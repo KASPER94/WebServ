@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 12:01:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/20 15:42:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/20 19:18:12 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ int main() {
 
     // Vérifier si la requête est une requête GET
     std::string request(buffer);
+    std::cout << "\033[31m" << request << "\033[0m" << std::endl;
     if (request.find("GET") == 0) {
         // Le client a fait une requête GET
         std::cout << "Requête GET détectée !" << std::endl;

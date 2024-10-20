@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+         #
+#    By: peanut <peanut@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/10/20 16:42:17 by skapersk         ###   ########.fr        #
+#    Updated: 2024/10/20 19:55:50 by peanut           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,8 @@ SRC_DIR = sources/
 
 OBJ_DIR = objects/
 
-SRC = websocket.cpp \
+SRC = main.cpp \
+	#   websocket.cpp \
 	  server.cpp \
 	  conf.cpp \
 	  client.cpp \
