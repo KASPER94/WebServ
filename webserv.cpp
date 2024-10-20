@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 12:01:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/17 14:07:44 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/20 15:42:58 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <sys/socket.h>
-# include <arpa/inet.h>
+#include <arpa/inet.h>
 
 #include <iostream>
 #include <cstring>
@@ -74,7 +74,7 @@ int main() {
     }
 
             // 7. Créer une réponse HTTP
-        std::string http_response = 
+        std::string http_response =
             "HTTP/1.1 200 OK\r\n"  // Ligne de statut HTTP
             "Content-Type: text/html\r\n"  // Type de contenu (HTML)
             "\r\n"  // Fin des en-têtes
