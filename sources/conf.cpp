@@ -6,11 +6,11 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/20 19:51:02 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/20 20:01:42 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cong.hpp"
+#include "conf.hpp"
 
 conf::conf(const std::string &str) {
 
