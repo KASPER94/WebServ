@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/21 17:56:59 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/21 19:19:34 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,50 +28,48 @@ bool isConf(const std::string &str) {
     return (false);
 }
 
-std::string trim(const std::string &str) {
-    size_t first = str.find_first_not_of(" \t");
-    size_t last = str.find_last_not_of(" \t");
-    return (first == std::string::npos) ? "" : str.substr(first, last - first + 1);
-}
-
 void   conf::_findServerBlock(std::string &line) {
-    size_t start;
-    
-    start = line.find(trim(line));
-    if (start != std::string::npos) {
-        _found = true;
-        _blockLevel = 1;
+    std::istringstream	word(line);
+    std::string w;
+
+    word >> w;
+    std::cout << w;
+    std::cout << w.compare("server") << std::endl;
+    if ((w.compare("server")) && word.eof()) {
+       this->_found = true;
+       this->_blockLevel = 0;
     }
 }
 
 void    conf::_parseLine(std::string &line) {
-    if (line.find("{") != std::string::npos)
-        _blockLevel++;
+    if (line.find("{") != std::string::npos){
+        this->_blockLevel++;
+    }
     if (line.find("}") != std::string::npos) {
-        _blockLevel--;
-        if (_blockLevel == 0)
-            return;
+       this-> _blockLevel--;
+        if (this->_blockLevel == 0)
+            return ;
     }
 }
 
 bool conf::_getRawConfig(std::ifstream &ConfigFile) {
     std::string line;
+    this->_found = false;
 
 	while (std::getline(ConfigFile, line))
 	{
 		if (line.empty() || line[0] == '#' || line[0] == ';')
-            continue ;
-        this->_findServerBlock(line);
+            continue;
+        if (!this->_found)
+            this->_findServerBlock(line);
         if (this->_found)
             this->_parseLine(line);
-    // std::istringstream	w(line);
 
 	}
     if (!this->_found)
 		throw (std::runtime_error("File is not containing a server block."));
-    std::cout << _blockLevel;
     if (this->_blockLevel != 0)
-		throw (std::runtime_error("the server block is not closed."));
+		throw (std::runtime_error("the server block is not well closed."));
     return (true);
 }
 
