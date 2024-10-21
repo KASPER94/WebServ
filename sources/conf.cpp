@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/21 19:19:34 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/21 22:08:12 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,25 +31,36 @@ bool isConf(const std::string &str) {
 void   conf::_findServerBlock(std::string &line) {
     std::istringstream	word(line);
     std::string w;
+    this->_blockLevel = 0;
 
-    word >> w;
-    std::cout << w;
-    std::cout << w.compare("server") << std::endl;
-    if ((w.compare("server")) && word.eof()) {
-       this->_found = true;
-       this->_blockLevel = 0;
+    while (word >> w) { 
+        if (w.compare("server") == 0) {
+            this->_found = true;
+            if (word >> w && w == "{") {
+                this->_blockLevel = 1;
+                break ;
+            }
+        }
+        else if (w == "server{") { 
+            this->_found = true;
+            this->_blockLevel = 1;
+            break ;
+        } else {
+            this->_blockLevel = 0;
+        }
     }
 }
 
 void    conf::_parseLine(std::string &line) {
-    if (line.find("{") != std::string::npos){
-        this->_blockLevel++;
+    std::istringstream	word(line);
+    std::string w;
+
+    word >> w;
+	if (!this->_blockLevel && w.compare("{") != 0) {
+		throw std::runtime_error("Invalid server block");
     }
-    if (line.find("}") != std::string::npos) {
-       this-> _blockLevel--;
-        if (this->_blockLevel == 0)
-            return ;
-    }
+    else
+        this->_blockLevel = 1;
 }
 
 bool conf::_getRawConfig(std::ifstream &ConfigFile) {
@@ -62,14 +73,13 @@ bool conf::_getRawConfig(std::ifstream &ConfigFile) {
             continue;
         if (!this->_found)
             this->_findServerBlock(line);
-        if (this->_found)
+        else if (this->_found)
             this->_parseLine(line);
-
 	}
+    if (line != "}")
+		throw std::runtime_error("Unclosed bracket");
     if (!this->_found)
 		throw (std::runtime_error("File is not containing a server block."));
-    if (this->_blockLevel != 0)
-		throw (std::runtime_error("the server block is not well closed."));
     return (true);
 }
 
