@@ -6,7 +6,7 @@
 #    By: peanut <peanut@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/10/20 20:01:27 by peanut           ###   ########.fr        #
+#    Updated: 2024/10/22 13:38:25 by peanut           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,6 +24,7 @@ OBJ_DIR = objects/
 
 SRC = main.cpp \
 	  conf.cpp \
+	  utils.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 

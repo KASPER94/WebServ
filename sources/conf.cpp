@@ -6,11 +6,12 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/21 22:08:12 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/22 14:06:46 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "conf.hpp"
+#include "utils.h"
 
 bool isDir(const std::string &str){
     struct stat	type;
@@ -28,7 +29,7 @@ bool isConf(const std::string &str) {
     return (false);
 }
 
-void   conf::_findServerBlock(std::string &line) {
+bool   conf::_findServerBlock(std::string &line) {
     std::istringstream	word(line);
     std::string w;
     this->_blockLevel = 0;
@@ -38,29 +39,47 @@ void   conf::_findServerBlock(std::string &line) {
             this->_found = true;
             if (word >> w && w == "{") {
                 this->_blockLevel = 1;
-                break ;
+                return (true) ;
             }
         }
         else if (w == "server{") { 
             this->_found = true;
             this->_blockLevel = 1;
-            break ;
+            return (true) ;
         } else {
             this->_blockLevel = 0;
         }
+    }
+    return (false);
+}
+
+void    conf::_getListen(std::vector<std::string> line) {
+    std::vector<std::string>::iterator it;
+
+    it = line.begin();
+    for (; it != line.end(); it++) {
+        std::cout << *it << std::endl;
     }
 }
 
 void    conf::_parseLine(std::string &line) {
     std::istringstream	word(line);
     std::string w;
+    std::vector<std::string> line_trim;
 
     word >> w;
 	if (!this->_blockLevel && w.compare("{") != 0) {
-		throw std::runtime_error("Invalid server block");
+		throw std::runtime_error("Error: Invalid server block");
     }
     else
         this->_blockLevel = 1;
+    line_trim = split_trim_conf(line, " ");
+    if ((*line_trim.begin()).compare("server") == 0)
+		throw std::runtime_error("Error: Syntax of config file is not ok");
+    std::cout << (*line_trim.begin()).compare("listen") << *line_trim.begin() << std::endl;
+    if ((*line_trim.begin()).compare("listen") == 0) {
+        this->_getListen(line_trim);
+    }
 }
 
 bool conf::_getRawConfig(std::ifstream &ConfigFile) {

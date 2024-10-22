@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/21 18:59:52 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/22 14:04:44 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,9 @@ class conf {
         int _blockLevel;
         bool _getRawConfig(std::ifstream &ConfigFile);
         void _parseLine(std::string &line);
-        void _findServerBlock(std::string &line);
+        bool _findServerBlock(std::string &line);
+        void _checkDuplicateServDecl(std::string &line);
+        void _getListen(std::vector<std::string> line);
     public:
         conf(const std::string &str);
         ~conf();
