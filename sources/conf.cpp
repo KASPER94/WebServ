@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/22 14:06:46 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/22 18:53:04 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,15 +53,6 @@ bool   conf::_findServerBlock(std::string &line) {
     return (false);
 }
 
-void    conf::_getListen(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
-
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
-}
-
 void    conf::_parseLine(std::string &line) {
     std::istringstream	word(line);
     std::string w;
@@ -73,13 +64,39 @@ void    conf::_parseLine(std::string &line) {
     }
     else
         this->_blockLevel = 1;
-    line_trim = split_trim_conf(line, " ");
+    line_trim = split_trim_conf(line);
     if ((*line_trim.begin()).compare("server") == 0)
 		throw std::runtime_error("Error: Syntax of config file is not ok");
-    std::cout << (*line_trim.begin()).compare("listen") << *line_trim.begin() << std::endl;
-    if ((*line_trim.begin()).compare("listen") == 0) {
+    if ((*line_trim.begin()).compare("listen") == 0)
         this->_getListen(line_trim);
-    }
+    else if ((*line_trim.begin()).compare("server_name") == 0)
+        this->_getServerName(line_trim);
+    else if ((*line_trim.begin()).compare("host") == 0)
+        this->_getHost(line_trim);
+    else if ((*line_trim.begin()).compare("index") == 0)
+        this->_getIndex(line_trim);
+    else if ((*line_trim.begin()).compare("location") == 0)
+        this->_getLocation(line_trim);
+    else if ((*line_trim.begin()).compare("error_page") == 0)
+        this->_getErrorPage(line_trim);
+    else if ((*line_trim.begin()).compare("client_max_body_size") == 0)
+        this->_getClientMaxBodySize(line_trim);
+    else if ((*line_trim.begin()).compare("allowed_methods") == 0)
+        this->_getAllowedMethods(line_trim);
+    else if ((*line_trim.begin()).compare("autoindex") == 0)
+        this->_getAutoindex(line_trim);
+    else if ((*line_trim.begin()).compare("upload_path") == 0)
+        this->_getUploadPath(line_trim);
+    else if ((*line_trim.begin()).compare("root") == 0)
+        this->_getRoot(line_trim);
+    else if ((*line_trim.begin()).compare("return") == 0)
+        this->_getRedirection(line_trim);
+    else if ((*line_trim.begin()).compare("cgi_extension") == 0)
+        this->_getCgiExtension(line_trim);
+    else if ((*line_trim.begin()).compare("cgi_path") == 0)
+        this->_getCgiPath(line_trim);
+    else
+        throw std::runtime_error("Unknown directive: " + *line_trim.begin());
 }
 
 bool conf::_getRawConfig(std::ifstream &ConfigFile) {

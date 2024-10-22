@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/22 13:42:13 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/22 18:26:48 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,28 +34,14 @@ void	rtrim(std::string &str) {
 	str = str.substr(0, i + 1);
 }
 
-std::vector<std::string> split_trim_conf(std::string str, std::string needle) {
-	std::vector<std::string>	split ;
-	size_t			start = 0 ;
-	size_t			end = 0 ;
-	std::string			subs ;
-	std::string			remaining ;
+std::vector<std::string> split_trim_conf(std::string str) {
+    std::vector<std::string>    split;
+    std::istringstream	word(str);
+    std::string w;
 
-	while ((end = str.find(needle, start)) != std::string::npos) {
-		subs = str.substr(start, end - start);
-		ltrim(subs);
-		rtrim(subs);
-		if (!subs.empty()) {
-			split.push_back(subs);
-		}
-		start = end + needle.length();
-	}
-	remaining = str.substr(start);
-	ltrim(remaining);
-	rtrim(remaining);
-	if (!remaining.empty()) {
-		split.push_back(remaining);
-	}
-	return split;
+    while (word >> w) {
+        split.push_back(w);
+    }
+    return (split);
 }
 

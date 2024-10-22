@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/22 14:04:44 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/22 18:51:57 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,23 @@ class conf {
         void _parseLine(std::string &line);
         bool _findServerBlock(std::string &line);
         void _checkDuplicateServDecl(std::string &line);
+
+        // GETTER
         void _getListen(std::vector<std::string> line);
+        void _getHost(std::vector<std::string> line);
+        void _getServerName(std::vector<std::string> line);
+        void _getIndex(std::vector<std::string> line);
+        void _getLocation(std::vector<std::string> line);
+        void _getErrorPage(std::vector<std::string> line);
+        void _getClientMaxBodySize(std::vector<std::string> line);
+        void _getAllowedMethods(std::vector<std::string> line);
+        void _getAutoindex(std::vector<std::string> line);
+        void _getUploadPath(std::vector<std::string> line);
+        void _getRoot(std::vector<std::string> line);
+        void _getRedirection(std::vector<std::string> line);
+        void _getCgiExtension(std::vector<std::string> line);
+        void _getCgiPath(std::vector<std::string> line);
+        
     public:
         conf(const std::string &str);
         ~conf();
