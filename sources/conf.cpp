@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/22 18:53:04 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/22 22:18:06 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,10 @@ bool   conf::_findServerBlock(std::string &line) {
     return (false);
 }
 
+void conf::_parseLocation(std::string block) {
+    std::cout << block << std::endl;
+}
+
 void    conf::_parseLine(std::string &line) {
     std::istringstream	word(line);
     std::string w;
@@ -75,14 +79,14 @@ void    conf::_parseLine(std::string &line) {
         this->_getHost(line_trim);
     else if ((*line_trim.begin()).compare("index") == 0)
         this->_getIndex(line_trim);
-    else if ((*line_trim.begin()).compare("location") == 0)
-        this->_getLocation(line_trim);
     else if ((*line_trim.begin()).compare("error_page") == 0)
         this->_getErrorPage(line_trim);
     else if ((*line_trim.begin()).compare("client_max_body_size") == 0)
         this->_getClientMaxBodySize(line_trim);
-    else if ((*line_trim.begin()).compare("allowed_methods") == 0)
+    else if ((*line_trim.begin()).compare("allowedMethods") == 0)
         this->_getAllowedMethods(line_trim);
+    else if ((*line_trim.begin()).compare("cgi_bin") == 0)
+        this->_getCgiBin(line_trim);
     else if ((*line_trim.begin()).compare("autoindex") == 0)
         this->_getAutoindex(line_trim);
     else if ((*line_trim.begin()).compare("upload_path") == 0)
@@ -95,6 +99,8 @@ void    conf::_parseLine(std::string &line) {
         this->_getCgiExtension(line_trim);
     else if ((*line_trim.begin()).compare("cgi_path") == 0)
         this->_getCgiPath(line_trim);
+    else if (*line_trim.begin() == "}")
+        return ;
     else
         throw std::runtime_error("Unknown directive: " + *line_trim.begin());
 }
@@ -102,22 +108,75 @@ void    conf::_parseLine(std::string &line) {
 bool conf::_getRawConfig(std::ifstream &ConfigFile) {
     std::string line;
     this->_found = false;
+    int brace_count = 0;
 
-	while (std::getline(ConfigFile, line))
-	{
-		if (line.empty() || line[0] == '#' || line[0] == ';')
+    while (std::getline(ConfigFile, line)) {
+        if (line.empty() || line[0] == '#' || line[0] == ';')
             continue;
-        if (!this->_found)
+        if (!this->_found) {
             this->_findServerBlock(line);
-        else if (this->_found)
+        } else if (this->_found && line.find("location") != std::string::npos) {
+            if (line.find("{") != std::string::npos)
+                brace_count++;
+            this->_parseLocation(line);
+            if (line.find("}") != std::string::npos) {
+                brace_count--;
+                if (brace_count == 0)
+                    continue;
+            }
+        } else if (this->_found && brace_count > 0) {
+            this->_parseLocation(line);
+            if (line.find("}") != std::string::npos) {
+                brace_count--;
+                if (brace_count == 0)
+                    continue;
+            }
+        } else if (this->_found) {
             this->_parseLine(line);
-	}
-    if (line != "}")
-		throw std::runtime_error("Unclosed bracket");
+        }
+    }
+    if (brace_count != 0)
+        throw std::runtime_error("Unclosed bracket");
     if (!this->_found)
-		throw (std::runtime_error("File is not containing a server block."));
-    return (true);
+        throw std::runtime_error("File is not containing a server block.");
+    return true;
 }
+
+
+// bool conf::_getRawConfig(std::ifstream &ConfigFile) {
+//     std::string line;
+//     this->_found = false;
+//     bool in = false;
+
+// 	while (std::getline(ConfigFile, line))
+// 	{
+// 		if (line.empty() || line[0] == '#' || line[0] == ';')
+//             continue;
+//         if (!this->_found)
+//             this->_findServerBlock(line);
+//         else if (this->_found && line.find("location") == 1) {
+//             if (line.find("{") != std::string::npos && line.find("}") == std::string::npos)
+//                 in = false;
+//             else if (line.find("{") == std::string::npos)
+//                 in = true;
+//             this->_parseLocation(line);
+//         }
+//         else if (this->_found && in == true) {
+//             std::cout << "+++" << in << std::endl;
+
+//             this->_parseLocation(line);
+//             if (line.find("}") != std::string::npos)
+//                 in = false;
+//         }
+//         else if (this->_found)
+//             this->_parseLine(line);
+// 	}
+//     if (line != "}")
+// 		throw std::runtime_error("Unclosed bracket");
+//     if (!this->_found)
+// 		throw (std::runtime_error("File is not containing a server block."));
+//     return (true);
+// }
 
 conf::conf(const std::string &str) {   
 

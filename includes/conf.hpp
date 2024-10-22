@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/22 18:51:57 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/22 21:01:07 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class conf {
         int _blockLevel;
         bool _getRawConfig(std::ifstream &ConfigFile);
         void _parseLine(std::string &line);
+        void _parseLocation(std::string block);
         bool _findServerBlock(std::string &line);
         void _checkDuplicateServDecl(std::string &line);
 
@@ -32,7 +33,7 @@ class conf {
         void _getHost(std::vector<std::string> line);
         void _getServerName(std::vector<std::string> line);
         void _getIndex(std::vector<std::string> line);
-        void _getLocation(std::vector<std::string> line);
+        // void _getLocation(std::vector<std::string> line);
         void _getErrorPage(std::vector<std::string> line);
         void _getClientMaxBodySize(std::vector<std::string> line);
         void _getAllowedMethods(std::vector<std::string> line);
@@ -42,6 +43,7 @@ class conf {
         void _getRedirection(std::vector<std::string> line);
         void _getCgiExtension(std::vector<std::string> line);
         void _getCgiPath(std::vector<std::string> line);
+        void _getCgiBin(std::vector<std::string> line);
         
     public:
         conf(const std::string &str);
