@@ -6,25 +6,25 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 11:54:06 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 14:47:46 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
+#include "Server.hpp"
 
-server::server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(8080), _host("127.0.0.1"), _name("default")  {
+Server::Server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(8080), _host("127.0.0.1"), _name("default")  {
     this->initializeConnection();
 }
 
-server::~server() {
+Server::~Server() {
 
 }
 
-server::server(const server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port, inet_addr(cpy._host.c_str())) {
+Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port, inet_addr(cpy._host.c_str())) {
     *this = cpy;
 }
 
-server &server::operator=(const server &rhs) {
+Server &Server::operator=(const Server &rhs) {
     this->_port = rhs._port;
 	this->_host = rhs._host;
 	this->_name = rhs._name;
@@ -42,8 +42,8 @@ server &server::operator=(const server &rhs) {
 	return (*this);
 }
 
-int server::connectToNetwork(int sock, struct sockaddr_in address) {
-    if (bind(sock, (struct sockaddr *)&address, sizeof(address)) < 0) {
+int Server::connectToNetwork() {
+    if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
         std::cerr << "Erreur: Échec de la liaison" << std::endl;
         return -1;
     }

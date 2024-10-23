@@ -6,16 +6,19 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/21 13:48:22 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 15:30:01 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "conf.hpp"
+#include "webserv.h"
 #include <iostream>
 
 bool webserv(char *config_file) {
+
     try {
         conf config(config_file);
+        std::cout << config.getNbServer();
     }
     catch (std::exception &e)
 	{

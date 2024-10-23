@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 11:31:44 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 15:32:12 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,13 @@ bool   conf::_findServerBlock(std::string &line) {
             this->_found = true;
             if (word >> w && w == "{") {
                 this->_blockLevel = 1;
-                return (true) ;
+                return (this->_nbServer++, true);
             }
         }
         else if (w == "server{") { 
             this->_found = true;
             this->_blockLevel = 1;
-            return (true) ;
+          return (this->_nbServer++, true);
         } else {
             this->_blockLevel = 0;
         }
@@ -99,8 +99,10 @@ void    conf::_parseLine(std::string &line) {
         this->_getCgiExtension(line_trim);
     else if ((*line_trim.begin()).compare("cgi_path") == 0)
         this->_getCgiPath(line_trim);
-    else if (*line_trim.begin() == "}")
+    else if (*line_trim.begin() == "}") {
+        this->_found = false;
         return ;
+    }
     else
         throw std::runtime_error("Unknown directive: " + *line_trim.begin());
 }
@@ -109,6 +111,7 @@ bool conf::_getRawConfig(std::ifstream &ConfigFile) {
     std::string line;
     this->_found = false;
     int brace_count = 0;
+    this->_nbServer = 0;
 
     while (std::getline(ConfigFile, line)) {
         if (line.empty() || line[0] == '#' || line[0] == ';')
@@ -137,7 +140,7 @@ bool conf::_getRawConfig(std::ifstream &ConfigFile) {
     }
     if (brace_count != 0)
         throw std::runtime_error("Unclosed bracket");
-    if (!this->_found)
+    if (!this->_found && !this->_nbServer)
         throw std::runtime_error("File is not containing a server block.");
     return true;
 }
@@ -207,4 +210,8 @@ conf::conf(const conf &cpy) {
 conf &conf::operator=(const conf &rhs){
 	(void) rhs;
 	return (*this);
+}
+
+int conf::getNbServer() {
+    return (this->_nbServer);
 }

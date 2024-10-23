@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/22 21:01:07 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 15:27:48 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ class conf {
     private:
         std::vector<std::string> _data;
         bool _found;
+        bool _reset;
+        int _nbServer;
         int _blockLevel;
         bool _getRawConfig(std::ifstream &ConfigFile);
         void _parseLine(std::string &line);
@@ -51,4 +53,5 @@ class conf {
         conf(const conf &cpy);
 
         conf &operator=(const conf &rhs);
+        int getNbServer();
 };

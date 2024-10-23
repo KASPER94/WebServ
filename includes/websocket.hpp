@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:24:17 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 11:53:07 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 14:22:41 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class websocket {
 		websocket(const websocket &cpy);
 
 		websocket &operator=(const websocket &rhs);
-		virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;
+		virtual int connectToNetwork() = 0;
 		void initializeConnection();
 		void	testConnection(int item);
 		int		getSock();

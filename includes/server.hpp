@@ -6,9 +6,12 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 11:36:07 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 14:46:50 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#ifndef SERVER_HPP
+# define SERVER_HPP
 
 #include "websocket.hpp"
 #include "webserv.h"
@@ -16,7 +19,7 @@
 #include <vector>
 #include <map>
 
-class server : public websocket {
+class Server : public websocket {
 	private:	
 		int								_port;
 		std::string						_host;
@@ -35,11 +38,13 @@ class server : public websocket {
 		std::vector<std::string>		_binPath ;
 		std::vector<std::string>		_cgiExtension ;
 	public:
-		server();
-		~server();
-		server(const server &cpy);
+		Server();
+		~Server();
+		Server(const Server &cpy);
 
-		server &operator=(const server &rhs);
+		Server &operator=(const Server &rhs);
 
-		int connectToNetwork(int sock, struct sockaddr_in address);
+		int connectToNetwork();
 };
+
+#endif

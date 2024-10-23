@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:44:47 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 11:55:32 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 14:28:14 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,9 +52,9 @@ int	websocket::getConnect() {
 	return this->_connection;
 }
 
-int websocket::connectToNetwork(int sock, struct sockaddr_in address) {
+int websocket::connectToNetwork() {
     // Implémentation par défaut (peut être redéfinie dans les classes dérivées)
-    if (bind(sock, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
         std::cerr << "Erreur: Échec de la liaison" << std::endl;
         return -1;
     }
@@ -63,5 +63,5 @@ int websocket::connectToNetwork(int sock, struct sockaddr_in address) {
 
 
 void websocket::initializeConnection() {
-    this->_connection = connectToNetwork(this->_sock, this->_address);
+    this->_connection = connectToNetwork();
 }
