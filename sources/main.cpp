@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 15:30:01 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 16:58:17 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,9 @@
 #include <iostream>
 
 bool webserv(char *config_file) {
-
+    env()->webserv = new Webserv();
     try {
         conf config(config_file);
-        std::cout << config.getNbServer();
     }
     catch (std::exception &e)
 	{

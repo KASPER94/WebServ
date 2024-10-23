@@ -1,38 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv.h                                          :+:      :+:    :+:   */
+/*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 16:53:08 by peanut           ###   ########.fr       */
+/*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
+/*   Updated: 2024/10/23 16:50:38 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERV_H
-# define WEBSERV_H
+#ifndef WEBSERV_HPP
+# define WEBSERV_HPP
 
-# include <fstream>
-# include <sstream>
-
-enum HttpMethod {
-	GET,
-	POST,
-	DELETE,
-	OTHER
-};
-
+# include <vector>
 # include "Server.hpp"
-# include "Webserv.hpp"
-class Webserv;
+
 class Server;
 
-typedef struct s_env {
-	Webserv	*webserv;
-}	t_env;
+class Webserv {
+    private:
+        std::vector<Server>				_servers;
+		// Webserv(const Webserv &cpy);
 
-t_env *env();
-std::vector<std::string> split_trim_conf(std::string str) ;
+		// Webserv &operator=(const Webserv &rhs);
+    public:
+        Webserv();
+        Webserv(std::vector<Server> const &servers) ;
+		~Webserv();
+};
 
 #endif

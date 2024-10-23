@@ -6,7 +6,7 @@
 #    By: peanut <peanut@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/10/23 11:31:28 by peanut           ###   ########.fr        #
+#    Updated: 2024/10/23 16:51:45 by peanut           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,6 +28,7 @@ SRC = main.cpp \
 	  utils.cpp \
 	  server.cpp \
 	  websocket.cpp \
+	  Webserv.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 

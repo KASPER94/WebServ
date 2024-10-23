@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   webserv.cpp                                        :+:      :+:    :+:   */
+/*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 10:52:57 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 16:48:48 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,11 @@ void	rtrim(std::string &str) {
 	while (isspace(str[i]))
 		i--;
 	str = str.substr(0, i + 1);
+}
+
+t_env *env() {
+	static t_env e;
+	return (&e);
 }
 
 std::vector<std::string> split_trim_conf(std::string str) {

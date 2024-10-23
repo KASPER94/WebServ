@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 14:46:50 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 16:56:46 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class Server : public websocket {
 		std::vector<std::string>		_cgiExtension ;
 	public:
 		Server();
-		~Server();
+		virtual ~Server();
 		Server(const Server &cpy);
 
 		Server &operator=(const Server &rhs);

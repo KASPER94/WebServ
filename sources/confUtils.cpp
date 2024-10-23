@@ -6,7 +6,7 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/22 21:01:20 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 17:24:26 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,11 @@
 void    conf::_getListen(std::vector<std::string> line) {
     std::vector<std::string>::iterator it;
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+    
+    // it = line.begin();
+    // for (; it != line.end(); it++) {
+    //     std::cout << *it << std::endl;
+    // }
 }
 
 void    conf::_getServerName(std::vector<std::string> line) {
@@ -47,15 +48,6 @@ void    conf::_getIndex(std::vector<std::string> line) {
         std::cout << *it << std::endl;
     }
 }
-
-// void    conf::_getLocation(std::vector<std::string> line) {
-//     std::vector<std::string>::iterator it;
-
-//     it = line.begin();
-//     for (; it != line.end(); it++) {
-//         std::cout << *it << std::endl;
-//     }
-// }
 
 void    conf::_getErrorPage(std::vector<std::string> line) {
     std::vector<std::string>::iterator it;
