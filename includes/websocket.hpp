@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   websocket.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:24:17 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/20 16:50:33 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/23 11:53:07 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <cstdio>
 
 class websocket {
-	private:
+	protected:
 		int	_sock;
 		struct sockaddr_in _address;
 		int _addrlen;
@@ -31,6 +31,7 @@ class websocket {
 
 		websocket &operator=(const websocket &rhs);
 		virtual int connectToNetwork(int sock, struct sockaddr_in address) = 0;
+		void initializeConnection();
 		void	testConnection(int item);
 		int		getSock();
 		int		getConnect();

@@ -6,12 +6,12 @@
 /*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/22 22:18:06 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/23 11:31:44 by peanut           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "conf.hpp"
-#include "utils.h"
+#include "webserv.h"
 
 bool isDir(const std::string &str){
     struct stat	type;
