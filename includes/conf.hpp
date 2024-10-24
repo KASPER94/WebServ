@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 15:19:20 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:13:49 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include <vector>
 # include "webserv.h"
 # include <cstring>
+# include <cctype>
 
 class conf {
 	private:
@@ -37,7 +38,7 @@ class conf {
 
 		// GETTER
 		int _getListen(std::vector<std::string> line);
-		void _getHost(std::vector<std::string> line);
+		std::string _getHost(std::vector<std::string> line);
 		std::string  _getServerName(std::vector<std::string> line);
 		void _getIndex(std::vector<std::string> line);
 		// void _getLocation(std::vector<std::string> line);

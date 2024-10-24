@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 15:33:09 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:19:27 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ bool webserv(char *config_file) {
         conf config(config_file);
 		it = (env()->webserv->getAllServer()).begin();
 		for (; it != (env()->webserv->getAllServer()).end(); it++){
-			std::cout << it->getServerName() << std::endl;
+			std::cout << it->getHost() << std::endl;
 		}
     }
     catch (std::exception &e)

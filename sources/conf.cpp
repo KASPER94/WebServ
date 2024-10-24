@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 15:32:57 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:21:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,8 @@ bool   conf::_findServerBlock(std::string &line) {
 }
 
 void conf::_parseLocation(std::string block) {
-    std::cout << block << std::endl;
+    // std::cout << block << std::endl;
+	(void)block;
 }
 
 void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &allServ) {
@@ -80,7 +81,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setServerName(this->_getServerName(line_trim));
 			break;
 		case HOST:
-			this->_getHost(line_trim);
+			serv.setHost(this->_getHost(line_trim));
 			break;
 		case INDEX:
 			this->_getIndex(line_trim);

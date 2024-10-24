@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 15:34:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:32:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,13 +46,64 @@ std::string    conf::_getServerName(std::vector<std::string> line) {
 	return serverName;
 }
 
-void    conf::_getHost(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+bool allDigit(std::string &seg) {
+	if (seg.empty())
+		return false;
+	for (size_t i = 0; i < seg.size(); ++i) {
+		if (!isdigit(seg[i])) {
+			return false;
+		}
+	}
+	int num = atoi(seg.c_str());
+	return (num >= 0 && num <= 255);
+}
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+bool isValidIpAdd(std::string &ip) {
+	int	numDots = 0;
+	std::string seg;
+
+	for (size_t i = 0; i < ip.length(); i++){
+		if (ip[i] == '.') {
+			numDots++;
+			if (seg.empty() || !allDigit(seg) || atoi(seg.c_str()) > 255) {
+				return (false);
+			}
+			seg.clear();
+		}
+		else if (isdigit(ip[i])) {
+			seg += ip[i];
+		}
+		else
+			return (false);
+	}
+	if (seg.empty() || !allDigit(seg) || atoi(seg.c_str()) > 255)
+		return (false);
+	return (numDots == 3);
+}
+
+bool isValidHostname(std::string &host) {
+	if (host.empty() || host.length() > 63)
+		return (false);
+	for (size_t i = 0; i < host.length(); i++) {
+		if (!isalnum(host[i]) && host[i] != '-')
+			return false;
+		if ((i == 0 || i == host.length() - 1) && host[i] == '-')
+		return (false);
+	}
+	return (true);
+}
+
+std::string    conf::_getHost(std::vector<std::string> line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: host directive requires exactly one argument (host)");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string host = line[1].substr(0, line[1].size() - 1);
+	if (!isValidIpAdd(host)) {
+		if (!isValidHostname(host))
+			throw std::runtime_error("Error: invalid host name (must be a valid IP or hostname)");
+	}
+	return host;
 }
 
 void    conf::_getIndex(std::vector<std::string> line) {

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 15:32:18 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:19:13 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,4 +64,12 @@ void	Server::setServerName(std::string name) {
 
 std::string		Server::getServerName(){
 	return (this->_name);
+}
+
+void	Server::setHost(std::string host) {
+	this->_host = host;
+}
+
+std::string		Server::getHost(){
+	return (this->_host);
 }
