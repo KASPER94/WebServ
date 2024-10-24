@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 10:45:43 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:51:11 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,5 +55,6 @@ typedef struct s_env {
 t_env *env();
 std::vector<std::string> split_trim_conf(std::string str);
 Directive getDirective(const std::string &directive);
+unsigned long convertIpToUnsignedLong(const std::string &ip);
 
 #endif

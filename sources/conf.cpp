@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 17:21:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:49:18 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setServerName(this->_getServerName(line_trim));
 			break;
 		case HOST:
-			serv.setHost(this->_getHost(line_trim));
+			serv.setHostname(this->_getHost(line_trim));
 			break;
 		case INDEX:
 			this->_getIndex(line_trim);

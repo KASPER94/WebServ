@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 17:32:08 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:48:36 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,8 @@ bool isValidIpAdd(std::string &ip) {
 		}
 		else if (isdigit(ip[i])) {
 			seg += ip[i];
+			if (seg.size() > 3)
+				return (false);
 		}
 		else
 			return (false);

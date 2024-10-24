@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 10:42:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 17:51:00 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,3 +86,11 @@ std::vector<std::string> split_trim_conf(std::string str) {
     return (split);
 }
 
+unsigned long convertIpToUnsignedLong(const std::string &ip) {
+	in_addr_t ipAddress = inet_addr(ip.c_str());
+
+	if (ipAddress == INADDR_NONE) {
+		throw std::runtime_error("Invalid IP address format");
+	}
+	return htonl(ipAddress);
+}
