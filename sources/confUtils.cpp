@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 13:37:24 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 15:34:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,13 +34,16 @@ int    conf::_getListen(std::vector<std::string> line) {
 	return port;
 }
 
-void    conf::_getServerName(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+std::string    conf::_getServerName(std::vector<std::string> line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: server_name directive requires exactly one argument (server_name)");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string serverName = line[1].substr(0, line[1].size() - 1);
+	if (serverName.empty())
+		throw std::runtime_error("Error: missing server_name");
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+	return serverName;
 }
 
 void    conf::_getHost(std::vector<std::string> line) {

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 12:28:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 15:33:09 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,14 @@
 #include <iostream>
 
 bool webserv(char *config_file) {
-	// std::vector<Server>::iterator	it;
+	std::vector<Server>::iterator	it;
 
     try {
         conf config(config_file);
-		std::cout << (env()->webserv->getAllServer()).begin()->getPort() << std::endl;;
-		// it = (env()->webserv->getAllServer()).begin();
-		// for (; it != (env()->webserv->getAllServer()).end(); it++){
-		// 	std::cout << *it << std::endl;
-		// }
+		it = (env()->webserv->getAllServer()).begin();
+		for (; it != (env()->webserv->getAllServer()).end(); it++){
+			std::cout << it->getServerName() << std::endl;
+		}
     }
     catch (std::exception &e)
 	{

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 12:27:16 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 15:32:18 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,4 +56,12 @@ void	Server::setPort(int port) {
 
 int	Server::getPort() {
 	return (this->_port);
+}
+
+void	Server::setServerName(std::string name) {
+	this->_name = name;
+}
+
+std::string		Server::getServerName(){
+	return (this->_name);
 }

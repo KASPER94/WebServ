@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 13:44:42 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 15:32:57 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setPort(this->_getListen(line_trim));
 			break;
 		case SERVER_NAME:
-			this->_getServerName(line_trim);
+			serv.setServerName(this->_getServerName(line_trim));
 			break;
 		case HOST:
 			this->_getHost(line_trim);
@@ -165,42 +165,6 @@ std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
 	}
     return allServ;
 }
-
-
-// bool conf::_getRawConfig(std::ifstream &ConfigFile) {
-//     std::string line;
-//     this->_found = false;
-//     bool in = false;
-
-// 	while (std::getline(ConfigFile, line))
-// 	{
-// 		if (line.empty() || line[0] == '#' || line[0] == ';')
-//             continue;
-//         if (!this->_found)
-//             this->_findServerBlock(line);
-//         else if (this->_found && line.find("location") == 1) {
-//             if (line.find("{") != std::string::npos && line.find("}") == std::string::npos)
-//                 in = false;
-//             else if (line.find("{") == std::string::npos)
-//                 in = true;
-//             this->_parseLocation(line);
-//         }
-//         else if (this->_found && in == true) {
-//             std::cout << "+++" << in << std::endl;
-
-//             this->_parseLocation(line);
-//             if (line.find("}") != std::string::npos)
-//                 in = false;
-//         }
-//         else if (this->_found)
-//             this->_parseLine(line);
-// 	}
-//     if (line != "}")
-// 		throw std::runtime_error("Unclosed bracket");
-//     if (!this->_found)
-// 		throw (std::runtime_error("File is not containing a server block."));
-//     return (true);
-// }
 
 conf::conf(const std::string &str) {
 
