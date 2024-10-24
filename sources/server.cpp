@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 11:18:31 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 12:27:16 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,10 @@ int Server::connectToNetwork() {
     return (0);
 }
 
-void	Server::setHost(int host) {
-	this->_host = host;
+void	Server::setPort(int port) {
+	this->_port = port;
 }
 
+int	Server::getPort() {
+	return (this->_port);
+}

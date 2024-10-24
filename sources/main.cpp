@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 16:58:17 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 12:28:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,15 @@
 #include <iostream>
 
 bool webserv(char *config_file) {
-    env()->webserv = new Webserv();
+	// std::vector<Server>::iterator	it;
+
     try {
         conf config(config_file);
+		std::cout << (env()->webserv->getAllServer()).begin()->getPort() << std::endl;;
+		// it = (env()->webserv->getAllServer()).begin();
+		// for (; it != (env()->webserv->getAllServer()).end(); it++){
+		// 	std::cout << *it << std::endl;
+		// }
     }
     catch (std::exception &e)
 	{

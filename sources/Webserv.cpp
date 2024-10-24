@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 16:52:14 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 12:17:33 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,4 +20,8 @@ Webserv::Webserv(std::vector<Server> const &servers) {
 
 Webserv::~Webserv() {
 
+}
+
+std::vector<Server> Webserv::getAllServer() {
+	return (this->_servers);
 }

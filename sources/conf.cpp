@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 11:18:55 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 12:26:13 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,12 +57,10 @@ void conf::_parseLocation(std::string block) {
     std::cout << block << std::endl;
 }
 
-void    conf::_parseLine(std::string &line) {
+void    conf::_parseLine(std::string &line, Server	serv, std::vector<Server> allServ) {
     std::istringstream	word(line);
     std::string w;
     std::vector<std::string> line_trim;
-	std::vector<Server> allServ;
-	Server	serv;
 
     word >> w;
 	if (!this->_blockLevel && w.compare("{") != 0) {
@@ -76,7 +74,7 @@ void    conf::_parseLine(std::string &line) {
 		case SERVER:
 			throw std::runtime_error("Error: Syntax of config file is not ok");
 		case LISTEN:
-			serv.setHost(this->_getListen(line_trim));
+			serv.setPort(this->_getListen(line_trim));
 			break;
 		case SERVER_NAME:
 			this->_getServerName(line_trim);
@@ -118,6 +116,7 @@ void    conf::_parseLine(std::string &line) {
 			this->_getCgiPath(line_trim);
 			break;
 		case CLOSE_BRACKET:
+			allServ.push_back(serv);
 			this->_found = false;
 			return;
 		case UNKNOWN:
@@ -126,8 +125,10 @@ void    conf::_parseLine(std::string &line) {
 	}
 }
 
-bool conf::_getRawConfig(std::ifstream &ConfigFile) {
+std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
     std::string line;
+	std::vector<Server> allServ;
+	Server	serv;
     this->_found = false;
     int brace_count = 0;
     this->_nbServer = 0;
@@ -154,14 +155,14 @@ bool conf::_getRawConfig(std::ifstream &ConfigFile) {
                     continue;
             }
         } else if (this->_found) {
-            this->_parseLine(line);
+            this->_parseLine(line, serv, allServ);
         }
     }
     if (brace_count != 0)
         throw std::runtime_error("Unclosed bracket");
     if (!this->_found && !this->_nbServer)
         throw std::runtime_error("File is not containing a server block.");
-    return true;
+    return allServ;
 }
 
 
@@ -214,7 +215,7 @@ conf::conf(const std::string &str) {
     if (!ConfigFile.is_open()) {
         throw (std::runtime_error("error opening the config file"));
     }
-    this->_getRawConfig(ConfigFile);
+    env()->webserv = new Webserv(this->_getRawConfig(ConfigFile));
 
 }
 
