@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 12:26:13 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 13:44:42 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void conf::_parseLocation(std::string block) {
     std::cout << block << std::endl;
 }
 
-void    conf::_parseLine(std::string &line, Server	serv, std::vector<Server> allServ) {
+void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &allServ) {
     std::istringstream	word(line);
     std::string w;
     std::vector<std::string> line_trim;
@@ -160,8 +160,9 @@ std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
     }
     if (brace_count != 0)
         throw std::runtime_error("Unclosed bracket");
-    if (!this->_found && !this->_nbServer)
+    if (!this->_found && !this->_nbServer){
         throw std::runtime_error("File is not containing a server block.");
+	}
     return allServ;
 }
 
@@ -216,7 +217,6 @@ conf::conf(const std::string &str) {
         throw (std::runtime_error("error opening the config file"));
     }
     env()->webserv = new Webserv(this->_getRawConfig(ConfigFile));
-
 }
 
 conf::~conf() {

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 12:11:16 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 13:43:24 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class conf {
 		int _nbServer;
 		int _blockLevel;
 		std::vector<Server> _getRawConfig(std::ifstream &ConfigFile);
-		void _parseLine(std::string &line, Server serv, std::vector<Server> allServ);
+		void _parseLine(std::string &line, Server &serv, std::vector<Server> &allServ);
 		void _parseLocation(std::string block);
 		bool _findServerBlock(std::string &line);
 		void _checkDuplicateServDecl(std::string &line);

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 11:26:25 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/24 13:37:24 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@ int    conf::_getListen(std::vector<std::string> line) {
 		throw std::runtime_error("Error: listen directive requires exactly one argument (port)");
 
 	const std::string& portStr = line[1];
-	for (size_t i = 0; i < portStr.size(); ++i) {
+	if (portStr[portStr.size() - 1] != ';')
+			throw std::runtime_error("Error: missing ';'");
+	for (size_t i = 0; i < portStr.size()- 1; ++i) {
 		if (!std::isdigit(portStr[i])) {
 			throw std::runtime_error("Error: listen directive requires a valid port number");
 		}
