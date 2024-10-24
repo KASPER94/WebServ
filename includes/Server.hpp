@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.hpp                                         :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 16:56:46 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:17:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,14 @@
 #include <map>
 
 class Server : public websocket {
-	private:	
+	private:
 		int								_port;
 		std::string						_host;
 		std::string						_name;
 		bool							_directoryListing;
 		std::string						_root;
 		std::vector<std::string>		_indexes;
-		std::string						_index;	
+		std::string						_index;
 		long long						_maxBodySize;
 		std::vector<enum HttpMethod>	_allowedMethod;
 		std::vector<std::string>		_locationBlock;
@@ -43,8 +43,8 @@ class Server : public websocket {
 		Server(const Server &cpy);
 
 		Server &operator=(const Server &rhs);
-
 		int connectToNetwork();
+		void	setHost(int host);
 };
 
 #endif

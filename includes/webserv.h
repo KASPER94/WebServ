@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 16:53:08 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 10:45:43 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,26 @@
 
 # include <fstream>
 # include <sstream>
+
+enum Directive {
+	SERVER,
+	LISTEN,
+	SERVER_NAME,
+	HOST,
+	INDEX,
+	ERROR_PAGE,
+	CLIENT_MAX_BODY_SIZE,
+	ALLOWED_METHODS,
+	CGI_BIN,
+	AUTOINDEX,
+	UPLOAD_PATH,
+	ROOT,
+	RETURN,
+	CGI_EXTENSION,
+	CGI_PATH,
+	CLOSE_BRACKET,
+	UNKNOWN
+};
 
 enum HttpMethod {
 	GET,
@@ -33,6 +53,7 @@ typedef struct s_env {
 }	t_env;
 
 t_env *env();
-std::vector<std::string> split_trim_conf(std::string str) ;
+std::vector<std::string> split_trim_conf(std::string str);
+Directive getDirective(const std::string &directive);
 
 #endif

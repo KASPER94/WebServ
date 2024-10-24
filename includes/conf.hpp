@@ -3,55 +3,62 @@
 /*                                                        :::      ::::::::   */
 /*   conf.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 15:27:48 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:20:35 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <fstream>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <vector>
-#include <sstream>
+#ifndef CONF_HPP
+# define CONF_HPP
+
+# include <sstream>
+# include <iostream>
+# include <fstream>
+# include <sys/stat.h>
+# include <unistd.h>
+# include <vector>
+# include "webserv.h"
+# include <cstring>
 
 class conf {
-    private:
-        std::vector<std::string> _data;
-        bool _found;
-        bool _reset;
-        int _nbServer;
-        int _blockLevel;
-        bool _getRawConfig(std::ifstream &ConfigFile);
-        void _parseLine(std::string &line);
-        void _parseLocation(std::string block);
-        bool _findServerBlock(std::string &line);
-        void _checkDuplicateServDecl(std::string &line);
+	private:
+		std::vector<std::string> _data;
+		bool _found;
+		bool _reset;
+		int _nbServer;
+		int _blockLevel;
+		bool _getRawConfig(std::ifstream &ConfigFile);
+		void _parseLine(std::string &line);
+		void _parseLocation(std::string block);
+		bool _findServerBlock(std::string &line);
+		void _checkDuplicateServDecl(std::string &line);
 
-        // GETTER
-        void _getListen(std::vector<std::string> line);
-        void _getHost(std::vector<std::string> line);
-        void _getServerName(std::vector<std::string> line);
-        void _getIndex(std::vector<std::string> line);
-        // void _getLocation(std::vector<std::string> line);
-        void _getErrorPage(std::vector<std::string> line);
-        void _getClientMaxBodySize(std::vector<std::string> line);
-        void _getAllowedMethods(std::vector<std::string> line);
-        void _getAutoindex(std::vector<std::string> line);
-        void _getUploadPath(std::vector<std::string> line);
-        void _getRoot(std::vector<std::string> line);
-        void _getRedirection(std::vector<std::string> line);
-        void _getCgiExtension(std::vector<std::string> line);
-        void _getCgiPath(std::vector<std::string> line);
-        void _getCgiBin(std::vector<std::string> line);
-        
-    public:
-        conf(const std::string &str);
-        ~conf();
-        conf(const conf &cpy);
+		// GETTER
+		int _getListen(std::vector<std::string> line);
+		void _getHost(std::vector<std::string> line);
+		void _getServerName(std::vector<std::string> line);
+		void _getIndex(std::vector<std::string> line);
+		// void _getLocation(std::vector<std::string> line);
+		void _getErrorPage(std::vector<std::string> line);
+		void _getClientMaxBodySize(std::vector<std::string> line);
+		void _getAllowedMethods(std::vector<std::string> line);
+		void _getAutoindex(std::vector<std::string> line);
+		void _getUploadPath(std::vector<std::string> line);
+		void _getRoot(std::vector<std::string> line);
+		void _getRedirection(std::vector<std::string> line);
+		void _getCgiExtension(std::vector<std::string> line);
+		void _getCgiPath(std::vector<std::string> line);
+		void _getCgiBin(std::vector<std::string> line);
 
-        conf &operator=(const conf &rhs);
-        int getNbServer();
+	public:
+		conf(const std::string &str);
+		~conf();
+		conf(const conf &cpy);
+
+		conf &operator=(const conf &rhs);
+		int getNbServer();
 };
+
+#endif

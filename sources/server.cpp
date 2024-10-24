@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 14:47:46 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:18:31 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,5 +48,9 @@ int Server::connectToNetwork() {
         return -1;
     }
     return (0);
+}
+
+void	Server::setHost(int host) {
+	this->_host = host;
 }
 

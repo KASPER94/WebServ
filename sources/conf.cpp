@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   conf.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 16:35:23 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:18:55 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ bool isDir(const std::string &str){
 
 bool isConf(const std::string &str) {
     size_t i = str.find(".conf");
-    
+
     if (i == str.size() - 5)
         return (true);
     return (false);
@@ -34,7 +34,7 @@ bool   conf::_findServerBlock(std::string &line) {
     std::string w;
     this->_blockLevel = 0;
 
-    while (word >> w) { 
+    while (word >> w) {
         if (w.compare("server") == 0) {
             this->_found = true;
             if (word >> w && w == "{") {
@@ -42,7 +42,7 @@ bool   conf::_findServerBlock(std::string &line) {
                 return (this->_nbServer++, true);
             }
         }
-        else if (w == "server{") { 
+        else if (w == "server{") {
             this->_found = true;
             this->_blockLevel = 1;
           return (this->_nbServer++, true);
@@ -61,6 +61,8 @@ void    conf::_parseLine(std::string &line) {
     std::istringstream	word(line);
     std::string w;
     std::vector<std::string> line_trim;
+	std::vector<Server> allServ;
+	Server	serv;
 
     word >> w;
 	if (!this->_blockLevel && w.compare("{") != 0) {
@@ -69,42 +71,59 @@ void    conf::_parseLine(std::string &line) {
     else
         this->_blockLevel = 1;
     line_trim = split_trim_conf(line);
-    if ((*line_trim.begin()).compare("server") == 0)
-		throw std::runtime_error("Error: Syntax of config file is not ok");
-    if ((*line_trim.begin()).compare("listen") == 0)
-        this->_getListen(line_trim);
-    else if ((*line_trim.begin()).compare("server_name") == 0)
-        this->_getServerName(line_trim);
-    else if ((*line_trim.begin()).compare("host") == 0)
-        this->_getHost(line_trim);
-    else if ((*line_trim.begin()).compare("index") == 0)
-        this->_getIndex(line_trim);
-    else if ((*line_trim.begin()).compare("error_page") == 0)
-        this->_getErrorPage(line_trim);
-    else if ((*line_trim.begin()).compare("client_max_body_size") == 0)
-        this->_getClientMaxBodySize(line_trim);
-    else if ((*line_trim.begin()).compare("allowedMethods") == 0)
-        this->_getAllowedMethods(line_trim);
-    else if ((*line_trim.begin()).compare("cgi_bin") == 0)
-        this->_getCgiBin(line_trim);
-    else if ((*line_trim.begin()).compare("autoindex") == 0)
-        this->_getAutoindex(line_trim);
-    else if ((*line_trim.begin()).compare("upload_path") == 0)
-        this->_getUploadPath(line_trim);
-    else if ((*line_trim.begin()).compare("root") == 0)
-        this->_getRoot(line_trim);
-    else if ((*line_trim.begin()).compare("return") == 0)
-        this->_getRedirection(line_trim);
-    else if ((*line_trim.begin()).compare("cgi_extension") == 0)
-        this->_getCgiExtension(line_trim);
-    else if ((*line_trim.begin()).compare("cgi_path") == 0)
-        this->_getCgiPath(line_trim);
-    else if (*line_trim.begin() == "}") {
-        this->_found = false;
-        return ;
-    }
-    else
-        throw std::runtime_error("Unknown directive: " + *line_trim.begin());
+    std::string directive = *line_trim.begin();
+	switch (getDirective(directive)) {
+		case SERVER:
+			throw std::runtime_error("Error: Syntax of config file is not ok");
+		case LISTEN:
+			serv.setHost(this->_getListen(line_trim));
+			break;
+		case SERVER_NAME:
+			this->_getServerName(line_trim);
+			break;
+		case HOST:
+			this->_getHost(line_trim);
+			break;
+		case INDEX:
+			this->_getIndex(line_trim);
+			break;
+		case ERROR_PAGE:
+			this->_getErrorPage(line_trim);
+			break;
+		case CLIENT_MAX_BODY_SIZE:
+			this->_getClientMaxBodySize(line_trim);
+			break;
+		case ALLOWED_METHODS:
+			this->_getAllowedMethods(line_trim);
+			break;
+		case CGI_BIN:
+			this->_getCgiBin(line_trim);
+			break;
+		case AUTOINDEX:
+			this->_getAutoindex(line_trim);
+			break;
+		case UPLOAD_PATH:
+			this->_getUploadPath(line_trim);
+			break;
+		case ROOT:
+			this->_getRoot(line_trim);
+			break;
+		case RETURN:
+			this->_getRedirection(line_trim);
+			break;
+		case CGI_EXTENSION:
+			this->_getCgiExtension(line_trim);
+			break;
+		case CGI_PATH:
+			this->_getCgiPath(line_trim);
+			break;
+		case CLOSE_BRACKET:
+			this->_found = false;
+			return;
+		case UNKNOWN:
+		default:
+			throw std::runtime_error("Unknown directive: " + directive);
+	}
 }
 
 bool conf::_getRawConfig(std::ifstream &ConfigFile) {
@@ -181,7 +200,7 @@ bool conf::_getRawConfig(std::ifstream &ConfigFile) {
 //     return (true);
 // }
 
-conf::conf(const std::string &str) {   
+conf::conf(const std::string &str) {
 
     if (str.empty())
         throw (std::runtime_error("error the config file seems to be empty"));
@@ -191,7 +210,7 @@ conf::conf(const std::string &str) {
         throw (std::runtime_error("error the config file has not the extension .conf"));
     if (access(str.c_str(), R_OK))
 		throw (std::runtime_error("error the config file does not provide read access"));
-    std::ifstream ConfigFile(str.c_str());    
+    std::ifstream ConfigFile(str.c_str());
     if (!ConfigFile.is_open()) {
         throw (std::runtime_error("error opening the config file"));
     }

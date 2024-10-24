@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 16:48:48 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 10:42:41 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,42 @@ void	rtrim(std::string &str) {
 	while (isspace(str[i]))
 		i--;
 	str = str.substr(0, i + 1);
+}
+
+Directive getDirective(const std::string &directive) {
+	if (directive == "server")
+		return SERVER;
+	if (directive == "listen")
+		return LISTEN;
+	if (directive == "server_name")
+		return SERVER_NAME;
+	if (directive == "host")
+		return HOST;
+	if (directive == "index")
+		return INDEX;
+	if (directive == "error_page")
+		return ERROR_PAGE;
+	if (directive == "client_max_body_size")
+		return CLIENT_MAX_BODY_SIZE;
+	if (directive == "allowedMethods")
+		return ALLOWED_METHODS;
+	if (directive == "cgi_bin")
+		return CGI_BIN;
+	if (directive == "autoindex")
+		return AUTOINDEX;
+	if (directive == "upload_path")
+		return UPLOAD_PATH;
+	if (directive == "root")
+		return ROOT;
+	if (directive == "return")
+		return RETURN;
+	if (directive == "cgi_extension")
+		return CGI_EXTENSION;
+	if (directive == "cgi_path")
+		return CGI_PATH;
+	if (directive == "}")
+		return CLOSE_BRACKET;
+	return UNKNOWN;
 }
 
 t_env *env() {

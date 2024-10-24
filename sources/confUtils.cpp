@@ -3,23 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   confUtils.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/23 17:24:26 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/24 11:26:25 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "conf.hpp"
 
-void    conf::_getListen(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+int    conf::_getListen(std::vector<std::string> line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: listen directive requires exactly one argument (port)");
 
-    
-    // it = line.begin();
-    // for (; it != line.end(); it++) {
-    //     std::cout << *it << std::endl;
-    // }
+	const std::string& portStr = line[1];
+	for (size_t i = 0; i < portStr.size(); ++i) {
+		if (!std::isdigit(portStr[i])) {
+			throw std::runtime_error("Error: listen directive requires a valid port number");
+		}
+	}
+
+	std::istringstream nb(portStr);
+	int port;
+	nb >> port;
+	if (nb.fail() || port < 0 || port > 65535) {
+		throw std::runtime_error("Error: listen directive requires a port number between 0 and 65535");
+	}
+	return port;
 }
 
 void    conf::_getServerName(std::vector<std::string> line) {
