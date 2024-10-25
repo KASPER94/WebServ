@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/25 11:52:14 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 16:38:13 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ std::map<int, std::string>	conf::_getErrorPage(std::vector<std::string> line) {
 	int			errorCode;
 
 	if (line.size() != 3)
-		throw std::runtime_error("Error: server_name directive requires exactly one argument (server_name)");
+		throw std::runtime_error("Error: error_page directive requires exactly one argument (error_page)");
 	if (line[2][line[2].size() - 1] != ';')
 		throw std::runtime_error("Error: missing ';'");
 	errorPage = line[2].substr(0, line[2].size() - 1);
@@ -138,22 +138,40 @@ size_t    conf::_getClientMaxBodySize(std::vector<std::string> line) {
 	size_t clientMaxBodysize;
 
 	if (line.size() != 2)
-		throw std::runtime_error("Error: server_name directive requires exactly one argument (server_name)");
+		throw std::runtime_error("Error: client_max_body_size directive requires exactly one argument (client_max_body_size)");
 	if (line[1][line[1].size() - 1] != ';')
 		throw std::runtime_error("Error: missing ';'");
 	if (allDigit(line[1]))
-		throw(std::runtime_error("Error: error_page directive"));
+		throw(std::runtime_error("Error: client_max_body_size directive"));
 	clientMaxBodysize = atoi(line[1].c_str());
 	return (clientMaxBodysize);
 }
 
-void    conf::_getAllowedMethods(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+std::vector<std::string>    *conf::_getAllowedMethods(std::vector<std::string> line) {
+	std::vector<std::string> *methods = new std::vector<std::string>;
+	std::string method;
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+	if (line.size() < 2)
+		throw std::runtime_error("Error: allowedMethods directive requires at least one method");
+	std::string lastMethod = line.back();
+	if (lastMethod[lastMethod.size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+
+	for (size_t i = 1; i < line.size(); i++) {
+		method = line[i].substr(0, line[i].size());
+		method.erase(method.find_last_not_of(" \n\r\t;") + 1);
+		method.erase(0, method.find_first_not_of(" \n\r\t"));
+		if (method == "GET") {
+			methods->push_back("GET");
+		} else if (method == "POST") {
+			methods->push_back("POST");
+		} else if (method == "DELETE") {
+			methods->push_back("DELETE");
+		} else {
+			throw std::runtime_error("Error: unsupported method in allowedMethods directive");
+		}
+	}
+	return (methods);
 }
 
 void    conf::_getAutoindex(std::vector<std::string> line) {

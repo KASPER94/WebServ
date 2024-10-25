@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 11:48:23 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 15:47:49 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setClientMaxBody(this->_getClientMaxBodySize(line_trim));
 			break;
 		case ALLOWED_METHODS:
-			this->_getAllowedMethods(line_trim);
+			serv.setAllowedMethods(this->_getAllowedMethods(line_trim));
 			break;
 		case CGI_BIN:
 			this->_getCgiBin(line_trim);

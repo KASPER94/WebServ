@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 17:51:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 16:03:55 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,24 @@ void	rtrim(std::string &str) {
 	while (isspace(str[i]))
 		i--;
 	str = str.substr(0, i + 1);
+}
+
+void convertAllowMethods(const std::vector<HttpMethod>& methods) {
+    std::stringstream result;
+	// std::vector<HttpMethod>::const_iterator it;
+
+	std::vector<HttpMethod>::const_iterator it;
+	it = methods.begin();
+	for (; it != methods.end(); it++){
+		std::cout << "coucou" << std::endl;
+		std::cout << *it << std::endl;
+		if (*it == GET)
+			std::cout << "+++GET+++" << std::endl;
+		else if (*it == POST)
+			std::cout << "++POST++" << std::endl;
+		else if (*it == DELETE)
+			std::cout << "+DELETE+" << std::endl;
+	}
 }
 
 Directive getDirective(const std::string &directive) {

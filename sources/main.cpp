@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/25 11:52:02 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 16:41:45 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,18 @@
 
 bool webserv(char *config_file) {
 	std::vector<Server>::iterator	it;
+	std::vector<std::string>::iterator	it2;
+	std::vector<std::string> *methods;
 
     try {
         conf config(config_file);
 		it = (env()->webserv->getAllServer()).begin();
 		for (; it != (env()->webserv->getAllServer()).end(); it++){
-			std::cout << it->getClientMaxBody() << std::endl;
+			methods = it->getAllowedMethods();
+			it2 = methods->begin();
+			for (; it2 != methods->end(); it2++){
+				std::cout << *it2 << std::endl;
+			}
 			// std::map<int, std::string> errorPages = it->getErrorPage();
 
 			// // Utiliser l'itérateur pour parcourir les erreurs

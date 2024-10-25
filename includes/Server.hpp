@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 11:50:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 16:41:00 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ class Server : public websocket {
 		std::vector<std::string>		_indexes;
 		std::string						_index;
 		long long						_maxBodySize;
-		std::vector<enum HttpMethod>	_allowedMethod;
+		std::vector<std::string>		*_allowedMethod;
 		std::vector<std::string>		_locationBlock;
 
 		std::map<int, std::string>		_errorPages ;
@@ -51,6 +51,8 @@ class Server : public websocket {
 		void	setServerName(std::string name);
 		void	setErrorPage(std::map<int, std::string>);
 		void	setClientMaxBody(size_t body);
+		void 	setAllowedMethods(std::vector<std::string> *methods);
+
 
 		// GETTER
 		int		getPort();
@@ -58,6 +60,7 @@ class Server : public websocket {
 		std::string		getServerName();
 		std::map<int, std::string>		getErrorPage();
 		size_t getClientMaxBody();
+		std::vector<std::string> *getAllowedMethods() ;
 };
 
 #endif

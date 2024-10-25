@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 17:51:11 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 16:16:25 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,10 @@ enum Directive {
 };
 
 enum HttpMethod {
-	GET,
-	POST,
-	DELETE,
-	OTHER
+	GET = 0,
+	POST = 1,
+	DELETE = 2,
+	OTHER = 3
 };
 
 # include "Server.hpp"
@@ -56,5 +56,6 @@ t_env *env();
 std::vector<std::string> split_trim_conf(std::string str);
 Directive getDirective(const std::string &directive);
 unsigned long convertIpToUnsignedLong(const std::string &ip);
+void convertAllowMethods(const std::vector<HttpMethod>& methods) ;
 
 #endif

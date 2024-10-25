@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 11:55:07 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 16:40:51 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,3 +91,15 @@ size_t	Server::getClientMaxBody() {
 		return (0);
 	return (this->_maxBodySize);
 }
+
+void Server::setAllowedMethods(std::vector<std::string> *methods) {
+    // this->_allowedMethod.clear();
+    // this->_allowedMethod.insert(_allowedMethod.end(), methods.begin(), methods.end());
+	this->_allowedMethod = methods;
+}
+
+std::vector<std::string> *Server::getAllowedMethods() {
+
+    return _allowedMethod;
+}
+
