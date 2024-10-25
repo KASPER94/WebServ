@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/25 11:42:07 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 11:52:14 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,13 +134,17 @@ std::map<int, std::string>	conf::_getErrorPage(std::vector<std::string> line) {
 	return (ErrorData);
 }
 
-void    conf::_getClientMaxBodySize(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+size_t    conf::_getClientMaxBodySize(std::vector<std::string> line) {
+	size_t clientMaxBodysize;
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+	if (line.size() != 2)
+		throw std::runtime_error("Error: server_name directive requires exactly one argument (server_name)");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	if (allDigit(line[1]))
+		throw(std::runtime_error("Error: error_page directive"));
+	clientMaxBodysize = atoi(line[1].c_str());
+	return (clientMaxBodysize);
 }
 
 void    conf::_getAllowedMethods(std::vector<std::string> line) {

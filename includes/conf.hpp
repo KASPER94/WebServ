@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 10:48:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 11:47:37 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class conf {
 		void _getIndex(std::vector<std::string> line);
 		// void _getLocation(std::vector<std::string> line);
 		std::map<int, std::string> _getErrorPage(std::vector<std::string> line);
-		void _getClientMaxBodySize(std::vector<std::string> line);
+		size_t _getClientMaxBodySize(std::vector<std::string> line);
 		void _getAllowedMethods(std::vector<std::string> line);
 		void _getAutoindex(std::vector<std::string> line);
 		void _getUploadPath(std::vector<std::string> line);

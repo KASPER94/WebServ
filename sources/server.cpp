@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 10:54:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 11:55:07 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,4 +80,14 @@ void	Server::setErrorPage(std::map<int, std::string> Error) {
 
 std::map<int, std::string> Server::getErrorPage() {
 	return (this->_errorPages);
+}
+
+void	Server::setClientMaxBody(size_t body) {
+	this->_maxBodySize = body;
+}
+
+size_t	Server::getClientMaxBody() {
+	if (!this->_maxBodySize)
+		return (0);
+	return (this->_maxBodySize);
 }
