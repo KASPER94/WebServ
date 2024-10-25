@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 17:48:36 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 11:42:07 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,13 +117,21 @@ void    conf::_getIndex(std::vector<std::string> line) {
     }
 }
 
-void    conf::_getErrorPage(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+std::map<int, std::string>	conf::_getErrorPage(std::vector<std::string> line) {
+	std::string errorPage;
+	std::map<int, std::string> ErrorData;
+	int			errorCode;
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+	if (line.size() != 3)
+		throw std::runtime_error("Error: server_name directive requires exactly one argument (server_name)");
+	if (line[2][line[2].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	errorPage = line[2].substr(0, line[2].size() - 1);
+	if (errorPage.empty() || allDigit(line[1]))
+		throw(std::runtime_error("Error: error_page directive"));
+	errorCode = atoi(line[1].c_str());
+	ErrorData.insert(std::make_pair(errorCode, errorPage));
+	return (ErrorData);
 }
 
 void    conf::_getClientMaxBodySize(std::vector<std::string> line) {

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 17:45:29 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 10:54:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,4 +72,12 @@ void	Server::setHostname(std::string host) {
 
 std::string		Server::getHostname(){
 	return (this->_host);
+}
+
+void	Server::setErrorPage(std::map<int, std::string> Error) {
+	this->_errorPages = Error;
+}
+
+std::map<int, std::string> Server::getErrorPage() {
+	return (this->_errorPages);
 }

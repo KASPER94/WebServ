@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 17:13:49 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 10:48:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <sys/stat.h>
 # include <unistd.h>
 # include <vector>
+# include <map>
 # include "webserv.h"
 # include <cstring>
 # include <cctype>
@@ -42,7 +43,7 @@ class conf {
 		std::string  _getServerName(std::vector<std::string> line);
 		void _getIndex(std::vector<std::string> line);
 		// void _getLocation(std::vector<std::string> line);
-		void _getErrorPage(std::vector<std::string> line);
+		std::map<int, std::string> _getErrorPage(std::vector<std::string> line);
 		void _getClientMaxBodySize(std::vector<std::string> line);
 		void _getAllowedMethods(std::vector<std::string> line);
 		void _getAutoindex(std::vector<std::string> line);

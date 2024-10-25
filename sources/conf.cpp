@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 17:49:18 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 11:37:42 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,10 +84,10 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setHostname(this->_getHost(line_trim));
 			break;
 		case INDEX:
-			this->_getIndex(line_trim);
+			// this->_getIndex(line_trim);
 			break;
 		case ERROR_PAGE:
-			this->_getErrorPage(line_trim);
+			serv.setErrorPage(this->_getErrorPage(line_trim));
 			break;
 		case CLIENT_MAX_BODY_SIZE:
 			this->_getClientMaxBodySize(line_trim);

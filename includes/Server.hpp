@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/24 17:48:52 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/25 10:54:59 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,13 @@ class Server : public websocket {
 		void	setPort(int port);
 		void	setHostname(std::string host);
 		void	setServerName(std::string name);
+		void	setErrorPage(std::map<int, std::string>);
 
 		// GETTER
 		int		getPort();
 		std::string		getHostname();
 		std::string		getServerName();
-
+		std::map<int, std::string>		getErrorPage();
 };
 
 #endif
