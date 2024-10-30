@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 15:47:49 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 11:52:01 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,25 +96,25 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setAllowedMethods(this->_getAllowedMethods(line_trim));
 			break;
 		case CGI_BIN:
-			this->_getCgiBin(line_trim);
+			// this->_getCgiBin(line_trim);
 			break;
 		case AUTOINDEX:
-			this->_getAutoindex(line_trim);
+			// this->_getAutoindex(line_trim);
 			break;
 		case UPLOAD_PATH:
-			this->_getUploadPath(line_trim);
+			// this->_getUploadPath(line_trim);
 			break;
 		case ROOT:
-			this->_getRoot(line_trim);
+			// this->_getRoot(line_trim);
 			break;
 		case RETURN:
-			this->_getRedirection(line_trim);
+			// this->_getRedirection(line_trim);
 			break;
 		case CGI_EXTENSION:
-			this->_getCgiExtension(line_trim);
+			// this->_getCgiExtension(line_trim);
 			break;
 		case CGI_PATH:
-			this->_getCgiPath(line_trim);
+			// this->_getCgiPath(line_trim);
 			break;
 		case CLOSE_BRACKET:
 			allServ.push_back(serv);

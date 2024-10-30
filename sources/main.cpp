@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/25 16:41:45 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 12:08:39 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,27 +15,27 @@
 #include <iostream>
 
 bool webserv(char *config_file) {
-	std::vector<Server>::iterator	it;
-	std::vector<std::string>::iterator	it2;
-	std::vector<std::string> *methods;
+	// std::vector<Server>::iterator	it;
+	// std::vector<std::string>::iterator	it2;
+	// std::vector<std::string> *methods;
 
     try {
         conf config(config_file);
-		it = (env()->webserv->getAllServer()).begin();
-		for (; it != (env()->webserv->getAllServer()).end(); it++){
-			methods = it->getAllowedMethods();
-			it2 = methods->begin();
-			for (; it2 != methods->end(); it2++){
-				std::cout << *it2 << std::endl;
-			}
+		env()->webserv->initializeSockets();
+		// it = (env()->webserv->getAllServer()).begin();
+		// for (; it != (env()->webserv->getAllServer()).end(); it++){
+		// 	methods = it->getAllowedMethods();
+		// 	it2 = methods->begin();
+		// 	for (; it2 != methods->end(); it2++){
+		// 		std::cout << *it2 << std::endl;
+		// 	}
 			// std::map<int, std::string> errorPages = it->getErrorPage();
 
 			// // Utiliser l'itérateur pour parcourir les erreurs
 			// for (std::map<int, std::string>::iterator it2 = errorPages.begin(); it2 != errorPages.end(); ++it2) {
 			// 	std::cout << it2->first << std::endl;
 			// }
-		}
-    }
+	}
     catch (std::exception &e)
 	{
 		std::cerr << e.what() << std::endl;

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/24 12:16:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 11:55:54 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Webserv {
         Webserv(std::vector<Server> const &servers) ;
 		~Webserv();
 		std::vector<Server> getAllServer();
+		void initializeSockets();
 };
 
 #endif

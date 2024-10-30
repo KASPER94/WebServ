@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   websocket.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:44:47 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 14:28:14 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/30 12:04:04 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,14 +52,14 @@ int	websocket::getConnect() {
 	return this->_connection;
 }
 
-int websocket::connectToNetwork() {
-    // Implémentation par défaut (peut être redéfinie dans les classes dérivées)
-    if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
-        std::cerr << "Erreur: Échec de la liaison" << std::endl;
-        return -1;
-    }
-    return 0;
-}
+// int websocket::connectToNetwork() {
+//     // Implémentation par défaut (peut être redéfinie dans les classes dérivées)
+//     if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
+//         std::cerr << "Erreur: Échec de la liaison" << std::endl;
+//         return -1;
+//     }
+//     return 0;
+// }
 
 
 void websocket::initializeConnection() {

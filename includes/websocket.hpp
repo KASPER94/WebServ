@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   websocket.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: peanut <peanut@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:24:17 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/23 14:22:41 by peanut           ###   ########.fr       */
+/*   Updated: 2024/10/30 12:06:48 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class websocket {
 
 	public:
 		websocket(int domain, int service, int protocol, int port, unsigned long interface);
-		~websocket();
+		virtual ~websocket();
 		websocket(const websocket &cpy);
 
 		websocket &operator=(const websocket &rhs);

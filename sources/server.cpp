@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 16:40:51 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 12:14:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,11 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 int Server::connectToNetwork() {
+	this->_address.sin_family = AF_INET;
+	this->_address.sin_port = htons(this->_port);
+	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());  // ou `INADDR_ANY` si vous souhaitez écouter sur toutes les interfaces
+
+	std::cout << this->_port << std::endl;
     if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
         std::cerr << "Erreur: Échec de la liaison" << std::endl;
         return -1;
