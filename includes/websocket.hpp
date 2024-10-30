@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:24:17 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/30 12:06:48 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 16:03:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,12 @@
 #include <stdlib.h>
 #include <cerrno>
 #include <cstdio>
+#include <vector>
+#include <poll.h>
 
 class websocket {
 	protected:
+		pollfd _fd;
 		int	_sock;
 		struct sockaddr_in _address;
 		int _addrlen;

@@ -6,14 +6,14 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/30 14:55:04 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 16:10:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(8080), _host("127.0.0.1"), _name("default")  {
-    this->initializeConnection();
+    // this->initializeConnection();
 }
 
 Server::~Server() {
@@ -43,34 +43,27 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 int Server::connectToNetwork() {
-    this->_sock = socket(AF_INET, SOCK_STREAM, 0);
+	this->_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_sock == 0) {
 		std::cerr << "Erreur: Échec de la création du socket" << std::endl;
 		return -1;
-    }
+	}
 	this->_address.sin_family = AF_INET;
 	this->_address.sin_port = htons(this->_port);
 	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());
-    // int addrlen = sizeof(this->_address);
 
 	std::cout << this->_port << std::endl;
 	std::cout << this->_host << std::endl;
-    if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
-        std::cerr << "Erreur: Échec de la liaison" << std::endl;
-        return -1;
-    }
+	if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
+		std::cerr << "Erreur: Échec de la liaison" << std::endl;
+		return -1;
+	}
 	if (listen(this->_sock, 10) < 0) {
-        std::cerr << "Erreur: Échec de l'écoute" << std::endl;
-        return -1;
-    }
-	    std::cout << "Serveur en écoute sur le port:" << this->_port << std::endl;
-
-    // int client_fd = accept(this->_sock, (struct sockaddr *)&this->_address, (socklen_t*)&addrlen);
-    // if (client_fd < 0) {
-    //     std::cerr << "Erreur: Échec de l'acceptation" << std::endl;
-    //     return -1;
-    // }
-    return (0);
+		std::cerr << "Erreur: Échec de l'écoute" << std::endl;
+		return -1;
+	}
+		std::cout << "Serveur en écoute sur le port:" << this->_port << std::endl;
+	return (0);
 }
 
 void	Server::setPort(int port) {

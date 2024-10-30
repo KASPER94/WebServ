@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:44:47 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/30 12:04:04 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 16:01:31 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,17 @@ int	websocket::getConnect() {
 // }
 
 
-void websocket::initializeConnection() {
-    this->_connection = connectToNetwork();
-}
+// void websocket::initializeConnection() {
+// 	std::vector<pollfd>	pollFds;
+// 	// pollFds.reserve(300);
+// 	std::vector<Server>::iterator it = (env()->webserv->getAllServer()).begin();
+// 	for (; it != (env()->webserv->getAllServer()).end()) {
+// 		std::cout << it-
+// 	}
+//     connectToNetwork();
+// 	while (1) {
+// 		int nfds = poll()
+// 	}
+// }
+
+
