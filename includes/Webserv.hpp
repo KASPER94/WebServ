@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/30 16:18:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/30 17:18:43 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 # include "Server.hpp"
 # include <vector>
 # include <poll.h>
+#include <unistd.h>
+
 
 class Server;
 
@@ -32,6 +34,7 @@ class Webserv {
 		~Webserv();
 		std::vector<Server> getAllServer();
 		void initializeSockets();
+		void sendResponse(int fd);
 };
 
 #endif
