@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/30 17:18:43 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/31 11:21:22 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,9 @@
 # include <vector>
 # include "Server.hpp"
 # include <vector>
-# include <poll.h>
-#include <unistd.h>
+// # include <poll.h>
+# include <sys/epoll.h>
+# include <unistd.h>
 
 
 class Server;
