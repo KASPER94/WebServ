@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:24:17 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/30 16:03:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/31 17:16:23 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ class websocket {
 		int	_sock;
 		struct sockaddr_in _address;
 		int _addrlen;
-		int _connection;
 
 	public:
 		websocket(int domain, int service, int protocol, int port, unsigned long interface);

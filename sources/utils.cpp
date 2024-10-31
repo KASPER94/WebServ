@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/25 16:03:55 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/31 18:18:39 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,4 +111,22 @@ unsigned long convertIpToUnsignedLong(const std::string &ip) {
 		throw std::runtime_error("Invalid IP address format");
 	}
 	return htonl(ipAddress);
+}
+
+int		setsocknonblock(int sock)
+{
+	int flag;
+
+	flag = fcntl(sock, F_GETFL, 0);
+	if (flag < 0)
+	{
+		perror("Fcntl (F_GETFL) failed");
+		return (-1);
+	}
+	if (fcntl(sock, F_SETFL, flag | O_NONBLOCK) < 0)
+	{
+		perror("Fcntl (F_SETFL) failed");
+		return (-1);
+	}
+	return (1);
 }

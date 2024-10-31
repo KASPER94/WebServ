@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/30 16:10:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/10/31 18:22:20 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,19 @@ int Server::connectToNetwork() {
 		std::cerr << "Erreur: Échec de la création du socket" << std::endl;
 		return -1;
 	}
+	if (!setsocknonblock(this->_sock)) {
+		return (-1);
+	}
 	this->_address.sin_family = AF_INET;
 	this->_address.sin_port = htons(this->_port);
 	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());
+	int			yes = 1;
+	
+	if (setsockopt(this->_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
+	{
+		perror("setsockopt()");
+		return (-1);
+	}
 
 	std::cout << this->_port << std::endl;
 	std::cout << this->_host << std::endl;
