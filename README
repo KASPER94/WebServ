@@ -78,3 +78,44 @@ Connection: close
 </html>
 ```
 ---------------
+
+
+EXEMPLE DE REQUETTE A PARSER : ➜  WebServ git:(simon) ✗ ./RPN ./config/all.conf
+8000
+127.0.0.1
+Serveur en écoute sur le port:8000
+8081
+127.0.0.1
+Erreur: Échec de la liaison
+Échec de la connexion pour le serveur 1
+8082
+127.0.0.1
+Serveur en écoute sur le port:8082
+8083
+127.0.0.1
+Serveur en écoute sur le port:8083
+8084
+127.0.0.1
+Serveur en écoute sur le port:8084
+8085
+127.0.0.1
+Serveur en écoute sur le port:8085
+8086
+127.0.0.1
+Serveur en écoute sur le port:8086
+Nouvelle connexion acceptée sur le socket 43
+Requête reçue sur le socket 43: GET / HTTP/1.1
+Host: skapersk.42.fr:8086
+Connection: keep-alive
+Cache-Control: max-age=0
+DNT: 1
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,fr;q=0.8
+Cookie: _ga=GA1.1.1076777069.1720866757; _fbp=fb.1.1724245589713.863225963959914988; _ga_ZPJQSRHJCC=GS1.1.1724245589.1.1.1724246289.0.0.0; _ga_BJ34XNRJCV=GS1.1.1730497053.61.0.1730497053.0.0.0
+
+
+Nouvelle connexion acceptée sur le socket 44
+^C

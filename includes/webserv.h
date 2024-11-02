@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/31 18:21:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/02 01:13:31 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,10 @@
 # include <fstream>
 # include <sstream>
 # include <fcntl.h>
+# include <cstring>
+
 # define MAX_EVENTS 10
+# define BUFFER_SIZE 4096
 
 enum Directive {
 	SERVER,

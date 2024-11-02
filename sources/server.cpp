@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/31 18:22:20 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/02 00:46:31 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 int Server::connectToNetwork() {
+	setSock();
 	this->_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_sock == 0) {
 		std::cerr << "Erreur: Échec de la création du socket" << std::endl;
@@ -51,11 +52,7 @@ int Server::connectToNetwork() {
 	if (!setsocknonblock(this->_sock)) {
 		return (-1);
 	}
-	this->_address.sin_family = AF_INET;
-	this->_address.sin_port = htons(this->_port);
-	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());
 	int			yes = 1;
-	
 	if (setsockopt(this->_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
 	{
 		perror("setsockopt()");
@@ -129,3 +126,8 @@ std::vector<std::string> *Server::getAllowedMethods() {
     return _allowedMethod;
 }
 
+void	Server::setSock() {
+	this->_address.sin_family = AF_INET;
+	this->_address.sin_port = htons(this->_port);
+	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());
+}

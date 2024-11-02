@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 16:41:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/02 00:41:41 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Server : public websocket {
 		void	setErrorPage(std::map<int, std::string>);
 		void	setClientMaxBody(size_t body);
 		void 	setAllowedMethods(std::vector<std::string> *methods);
+		void	setSock();
 
 
 		// GETTER

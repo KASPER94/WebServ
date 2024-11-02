@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/31 18:22:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/02 01:17:32 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,30 @@ Webserv::~Webserv() {
 std::vector<Server> Webserv::getAllServer() {
 	return (this->_servers);
 }
+
+void Webserv::getRequest(int clientSock) {
+    char buffer[BUFFER_SIZE];
+    memset(buffer, 0, BUFFER_SIZE);
+
+    // Lire les données envoyées par le client
+    int bytesRead = recv(clientSock, buffer, BUFFER_SIZE - 1, 0);
+
+    if (bytesRead < 0) {
+        std::cerr << "Erreur lors de la lecture des données du socket " << clientSock << std::endl;
+        return;
+    } else if (bytesRead == 0) {
+        std::cout << "Le client " << clientSock << " a fermé la connexion." << std::endl;
+        close(clientSock);
+        return;
+    }
+
+    buffer[bytesRead] = '\0'; // Attention ! Guillaume conseil de faire attention au /0 car trop simple pour verifier que la chaîne est terminée
+    std::cout << "Requête reçue sur le socket " << clientSock << ": " << buffer << std::endl;
+
+    // traiter la requête, parser l'HTTP, etc.
+
+}
+
 
 void Webserv::sendResponse(int clientSock) {
 	std::string http_response =
@@ -73,7 +97,7 @@ void Webserv::initializeSockets() {
 	// Boucle principale pour gérer les événements
 	while (1) {
 		struct epoll_event events[MAX_EVENTS]; // Taille maximale des événements
-		int eventCount = epoll_wait(epollFd, events, 10, -1);
+		int eventCount = epoll_wait(epollFd, events, MAX_EVENTS, -1);
 		if (eventCount == -1) {
 			std::cerr << "Erreur lors de l'appel à epoll_wait" << std::endl;
 			break;
@@ -88,6 +112,7 @@ void Webserv::initializeSockets() {
 					continue;
 				}
 				std::cout << "Nouvelle connexion acceptée sur le socket " << clientSock << std::endl;
+				getRequest(clientSock);
 				setsocknonblock(clientSock);
 				struct epoll_event clientEvent;
 				clientEvent.data.fd = clientSock;
