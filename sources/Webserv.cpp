@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/02 01:17:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/03 14:22:04 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@ std::vector<Server> Webserv::getAllServer() {
 void Webserv::getRequest(int clientSock) {
     char buffer[BUFFER_SIZE];
     memset(buffer, 0, BUFFER_SIZE);
+	Client &client = this->_clients[clientSock];
+
+	(void)client;
 
     // Lire les données envoyées par le client
     int bytesRead = recv(clientSock, buffer, BUFFER_SIZE - 1, 0);
@@ -46,7 +49,26 @@ void Webserv::getRequest(int clientSock) {
     std::cout << "Requête reçue sur le socket " << clientSock << ": " << buffer << std::endl;
 
     // traiter la requête, parser l'HTTP, etc.
+	std::string request(buffer);
+    HttpRequest httpRequest = HttpRequest(request);
 
+    // Préparer la réponse HTTP
+    std::string response;
+    if (httpRequest.getMethod() == GET) {
+        response = "HTTP/1.1 200 OK\r\n"
+                   "Content-Type: text/plain\r\n"
+                   "Content-Length: 13\r\n"
+                   "\r\n"
+                   "Hello, World!";
+    } else {
+        response = "HTTP/1.1 405 Method Not Allowed\r\n"
+                   "Content-Length: 0\r\n"
+                   "\r\n";
+    }
+
+    // Envoyer la réponse
+    send(clientSock, response.c_str(), response.size(), 0);
+    std::cout << "Réponse envoyée au client." << std::endl;
 }
 
 
