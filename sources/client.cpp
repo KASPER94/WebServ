@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/03 14:30:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 13:28:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 Client::Client():
 	_request(NULL),
 	_response(NULL)
+	{}
+
+Client::Client(int fd):
+	_request(NULL),
+	_response(NULL), 
+	_fd(fd)
 	{}
 
 Client::Client(const Client &cpy) {
@@ -41,4 +47,14 @@ HttpRequest	*Client::getRequest() const {
 
 HttpRequest	*Client::getResponse() const {
 	return (this->_response);
+}
+
+int Client::getFd() const {
+    return _fd;
+}
+
+void Client::setFd(int fd) {
+    if (_fd >= 0) 
+		close(_fd);
+    _fd = fd;
 }

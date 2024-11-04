@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/03 14:15:49 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 13:28:46 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Client {
 
 	public:
 		Client();
+		Client(int fd);
 		Client(std::string buffer, int fd);
 		Client(const Client &cpy);
 		~Client();
@@ -40,6 +41,8 @@ class Client {
 		// std::string		getRawRequest() const;
 		bool			appendRequest(const std::string str);
 		// void			sendResponse();
+		int getFd() const;
+		void setFd(int fd);
 };
 
 std::ostream &operator<<(std::ostream &o, const Client &client);

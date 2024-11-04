@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/03 14:22:04 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 13:39:47 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,6 @@ void Webserv::getRequest(int clientSock) {
 
 	(void)client;
 
-    // Lire les données envoyées par le client
     int bytesRead = recv(clientSock, buffer, BUFFER_SIZE - 1, 0);
 
     if (bytesRead < 0) {
@@ -52,7 +51,6 @@ void Webserv::getRequest(int clientSock) {
 	std::string request(buffer);
     HttpRequest httpRequest = HttpRequest(request);
 
-    // Préparer la réponse HTTP
     std::string response;
     if (httpRequest.getMethod() == GET) {
         response = "HTTP/1.1 200 OK\r\n"
@@ -65,8 +63,6 @@ void Webserv::getRequest(int clientSock) {
                    "Content-Length: 0\r\n"
                    "\r\n";
     }
-
-    // Envoyer la réponse
     send(clientSock, response.c_str(), response.size(), 0);
     std::cout << "Réponse envoyée au client." << std::endl;
 }
@@ -84,75 +80,80 @@ void Webserv::sendResponse(int clientSock) {
     int ret = send(clientSock, http_response.c_str(), http_response.size(), 0);
     if (ret < 0) {
         std::cerr << "Erreur lors de l'envoi de la réponse" << std::endl;
-        close(clientSock);  // Fermer en cas d'erreur d'envoi
+        close(clientSock);
     } else {
         std::cout << "Réponse envoyée au client." << std::endl;
-        // Le socket reste ouvert ici pour de nouvelles requêtes éventuelles.
+    
     }
 }
 
 void Webserv::initializeSockets() {
-	std::vector<Server> servers = this->getAllServer();
-	int epollFd = epoll_create1(0); // Crée l'instance epoll
-	if (epollFd == -1) {
-		std::cerr << "Erreur lors de la création de l'instance epoll" << std::endl;
-		return;
-	}
+    std::vector<Server> servers = this->getAllServer();
+    int epollFd = epoll_create1(0);
+    if (epollFd == -1) {
+        std::cerr << "Erreur lors de la création de l'instance epoll" << std::endl;
+        return;
+    }
 
-	// Initialisation des sockets des serveurs et ajout à epoll
-	for (size_t i = 0; i < servers.size() - 1; i++) {
-		if (servers[i].connectToNetwork() < 0) {
-			std::cerr << "Échec de la connexion pour le serveur " << i << std::endl;
-			continue;
-		}
+    // Loop through each server and set up its socket in epoll
+    for (size_t i = 0; i < servers.size(); i++) {
+        if (servers[i].connectToNetwork() < 0) {
+            std::cerr << "Échec de la connexion pour le serveur " << i << std::endl;
+            continue;
+        }
 
-		struct epoll_event event;
-		event.data.fd = servers[i].getSock();
-		event.events = EPOLLIN; // Enregistre pour EPOLLIN pour accepter les connexions
-		if (epoll_ctl(epollFd, EPOLL_CTL_ADD, servers[i].getSock(), &event) == -1) {
-			std::cerr << "Erreur lors de l'ajout du socket serveur à epoll" << std::endl;
-			close(servers[i].getSock());
-			continue;
-		}
-	}
+        struct epoll_event event;
+        event.data.fd = servers[i].getSock();  // Track each server's socket
+        event.events = EPOLLIN; // Register for EPOLLIN to accept connections
+        if (epoll_ctl(epollFd, EPOLL_CTL_ADD, servers[i].getSock(), &event) == -1) {
+            std::cerr << "Erreur lors de l'ajout du socket serveur à epoll" << std::endl;
+            close(servers[i].getSock());
+            continue;
+        }
+    }
 
-	// Boucle principale pour gérer les événements
-	while (1) {
-		struct epoll_event events[MAX_EVENTS]; // Taille maximale des événements
-		int eventCount = epoll_wait(epollFd, events, MAX_EVENTS, -1);
-		if (eventCount == -1) {
-			std::cerr << "Erreur lors de l'appel à epoll_wait" << std::endl;
-			break;
-		}
+    // Main loop to handle epoll events
+    while (true) {
+        struct epoll_event events[MAX_EVENTS];
+        int eventCount = epoll_wait(epollFd, events, MAX_EVENTS, -1); // Wait for events
+        if (eventCount == -1) {
+            std::cerr << "Erreur lors de l'appel à epoll_wait" << std::endl;
+            break;
+        }
 
-		for (int i = 0; i < eventCount; i++) {
-			if (events[i].events & EPOLLIN) {
-				// Nouvelle connexion entrante
-				int clientSock = accept(events[i].data.fd, NULL, NULL);
-				if (clientSock == -1) {
-					std::cerr << "Erreur lors de l'acceptation de la connexion" << std::endl;
-					continue;
-				}
-				std::cout << "Nouvelle connexion acceptée sur le socket " << clientSock << std::endl;
-				getRequest(clientSock);
-				setsocknonblock(clientSock);
-				struct epoll_event clientEvent;
-				clientEvent.data.fd = clientSock;
-				clientEvent.events = EPOLLOUT; // Surveille le socket client pour EPOLLOUT
-				if (epoll_ctl(epollFd, EPOLL_CTL_ADD, clientSock, &clientEvent) == -1) {
-					std::cerr << "Erreur lors de l'ajout du socket client à epoll" << std::endl;
-					close(clientSock);
-				}
-			}
-			else if (events[i].events & EPOLLOUT) {
-				// Prêt à envoyer une réponse
-				sendResponse(events[i].data.fd);
+        for (int i = 0; i < eventCount; i++) {
+            if (events[i].events & EPOLLIN) {
+                // New incoming connection on a server socket
+                int serverSock = events[i].data.fd;
+                int clientSock = accept(serverSock, NULL, NULL);  // Accept client on server socket
+                if (clientSock == -1) {
+                    std::cerr << "Erreur lors de l'acceptation de la connexion" << std::endl;
+                    continue;
+                }
+                std::cout << "Nouvelle connexion acceptée sur le socket " << clientSock << " via le port serveur " << serverSock << std::endl;
+                
+				// Create a new Client instance and set its file descriptor
+                Client client(clientSock);
+                getRequest(client.getFd());  // Handles reading and processing the request
+                setsocknonblock(client.getFd());  // Make client socket non-blocking
 
-				// Ferme le socket client et le retire de epoll
-				close(events[i].data.fd);
-				epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-			}
-		}
-	}
-	close(epollFd); // Ferme l'instance epoll
+                struct epoll_event clientEvent;
+                clientEvent.data.fd = client.getFd();
+                clientEvent.events = EPOLLOUT;  // Monitor client socket for EPOLLOUT
+                if (epoll_ctl(epollFd, EPOLL_CTL_ADD, client.getFd(), &clientEvent) == -1) {
+                    std::cerr << "Erreur lors de l'ajout du socket client à epoll" << std::endl;
+                    close(client.getFd());
+                }
+            } else if (events[i].events & EPOLLOUT) {
+                // Ready to send a response
+                sendResponse(events[i].data.fd);  // Sends response on client socket
+
+                // Close client socket after sending response
+                close(events[i].data.fd);
+                epoll_ctl(epollFd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+            }
+        }
+    }
+    close(epollFd); // Close the epoll instance after exiting loop
 }
+
