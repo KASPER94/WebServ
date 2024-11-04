@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/04 16:18:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 18:17:13 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,63 +26,60 @@ std::vector<Server> &Webserv::getAllServer() {
 	return (this->_servers);
 }
 
+void	Webserv::deleteClient(int fd) {
+	epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, fd, NULL);
+	if (close(fd) < 0) {
+		perror("");
+	}
+	this->_clients.erase(fd);
+}
+
 void Webserv::getRequest(int clientSock) {
-    char buffer[BUFFER_SIZE];
-    memset(buffer, 0, BUFFER_SIZE);
-	if (_clients.find(clientSock) == _clients.end()) {
+    char buffer[BUFFER_SIZE + 1];  // +1 pour l'ajout de '\0' à la fin
+    int bytesRead;
+    
+    // Vérifier que le client existe dans le map _clients
+    if (_clients.find(clientSock) == _clients.end()) {
         std::cerr << "Client introuvable pour le socket " << clientSock << std::endl;
         return;
     }
-	Client &client = this->_clients[clientSock];
+    Client &client = this->_clients[clientSock];
 
-    int bytesRead = recv(clientSock, buffer, BUFFER_SIZE - 1, 0);
-
-    if (bytesRead < 0) {
-        std::cerr << "Erreur lors de la lecture des données du socket " << clientSock << std::endl;
-        return;
-    } else if (bytesRead == 0) {
-        std::cout << "Le client " << clientSock << " a fermé la connexion." << std::endl;
-        close(clientSock);
+    // Lire les données de la socket client
+    bytesRead = recv(clientSock, buffer, BUFFER_SIZE, 0);
+    if (bytesRead <= 0) {
+        if (bytesRead == 0) {
+            std::cout << "Le client " << clientSock << " a fermé la connexion." << std::endl;
+        } else {
+            std::cerr << "Erreur lors de la lecture des données du socket " << clientSock << std::endl;
+        }
+        this->deleteClient(clientSock);
         return;
     }
 
-    buffer[bytesRead] = '\0'; // Attention ! Guillaume conseil de faire attention au /0 car trop simple pour verifier que la chaîne est terminée
-    std::cout << "Requête reçue sur le socket " << clientSock << ": " << buffer << std::endl;
+    buffer[bytesRead] = '\0';  // Terminer la chaîne de caractères
+    std::cout << "Fragment de requête reçu sur le socket " << clientSock << ": " << buffer << std::endl;
 
-    // traiter la requête, parser l'HTTP, etc.
-	std::string request(buffer);
-    HttpRequest httpRequest = HttpRequest(request);
-	client.setRequest(httpRequest);
-	if (!request.empty()) {
+    // Accumuler le fragment dans la requête du client
+    if (client.appendRequest(buffer, bytesRead) && !client.error()) {
+        // Si la requête est complète et sans erreur, procéder au traitement
+        HttpRequest httpRequest(client.getFullRequest());
         client.setRequest(httpRequest);
-        std::cout << "Requête stockée pour le client " << clientSock << std::endl;
-    } else {
-        std::cerr << "La requête pour le client " << clientSock << " est vide" << std::endl;
-        close(clientSock);
-        _clients.erase(clientSock);  // Clean up if the request is invalid
-        return;
+        std::cout << "Requête stockée et prête pour le traitement pour le client " << clientSock << std::endl;
+
+        // Préparer le client pour l'envoi de la réponse
+        struct epoll_event clientEvent;
+        clientEvent.data.fd = clientSock;
+        clientEvent.events = EPOLLOUT;
+        epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent);
+
+    } else if (client.error()) {
+        // Supprimer le client en cas d'erreur de réception ou de parsing
+        std::cerr << "Erreur de requête détectée pour le client " << clientSock << std::endl;
+        this->deleteClient(clientSock);
     }
-
-	struct epoll_event clientEvent;
-    clientEvent.data.fd = clientSock;
-    clientEvent.events = EPOLLOUT;
-    epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent);
-
-    // std::string response;
-    // if (httpRequest.getMethod() == GET) {
-    //     response = "HTTP/1.1 200 OK\r\n"
-    //                "Content-Type: text/plain\r\n"
-    //                "Content-Length: 13\r\n"
-    //                "\r\n"
-    //                "Hello, World!";
-    // } else {
-    //     response = "HTTP/1.1 405 Method Not Allowed\r\n"
-    //                "Content-Length: 0\r\n"
-    //                "\r\n";
-    // }
-    // send(clientSock, response.c_str(), response.size(), 0);
-    // std::cout << "Réponse envoyée au client." << std::endl;
 }
+
 
 
 void Webserv::sendResponse(int clientSock) {

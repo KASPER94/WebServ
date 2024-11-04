@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/03 14:28:29 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 18:01:39 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,3 +54,7 @@ void HttpRequest::parseHttpRequest(const std::string& request) {
         }
     }
 }
+
+// void HttpRequest::parseHttpRequest(const std::string& request) {
+	
+// }

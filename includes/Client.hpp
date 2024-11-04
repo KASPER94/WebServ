@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/04 14:31:37 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 18:24:17 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 
 # include "Server.hpp"
 # include "HttpRequest.hpp"
+# include <map>
+
 // # include "HttpResponse.hpp"
 
 class Server;
@@ -25,6 +27,12 @@ class Client {
 		HttpRequest		*_request;
 		HttpRequest		*_response;
 		int				_fd;
+		bool			_error;
+		
+		std::string _requestData;        // Contient les données de la requête reçues
+		bool _headersParsed;     // Indicateur si les en-têtes ont été analysés
+		std::map<std::string, std::string> _headers; // Contient les en-têtes HTTP
+
 
 
 	public:
@@ -42,9 +50,14 @@ class Client {
 		HttpRequest* getRequestPtr() const { return _request; };
 
     	HttpRequest& 	getRequest();   
+		bool			appendRequest(const char *data, int bytes);
+		std::string 	getFullRequest() const;
+		bool 			hasCompleteBody();
+		void 			parseHeaders();
+		bool 			isChunkedBodyComplete();
 		// std::string		getRawRequest() const;
-		// bool			appendRequest(const std::string str);
 		// void			sendResponse();
+		bool	error() const;
 		int getFd() const;
 		void setFd(int fd);
 };
