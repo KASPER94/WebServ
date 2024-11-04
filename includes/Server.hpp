@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/02 00:41:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 14:50:19 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class Server : public websocket {
 
 		Server &operator=(const Server &rhs);
 		int connectToNetwork();
-
+		
 		// SETTER
 		void	setPort(int port);
 		void	setHostname(std::string host);

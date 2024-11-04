@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/04 13:28:46 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 14:31:37 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,12 @@ class Client {
 
 		HttpRequest		*getRequest() const;
 		HttpRequest		*getResponse() const;
+		void 			setRequest(HttpRequest& request);
+		HttpRequest* getRequestPtr() const { return _request; };
+
+    	HttpRequest& 	getRequest();   
 		// std::string		getRawRequest() const;
-		bool			appendRequest(const std::string str);
+		// bool			appendRequest(const std::string str);
 		// void			sendResponse();
 		int getFd() const;
 		void setFd(int fd);

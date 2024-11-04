@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/04 13:28:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 14:26:09 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,4 +57,15 @@ void Client::setFd(int fd) {
     if (_fd >= 0) 
 		close(_fd);
     _fd = fd;
+}
+
+void Client::setRequest(HttpRequest& request) {
+	if (_request) {
+        delete _request;  // Delete the existing request to avoid memory leaks
+    }
+    _request = new HttpRequest(request);  
+}
+
+HttpRequest& Client::getRequest() {
+    return *_request;  
 }

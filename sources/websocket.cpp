@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:44:47 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/02 00:41:08 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 15:50:54 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void websocket::testConnection(int item) {
 	}
 }
 
-int	websocket::getSock() {
+int	websocket::getSock() const {
 	return this->_sock;
 }
 

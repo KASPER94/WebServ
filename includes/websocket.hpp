@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:24:17 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/02 00:41:31 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 15:51:03 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,6 @@ class websocket {
 		virtual int connectToNetwork() = 0;
 		void initializeConnection();
 		void	testConnection(int item);
-		int		getSock();
+		int		getSock() const ;
 		int		getConnect();
 };
