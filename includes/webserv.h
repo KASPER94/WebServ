@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/02 01:13:31 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/05 16:26:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 
 # define MAX_EVENTS 10
 # define BUFFER_SIZE 4096
+# define EPOLL_TIMEOUT 5000
+# define CLIENT_TIMEOUT 5
 
 enum Directive {
 	SERVER,

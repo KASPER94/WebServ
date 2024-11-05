@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/05 11:54:51 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/05 16:13:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,9 +54,9 @@ class HttpRequest {
 		HttpRequest	&operator=(const HttpRequest &rhs);
 
 		Client			*getClient() const;
-		std::string		getRawRequest() const;
-		bool			appendRequest(const std::string str);
-		bool			isGood() const;
+		// std::string		getRawRequest() const;
+		// bool			appendRequest(const std::string str);
+		// bool			isGood() const;
 		enum HttpMethod	getMethod() const;
 		std::string		getUri() const;
 		bool			keepAlive() const;

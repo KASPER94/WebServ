@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/05 11:53:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/05 17:50:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ void Webserv::getRequest(int clientSock) {
         return;
     }
     Client &client = this->_clients[clientSock];
-
     // Lire les données de la socket client
     bytesRead = recv(clientSock, buffer, BUFFER_SIZE, 0);
     if (bytesRead <= 0) {
@@ -137,7 +136,7 @@ void Webserv::initializeSockets() {
         }
 
         int serverSock = servers[i].getSock();
-        _serverSockets[serverSock] = servers[i];
+        _serverSockets[serverSock] = &servers[i];
 
         struct epoll_event event;
         event.data.fd = serverSock;
@@ -152,7 +151,7 @@ void Webserv::initializeSockets() {
     // Main loop to handle events
     while (true) {
         struct epoll_event events[MAX_EVENTS];
-        int eventCount = epoll_wait(_epollfd, events, MAX_EVENTS, -1);
+        int eventCount = epoll_wait(_epollfd, events, MAX_EVENTS, EPOLL_TIMEOUT);
         if (eventCount == -1) {
             std::cerr << "Erreur lors de l'appel à epoll_wait" << std::endl;
             break;
@@ -175,8 +174,18 @@ void Webserv::initializeSockets() {
                 }
 
                 // Create a new Client instance and add to _clients
-                Client client(clientSock);
-                _clients[clientSock] = client;
+				Server *Server =_serverSockets[sock];
+				if (Server) {
+					Client client(clientSock, Server);
+					_clients[clientSock] = client;
+				} else {
+					// Handle the case where the server pointer is null
+					std::cerr << "Server not found for socket " << sock << std::endl;
+					close(clientSock);
+				}
+				// Server *Server =_serverSockets[sock];
+                // Client client(clientSock, Server);
+                // _clients[clientSock] = client;
 
                 // Set non-blocking mode for the client socket
                 setsocknonblock(clientSock);
