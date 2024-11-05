@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/04 18:17:13 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/05 11:53:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,9 @@ void Webserv::getRequest(int clientSock) {
     // Accumuler le fragment dans la requête du client
     if (client.appendRequest(buffer, bytesRead) && !client.error()) {
         // Si la requête est complète et sans erreur, procéder au traitement
-        HttpRequest httpRequest(client.getFullRequest());
-        client.setRequest(httpRequest);
+        // HttpRequest httpRequest(client.getFullRequest());
+        // client.setRequest(httpRequest);
+		client.getRequest().parseHttpRequest();
         std::cout << "Requête stockée et prête pour le traitement pour le client " << clientSock << std::endl;
 
         // Préparer le client pour l'envoi de la réponse
@@ -95,6 +96,7 @@ void Webserv::sendResponse(int clientSock) {
     }
     HttpRequest &httpRequest = client.getRequest();
     std::string response;
+	std::cout << "Méthode HTTP reçue : " << httpRequest.HttpMethodTostring() << std::endl;
 
     if (httpRequest.getMethod() == GET) {
         response = "HTTP/1.1 200 OK\r\n"

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/03 14:28:46 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/05 11:54:51 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,14 @@
 # include "webserv.h"
 # include "Server.hpp"
 # include "Client.hpp"
+# include <map>
 
 class Server;
 class Client;
 
 class HttpRequest {
 	private:
+		Client	*_client;
 		std::string					_rawRequest;
 		std::string					_path;
 		bool						_goodRequest;
@@ -30,9 +32,13 @@ class HttpRequest {
 		std::string					_version;
 		std::vector<std::string>	_acceptedMimes;
 		bool						_keepAliveConnection;
+		
+		std::string _requestData;        // Contient les données de la requête reçues
+		bool _headersParsed;     // Indicateur si les en-têtes ont été analysés
+		std::map<std::string, std::string> _headers; // Contient les en-têtes HTTP
 
 		// bool	isFullRequest();
-		void	parseHttpRequest();
+		// void	parseHttpRequest();
 		// void	parseRequestLine(std::string line);
 		// void	setMethod(std::string str);
 		// void	parseAcceptedMimes(std::string line);
@@ -40,7 +46,8 @@ class HttpRequest {
 
 	public:
 		HttpRequest();
-		HttpRequest(const std::string &req);
+		HttpRequest(Client *client);
+		// HttpRequest(const std::string &req);
 		// HttpRequest(const HttpRequest &cpy);
 		~HttpRequest();
 
@@ -53,8 +60,15 @@ class HttpRequest {
 		enum HttpMethod	getMethod() const;
 		std::string		getUri() const;
 		bool			keepAlive() const;
-		void parseHttpRequest(const std::string& request);
-		HttpMethod stringToHttpMethod(const std::string &methodStr);
+		// void 			parseHttpRequest(const std::string& request);
+		void 			parseHttpRequest();
+		std::string		HttpMethodTostring();
+		HttpMethod 		stringToHttpMethod(const std::string &methodStr);
+		bool			appendRequest(const char *data, int bytes);
+		std::string 	getFullRequest() const;
+		bool 			hasCompleteBody();
+		void 			parseHeaders();
+		bool 			isChunkedBodyComplete();
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);
