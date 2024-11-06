@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 15:40:19 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:03:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,32 +40,8 @@ HttpMethod HttpRequest::stringToHttpMethod(const std::string &methodStr) {
     return OTHER;
 }
 
-// void HttpRequest::parseHttpRequest() {
-//     std::istringstream stream(_requestData);
-//     std::string line;
-
-//     std::getline(stream, line);
-//     std::istringstream requestLine(line);
-//     std::string methodStr;
-
-//     requestLine >> methodStr >> this->_path >> this->_version;
-
-//     this->_method = stringToHttpMethod(methodStr);
-
-//     // Lire les en-têtes
-//     while (std::getline(stream, line) && line != "\r") {
-//         size_t pos = line.find(": ");
-//         if (pos != std::string::npos) {
-//             std::string headerName = line.substr(0, pos);
-//             std::string headerValue = line.substr(pos + 2);
-//             // Stocker l'en-tête dans le map `_headers`
-//             // this->_headers[headerName] = headerValue;
-//         }
-//     }
-// }
-
 void HttpRequest::setQuery(std::string query) {
-	_query.strquery = query.substr(query.find("query=") + 6);
+	_query.strquery = query;
 }
 
 std::string decodeURIComponent(const std::string& encoded) {
@@ -86,7 +62,7 @@ std::string decodeURIComponent(const std::string& encoded) {
     return decoded;
 }
 
-void HttpRequest::parseQueryString(std::string queryString) {
+void HttpRequest::parseUrn(std::string queryString) {
 	setQuery(queryString);
 
     std::istringstream stream(queryString);
@@ -98,7 +74,6 @@ void HttpRequest::parseQueryString(std::string queryString) {
             std::string key = decodeURIComponent(token.substr(0, pos));
             std::string value = decodeURIComponent(token.substr(pos + 1));
             _query.params[key] = value;
-            std::cout << "Key: " << key << ", Value: " << value << " ++++++" << std::endl;
         }
     }
 }
@@ -120,8 +95,46 @@ void	HttpRequest::getUri() {
         tmp = this->_path.substr(0, queryPos);
 		this->_path.erase();
 		this->_path = tmp;
-        parseQueryString(queryString);
+        parseUrn(queryString);
     }
+}
+
+void HttpRequest::parseAcceptedMimes(std::string &line) {
+    std::istringstream stream(line);
+    std::string mime;
+    while (std::getline(stream, mime, ',')) {
+        _acceptedMimes.push_back(mime);
+    }
+}
+
+void HttpRequest::parseConnection(std::string &line) {
+    _keepAliveConnection = (line == "keep-alive");
+}
+
+void HttpRequest::parseUserAgent(std::string &line) {
+    _userAgent = line;
+}
+
+void HttpRequest::parseContentType(std::string &line) {
+    _contentType = line;
+    if (_contentType.find("multipart/form-data") != std::string::npos) {
+        size_t pos = _contentType.find("boundary=");
+        if (pos != std::string::npos) {
+            _boundary = _contentType.substr(pos + 9);
+        }
+    }
+}
+
+void HttpRequest::parseHost(std::string &line) {
+    _host = line;
+}
+
+void HttpRequest::initializeHeaderParsers() {
+	parseAcceptedMimes(_headers["Accept"]);
+	parseConnection(_headers["Connection"]);
+	parseUserAgent(_headers["User-Agent"]);
+	parseContentType(_headers["Content-Type"]);
+	parseHost(_headers["Host"]);
 }
 
 void HttpRequest::parseHttpRequest() {
@@ -136,36 +149,11 @@ void HttpRequest::parseHttpRequest() {
     // Extraction de la méthode, du chemin (URI) et de la version HTTP
     requestLine >> methodStr >> this->_path >> this->_version;
     this->_method = stringToHttpMethod(methodStr);
-    // setRequestLine(line);
-    // setMethod(methodStr);
-    // setUri(this->_path);
-    // setHTTPVersion(this->_version);
-
     // Si l'URI contient une chaîne de requête, extraire et stocker les paramètres
 	this->getUri();
 
-    // Étape 2 : Lecture des en-têtes
-    // std::map<std::string, std::string> *headers = new std::map<std::string, std::string>;
-    while (std::getline(stream, line) && line != "\r") {
-        size_t pos = line.find(": ");
-        if (pos != std::string::npos) {
-            std::string headerName = line.substr(0, pos);
-            std::string headerValue = line.substr(pos + 2);
-            // Enregistrement des en-têtes spécifiques pour un accès rapide
-            _headers[headerName] = headerValue;
-        }
-    }
-    // setHeader(headers);
-
-    // Étape 3 : Traitement du corps de la requête si nécessaire
-    // if (_headers.count("Content-Length") > 0) {
-    //     std::string body;
-    //     std::getline(stream, body, '\0');  // Lire jusqu'à la fin pour obtenir le corps
-    //     setBody(parseBody(body, _headers["Content-Type"]));  // Fonction pour extraire les champs du corps
-    // } else if (_headers.count("Transfer-Encoding") > 0 && _headers["Transfer-Encoding"] == "chunked") {
-    //     // Traiter le corps en mode chunked
-    //     parseChunkedBody(stream);
-    // }
+    // Étape 2 : traitement des en-tête parser précédemment.
+	this->initializeHeaderParsers();
 }
 
 
@@ -247,13 +235,15 @@ bool HttpRequest::isChunkedBodyComplete() {
         int chunkSize = std::strtol(chunkSizeStr.c_str(), 0, 16);
 
         // Si la taille est zéro, le corps est terminé
-        if (chunkSize == 0) return true;
+        if (chunkSize == 0)
+			return true;
 
         // Positionner au début du contenu du chunk
         pos = nextPos + 2 + chunkSize;  // Skip \r\n après la taille et avancer de chunkSize
 
         // Vérifier la fin du chunk
-        if (_requestData.substr(pos, 2) != "\r\n") return false;
+        if (_requestData.substr(pos, 2) != "\r\n")
+			return false;
 
         pos += 2;  // Skip the \r\n after the chunk content
     }

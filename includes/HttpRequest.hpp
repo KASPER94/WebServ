@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 15:11:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:04:19 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,10 @@ class HttpRequest {
 		t_query								_query;
 		std::string							_version;
 		std::vector<std::string>			_acceptedMimes;
+		std::string							_contentType;
+		std::string							_userAgent;
+		std::string							_host;
+		std::string							_boundary;
 		bool								_keepAliveConnection;
 		
 		std::string					 		_requestData;        // Contient les données de la requête reçues
@@ -70,7 +74,13 @@ class HttpRequest {
 		void			getUri();
 		bool			keepAlive() const;
 		void			setQuery(std::string query);
-		void			parseQueryString(std::string queryString);
+		void			parseUrn(std::string queryString);
+		void 			initializeHeaderParsers();
+		void 			parseAcceptedMimes(std::string &line);
+		void 			parseConnection(std::string &line);
+		void 			parseUserAgent(std::string &line);
+		void 			parseHost(std::string &line);
+		void 			parseContentType(std::string &line);
 		// void 			parseHttpRequest(const std::string& request);
 		void 			parseHttpRequest();
 		std::string		HttpMethodTostring();
