@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 14:47:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/06 15:11:58 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Client;
 typedef struct s_query
 {
 	std::string					strquery;
-	std::vector<std::string>	params;
+	std::map<std::string, std::string>	params;
 } t_query;
 
 

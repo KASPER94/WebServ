@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 15:05:45 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/06 15:40:19 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,25 +68,38 @@ void HttpRequest::setQuery(std::string query) {
 	_query.strquery = query.substr(query.find("query=") + 6);
 }
 
-void HttpRequest::parseQueryString(std::string queryString) {
-	setQuery(queryString);
-	std::cout << "++++++" << _query.strquery << "++++++" << std::endl;
-
-    std::string line;
-    for (std::string::size_type i = 0; i < _query.strquery.size(); ++i) {
-        char ch = _query.strquery[i];
-        if (ch == '&') {
-            _query.params.push_back(line);
-            line.clear();
+std::string decodeURIComponent(const std::string& encoded) {
+    std::string decoded;
+    char hex[3] = {0};
+    for (size_t i = 0; i < encoded.length(); ++i) {
+        if (encoded[i] == '%' && i + 2 < encoded.length()) {
+            hex[0] = encoded[i + 1];
+            hex[1] = encoded[i + 2];
+            decoded += static_cast<char>(std::strtol(hex, NULL, 16));
+            i += 2;
+        } else if (encoded[i] == '+') {
+            decoded += ' ';
         } else {
-            line += ch;
+            decoded += encoded[i];
         }
     }
-	if (!line.empty()) {
-        _query.params.push_back(line);
-    }
-	for (std::vector<std::string>::const_iterator it = _query.params.begin(); it != _query.params.end(); ++it) {
-		std::cout << "ooooooooo " << *it << " ++++++" << std::endl;
+    return decoded;
+}
+
+void HttpRequest::parseQueryString(std::string queryString) {
+	setQuery(queryString);
+
+    std::istringstream stream(queryString);
+    std::string token;
+
+    while (std::getline(stream, token, '&')) {
+        std::string::size_type pos = token.find('=');
+        if (pos != std::string::npos) {
+            std::string key = decodeURIComponent(token.substr(0, pos));
+            std::string value = decodeURIComponent(token.substr(pos + 1));
+            _query.params[key] = value;
+            std::cout << "Key: " << key << ", Value: " << value << " ++++++" << std::endl;
+        }
     }
 }
 
@@ -107,7 +120,7 @@ void	HttpRequest::getUri() {
         tmp = this->_path.substr(0, queryPos);
 		this->_path.erase();
 		this->_path = tmp;
-        parseQueryString(queryString); // Fonction pour extraire les paramètres de requête
+        parseQueryString(queryString);
     }
 }
 
