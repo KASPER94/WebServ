@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 13:08:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/06 15:05:45 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,29 @@ HttpMethod HttpRequest::stringToHttpMethod(const std::string &methodStr) {
 // }
 
 void HttpRequest::setQuery(std::string query) {
-	_query = query;
+	_query.strquery = query.substr(query.find("query=") + 6);
 }
 
 void HttpRequest::parseQueryString(std::string queryString) {
 	setQuery(queryString);
-	std::cout << "++++++" << _query << "++++++" << std::endl;
+	std::cout << "++++++" << _query.strquery << "++++++" << std::endl;
+
+    std::string line;
+    for (std::string::size_type i = 0; i < _query.strquery.size(); ++i) {
+        char ch = _query.strquery[i];
+        if (ch == '&') {
+            _query.params.push_back(line);
+            line.clear();
+        } else {
+            line += ch;
+        }
+    }
+	if (!line.empty()) {
+        _query.params.push_back(line);
+    }
+	for (std::vector<std::string>::const_iterator it = _query.params.begin(); it != _query.params.end(); ++it) {
+		std::cout << "ooooooooo " << *it << " ++++++" << std::endl;
+    }
 }
 
 void	HttpRequest::getUri() {

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 12:40:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/06 14:47:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,17 @@
 # include "Server.hpp"
 # include "Client.hpp"
 # include <map>
+# include <vector>
 
 class Server;
 class Client;
+
+typedef struct s_query
+{
+	std::string					strquery;
+	std::vector<std::string>	params;
+} t_query;
+
 
 class HttpRequest {
 	private:
@@ -29,7 +37,7 @@ class HttpRequest {
 		bool								_goodRequest;
 		enum HttpMethod						_method;
 		std::string							_uri;
-		std::string							_query;
+		t_query								_query;
 		std::string							_version;
 		std::vector<std::string>			_acceptedMimes;
 		bool								_keepAliveConnection;
