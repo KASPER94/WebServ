@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 17:03:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/07 17:36:17 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,6 +123,7 @@ void HttpRequest::parseContentType(std::string &line) {
             _boundary = _contentType.substr(pos + 9);
         }
     }
+	std::cout << "++++  " << _boundary << " ++++" << std::endl;
 }
 
 void HttpRequest::parseHost(std::string &line) {
@@ -220,6 +221,7 @@ void HttpRequest::parseHeaders() {
             _headers[headerName] = headerValue;
         }
     }
+	parseHttpRequest();
 }
 
 bool HttpRequest::isChunkedBodyComplete() {

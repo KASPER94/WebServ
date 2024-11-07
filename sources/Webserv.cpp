@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/05 17:50:08 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/07 17:54:19 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,13 +58,16 @@ void Webserv::getRequest(int clientSock) {
 
     buffer[bytesRead] = '\0';  // Terminer la chaîne de caractères
     std::cout << "Fragment de requête reçu sur le socket " << clientSock << ": " << buffer << std::endl;
-
+	bool isRequestComplete = client.appendRequest(buffer, bytesRead);
+	    // Si la requête est chunked et incomplète, continuer à écouter le socket
+    if (!(client.getRequest().isChunkedBodyComplete())) {
+        // Reste en mode EPOLLIN pour recevoir plus de fragments
+        std::cout << "Attente de fragments supplémentaires pour le client " << clientSock << std::endl;
+        return;
+    }
     // Accumuler le fragment dans la requête du client
-    if (client.appendRequest(buffer, bytesRead) && !client.error()) {
-        // Si la requête est complète et sans erreur, procéder au traitement
-        // HttpRequest httpRequest(client.getFullRequest());
-        // client.setRequest(httpRequest);
-		client.getRequest().parseHttpRequest();
+    if (isRequestComplete) {
+		// client.getRequest().parseHttpRequest();
         std::cout << "Requête stockée et prête pour le traitement pour le client " << clientSock << std::endl;
 
         // Préparer le client pour l'envoi de la réponse
