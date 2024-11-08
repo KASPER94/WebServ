@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 17:02:48 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:07:14 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,7 @@ class HttpRequest {
 		void 			parseCookie(std::string &line);
 		void 			parseContentType(std::string &line);
 		void			processMultipartData();
+		void			decodeFormData();
 
 		void 			parseHttpRequest();
 		std::string		HttpMethodTostring();

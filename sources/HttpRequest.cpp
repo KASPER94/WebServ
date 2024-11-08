@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 17:03:37 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 18:01:46 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,18 +116,18 @@ void HttpRequest::parseUserAgent(std::string &line) {
 }
 
 void HttpRequest::parseContentType(std::string &line) {
-    _contentType = line;
-    if (_contentType.find("multipart/form-data") != std::string::npos) {
-		_contentType = "multipart/form-data";
+    _contentType = line.substr();
+    if (line.find("multipart/form-data") != std::string::npos) {
         size_t pos = _contentType.find("boundary=");
         if (pos != std::string::npos) {
-            _boundary = _contentType.substr(pos + 9);
+            _boundary = "--" + _contentType.substr(pos + 9);
         }
+		_contentType = "multipart/form-data";
     }
-	else if (_contentType.find("text/plain") != std::string::npos) {
+	else if (line.find("text/plain") != std::string::npos) {
 		_contentType = "text/plain";
 	}
-	else if (_contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
+	else if (line.find("application/x-www-form-urlencoded") != std::string::npos) {
 		_contentType = "application/x-www-form-urlencoded";
 	}
 
@@ -231,8 +231,7 @@ bool HttpRequest::hasCompleteBody() {
 
 void	HttpRequest::processMultipartData() {
 	if (_contentType == "multipart/form-data") {
-		std::cout << "COUCOUCOUCOCUOUC" << std::endl;
-		return ;
+		this->decodeFormData();
 	}
 	else if (_contentType == "application/x-www-form-urlencoded") {
 		return;
@@ -240,6 +239,41 @@ void	HttpRequest::processMultipartData() {
 	else if (_contentType == "text/plain") {
 		return ;
 	}
+}
+void	HttpRequest::decodeFormData() {
+	size_t	pos = _requestData.find("\r\n\r\n") + 4;
+
+	std::string tmp = _requestData.substr(pos);
+	if (tmp.find(_boundary) == std::string::npos) {
+		std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
+		return;
+	}
+	size_t boundaryPos = tmp.find(_boundary);
+	while (boundaryPos != std::string::npos) {
+		boundaryPos += _boundary.size() + 1;  // Aller au début du contenu après boundary
+		size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
+
+		if (nextBoundaryPos == std::string::npos) {
+			nextBoundaryPos = tmp.find(_boundary + "--");
+		}
+			// break;
+
+		std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
+
+		// Vérifiez si c'est une image ou du texte
+		if (part.find("Content-Disposition: form-data; name=\"image\"") != std::string::npos) {
+			std::cout << "[Image data - binary content hidden]" << std::endl;
+		} else {
+			std::cout << "Données de formulaire texte reçues: " << part << std::endl;
+		}
+
+		boundaryPos = nextBoundaryPos;
+	}
+	// std::cout << " 000 " << _boundary << " 111" << std::endl;
+	// if (tmp.find(_boundary)) {
+	// 	std::string tmp2 = tmp.substr(_boundary.length(), tmp.size() - _boundary.length());
+	// 	std::cout << "111" << _boundary << " 111 " << "tmp2" << std::endl;
+	// }
 }
 
 void HttpRequest::parseHeaders() {
