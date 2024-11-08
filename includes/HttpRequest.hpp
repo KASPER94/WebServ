@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 11:48:43 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 14:52:31 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class HttpRequest {
 		std::string							_contentType;
 		std::string							_userAgent;
 		std::string							_host;
+		std::string							_cookie;
 		std::string							_boundary;
 		bool								_keepAliveConnection;
 
@@ -80,8 +81,10 @@ class HttpRequest {
 		void 			parseConnection(std::string &line);
 		void 			parseUserAgent(std::string &line);
 		void 			parseHost(std::string &line);
+		void 			parseCookie(std::string &line);
 		void 			parseContentType(std::string &line);
-		// void 			parseHttpRequest(const std::string& request);
+		void			processMultipartData();
+
 		void 			parseHttpRequest();
 		std::string		HttpMethodTostring();
 		HttpMethod 		stringToHttpMethod(const std::string &methodStr);

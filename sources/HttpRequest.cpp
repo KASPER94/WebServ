@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 11:49:24 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 15:43:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,16 +118,29 @@ void HttpRequest::parseUserAgent(std::string &line) {
 void HttpRequest::parseContentType(std::string &line) {
     _contentType = line;
     if (_contentType.find("multipart/form-data") != std::string::npos) {
+		_contentType = "multipart/form-data";
         size_t pos = _contentType.find("boundary=");
         if (pos != std::string::npos) {
             _boundary = _contentType.substr(pos + 9);
         }
     }
-	std::cout << "++++  " << _boundary << " ++++" << std::endl;
+	else if (_contentType.find("text/plain") != std::string::npos) {
+		_contentType = "text/plain";
+	}
+	else if (_contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
+		_contentType = "application/x-www-form-urlencoded";
+	}
+
+	// std::cout << "++++  " << _boundary << " ++++" << std::endl;
+	// std::cout << "++++  " << _contentType << " ++++" << std::endl;
 }
 
 void HttpRequest::parseHost(std::string &line) {
     _host = line;
+}
+
+void HttpRequest::parseCookie(std::string &line) {
+    _cookie = line;
 }
 
 void HttpRequest::initializeHeaderParsers() {
@@ -136,6 +149,7 @@ void HttpRequest::initializeHeaderParsers() {
 	parseUserAgent(_headers["User-Agent"]);
 	parseContentType(_headers["Content-Type"]);
 	parseHost(_headers["Host"]);
+	parseCookie(_headers["cookie"]);
 }
 
 void HttpRequest::parseHttpRequest() {
@@ -187,7 +201,19 @@ bool HttpRequest::hasCompleteBody() {
         _headersParsed = true;  // Indiquer que les en-têtes ont été traités
     }
 
-    // Cas 1 : Vérifier Content-Length
+    // if (_headers.count("Transfer-Encoding") > 0 && _headers["Transfer-Encoding"] == "chunked") {
+        // return isChunkedBodyComplete();
+		if (isChunkedBodyComplete()) {
+			if (_requestData.find(_boundary + "--"))
+				std::cout << "OK    ++++ " << std::endl;
+			this->processMultipartData();
+			return (true);
+		}
+		else
+			return (false);
+    // }
+
+	// Cas 1 : Vérifier Content-Length
     if (_headers.count("Content-Length") > 0) {
 		size_t contentLength = std::strtol(_headers["Content-Length"].c_str(), 0, 10);
 
@@ -195,14 +221,23 @@ bool HttpRequest::hasCompleteBody() {
         size_t bodyLength = _requestData.size() - headerEndPos;
         return bodyLength >= contentLength;
     }
-
     // Cas 2 : Vérifier Transfer-Encoding: chunked
-    if (_headers.count("Transfer-Encoding") > 0 && _headers["Transfer-Encoding"] == "chunked") {
-        return isChunkedBodyComplete();
-    }
+
 
     // Si aucune taille de corps spécifiée, considérer comme complète
-    return true;
+    return (true);
+}
+
+void	HttpRequest::processMultipartData() {
+	if (_contentType == "multipart/form-data") {
+		return ;
+	}
+	else if (_contentType == "application/x-www-form-urlencoded") {
+		return;
+	}
+	else if (_contentType == "text/plain") {
+		return ;
+	}
 }
 
 void HttpRequest::parseHeaders() {
