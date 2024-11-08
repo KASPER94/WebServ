@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/08 15:38:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:03:52 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ void Webserv::getRequest(int clientSock) {
         return;
     }
     // Accumuler le fragment dans la requête du client
-    if (client.getRequest().hasCompleteBody()) {
+    if (client.getRequest().getEnd()) {
 		// client.getRequest().parseHttpRequest();
         std::cout << "Requête stockée et prête pour le traitement pour le client " << clientSock << std::endl;
 

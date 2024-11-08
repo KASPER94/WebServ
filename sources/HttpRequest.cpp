@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 15:43:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:03:37 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,16 +173,18 @@ void HttpRequest::parseHttpRequest() {
 
 
 bool HttpRequest::appendRequest(const char* data, int length) {
+	_endRequested = false;
 	_headersParsed = false;
     _requestData.append(data, length);  // Accumule les données reçues dans une std::string
     // Vérifiez si la requête est complète
     if (_requestData.find("\r\n\r\n") != std::string::npos) {  // Fin de l'entête
         // Logique pour vérifier si le corps est complet si Content-Length est spécifié
         if (hasCompleteBody()) {
-            return true;
+			_endRequested = true;
+            return (_endRequested);
         }
     }
-    return false;  // Retourne false si la requête n'est pas encore complète
+    return (_endRequested);  // Retourne false si la requête n'est pas encore complète
 }
 
 std::string HttpRequest::getFullRequest() const {
@@ -201,17 +203,13 @@ bool HttpRequest::hasCompleteBody() {
         _headersParsed = true;  // Indiquer que les en-têtes ont été traités
     }
 
-    // if (_headers.count("Transfer-Encoding") > 0 && _headers["Transfer-Encoding"] == "chunked") {
-        // return isChunkedBodyComplete();
-		if (isChunkedBodyComplete()) {
-			if (_requestData.find(_boundary + "--"))
-				std::cout << "OK    ++++ " << std::endl;
-			this->processMultipartData();
-			return (true);
-		}
-		else
-			return (false);
-    // }
+	if (!_completed) {
+		// if (_requestData.find(_boundary + "--")) {
+		// 	std::cout << "OK    ++++ " << std::endl;
+		// }
+		this->processMultipartData();
+		return (true);
+	}
 
 	// Cas 1 : Vérifier Content-Length
     if (_headers.count("Content-Length") > 0) {
@@ -219,10 +217,13 @@ bool HttpRequest::hasCompleteBody() {
 
         size_t headerEndPos = _requestData.find("\r\n\r\n") + 4;
         size_t bodyLength = _requestData.size() - headerEndPos;
-        return bodyLength >= contentLength;
+		if (bodyLength >= contentLength)
+        	return (true);
     }
     // Cas 2 : Vérifier Transfer-Encoding: chunked
-
+    if (_headers.count("Transfer-Encoding") > 0 && _headers["Transfer-Encoding"] == "chunked") {
+        return isChunkedBodyComplete();
+    }
 
     // Si aucune taille de corps spécifiée, considérer comme complète
     return (true);
@@ -230,6 +231,7 @@ bool HttpRequest::hasCompleteBody() {
 
 void	HttpRequest::processMultipartData() {
 	if (_contentType == "multipart/form-data") {
+		std::cout << "COUCOUCOUCOCUOUC" << std::endl;
 		return ;
 	}
 	else if (_contentType == "application/x-www-form-urlencoded") {
@@ -260,31 +262,38 @@ void HttpRequest::parseHeaders() {
 }
 
 bool HttpRequest::isChunkedBodyComplete() {
+	_completed = false;
     size_t pos = _requestData.find("\r\n\r\n") + 4;  // Position du début du corps
     while (pos < _requestData.size()) {
         // Trouver la taille du chunk
         size_t nextPos = _requestData.find("\r\n", pos);
-        if (nextPos == std::string::npos)
+        if (nextPos == std::string::npos) {
+			_completed = false;
 			return false;
+		}
 
         // Lire la taille en hexadécimal
         std::string chunkSizeStr = _requestData.substr(pos, nextPos - pos);
         int chunkSize = std::strtol(chunkSizeStr.c_str(), 0, 16);
 
         // Si la taille est zéro, le corps est terminé
-        if (chunkSize == 0)
+        if (chunkSize == 0) {
+			_completed = true;
 			return true;
+		}
 
         // Positionner au début du contenu du chunk
         pos = nextPos + 2 + chunkSize;  // Skip \r\n après la taille et avancer de chunkSize
 
         // Vérifier la fin du chunk
-        if (_requestData.substr(pos, 2) != "\r\n")
+        if (_requestData.substr(pos, 2) != "\r\n"){
+			_completed = false;
 			return false;
+		}
 
         pos += 2;  // Skip the \r\n after the chunk content
     }
-    return false;  // Corps incomplet si on sort de la boucle sans retour
+    return _completed;  // Corps incomplet si on sort de la boucle sans retour
 }
 
 Client	*HttpRequest::getClient() const {
@@ -295,3 +304,10 @@ std::string 	HttpRequest::getHeader(std::string find) {
 	return (_headers[find]);
 }
 
+bool		 	HttpRequest::getCompleted() const {
+	return (_completed);
+}
+
+bool		 	HttpRequest::getEnd() const {
+	return (_endRequested);
+}

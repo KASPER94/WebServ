@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 14:52:31 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 17:02:48 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ typedef struct s_query
 class HttpRequest {
 	private:
 		Client								*_client;
+		bool								_completed;
+		bool								_endRequested;
 		std::string							_rawRequest;
 		std::string							_path;
 		bool								_goodRequest;
@@ -95,6 +97,8 @@ class HttpRequest {
 		bool 			isChunkedBodyComplete();
 		void 			setHeader(std::map<std::string, std::string> *header) const;
 		std::string 	getHeader(std::string find);
+		bool		 	getCompleted() const;
+		bool		 	getEnd() const;
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);
