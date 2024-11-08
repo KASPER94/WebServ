@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/07 17:36:17 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 11:49:24 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,7 +229,7 @@ bool HttpRequest::isChunkedBodyComplete() {
     while (pos < _requestData.size()) {
         // Trouver la taille du chunk
         size_t nextPos = _requestData.find("\r\n", pos);
-        if (nextPos == std::string::npos) 
+        if (nextPos == std::string::npos)
 			return false;
 
         // Lire la taille en hexadécimal
@@ -255,3 +255,8 @@ bool HttpRequest::isChunkedBodyComplete() {
 Client	*HttpRequest::getClient() const {
 	return (this->_client);
 }
+
+std::string 	HttpRequest::getHeader(std::string find) {
+	return (_headers[find]);
+}
+

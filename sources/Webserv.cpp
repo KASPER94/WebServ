@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/07 17:54:19 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 12:07:55 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void	Webserv::deleteClient(int fd) {
 void Webserv::getRequest(int clientSock) {
     char buffer[BUFFER_SIZE + 1];  // +1 pour l'ajout de '\0' à la fin
     int bytesRead;
-    
+
     // Vérifier que le client existe dans le map _clients
     if (_clients.find(clientSock) == _clients.end()) {
         std::cerr << "Client introuvable pour le socket " << clientSock << std::endl;
@@ -60,13 +60,12 @@ void Webserv::getRequest(int clientSock) {
     std::cout << "Fragment de requête reçu sur le socket " << clientSock << ": " << buffer << std::endl;
 	bool isRequestComplete = client.appendRequest(buffer, bytesRead);
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
-    if (!(client.getRequest().isChunkedBodyComplete())) {
-        // Reste en mode EPOLLIN pour recevoir plus de fragments
+    if (!isRequestComplete) {
         std::cout << "Attente de fragments supplémentaires pour le client " << clientSock << std::endl;
         return;
     }
     // Accumuler le fragment dans la requête du client
-    if (isRequestComplete) {
+    if (client.getRequest().hasCompleteBody()) {
 		// client.getRequest().parseHttpRequest();
         std::cout << "Requête stockée et prête pour le traitement pour le client " << clientSock << std::endl;
 

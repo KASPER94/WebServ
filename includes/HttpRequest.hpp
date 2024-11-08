@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/06 17:04:19 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/08 11:48:43 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class HttpRequest {
 		std::string							_host;
 		std::string							_boundary;
 		bool								_keepAliveConnection;
-		
+
 		std::string					 		_requestData;        // Contient les données de la requête reçues
 		bool 								_headersParsed;     // Indicateur si les en-têtes ont été analysés
 		std::map<std::string, std::string>	_headers; // Contient les en-têtes HTTP
@@ -91,6 +91,7 @@ class HttpRequest {
 		void 			parseHeaders();
 		bool 			isChunkedBodyComplete();
 		void 			setHeader(std::map<std::string, std::string> *header) const;
+		std::string 	getHeader(std::string find);
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);
