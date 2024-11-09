@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 18:01:46 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/09 15:43:14 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,12 +229,40 @@ bool HttpRequest::hasCompleteBody() {
     return (true);
 }
 
+void HttpRequest::setForm(std::string form) {
+	_form.strform = form;
+}
+
+void	HttpRequest::getForm(std::string &str) {
+	setForm(str);
+
+    std::istringstream stream(str);
+    std::string token;
+
+    while (std::getline(stream, token, '&')) {
+        std::string::size_type pos = token.find('=');
+        if (pos != std::string::npos) {
+            std::string key = decodeURIComponent(token.substr(0, pos));
+            std::string value = decodeURIComponent(token.substr(pos + 1));
+            _form.form[key] = value;
+			std::cout << value << std::endl;
+        }
+    }
+}
+
+void	HttpRequest::decodeUrl() {
+	size_t	pos = _requestData.find("\r\n\r\n") + 4;
+
+	std::string tmp = _requestData.substr(pos);
+	getForm(tmp);
+}
+
 void	HttpRequest::processMultipartData() {
 	if (_contentType == "multipart/form-data") {
 		this->decodeFormData();
 	}
 	else if (_contentType == "application/x-www-form-urlencoded") {
-		return;
+		this->decodeUrl();
 	}
 	else if (_contentType == "text/plain") {
 		return ;
@@ -269,11 +297,6 @@ void	HttpRequest::decodeFormData() {
 
 		boundaryPos = nextBoundaryPos;
 	}
-	// std::cout << " 000 " << _boundary << " 111" << std::endl;
-	// if (tmp.find(_boundary)) {
-	// 	std::string tmp2 = tmp.substr(_boundary.length(), tmp.size() - _boundary.length());
-	// 	std::cout << "111" << _boundary << " 111 " << "tmp2" << std::endl;
-	// }
 }
 
 void HttpRequest::parseHeaders() {

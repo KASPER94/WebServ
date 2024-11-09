@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/08 17:07:14 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/09 15:42:44 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,11 @@ typedef struct s_query
 	std::map<std::string, std::string>	params;
 } t_query;
 
+typedef struct s_form
+{
+	std::string					strform;
+	std::map<std::string, std::string>	form;
+} t_form;
 
 class HttpRequest {
 	private:
@@ -40,6 +45,7 @@ class HttpRequest {
 		enum HttpMethod						_method;
 		std::string							_uri;
 		t_query								_query;
+		t_form								_form;
 		std::string							_version;
 		std::vector<std::string>			_acceptedMimes;
 		std::string							_contentType;
@@ -87,6 +93,10 @@ class HttpRequest {
 		void 			parseContentType(std::string &line);
 		void			processMultipartData();
 		void			decodeFormData();
+		void 			setForm(std::string form);
+		void			getForm(std::string &str);
+		void			decodeUrl();
+
 
 		void 			parseHttpRequest();
 		std::string		HttpMethodTostring();
