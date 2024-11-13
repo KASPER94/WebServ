@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/09 15:43:14 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 11:33:43 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,16 +245,18 @@ void	HttpRequest::getForm(std::string &str) {
             std::string key = decodeURIComponent(token.substr(0, pos));
             std::string value = decodeURIComponent(token.substr(pos + 1));
             _form.form[key] = value;
-			std::cout << value << std::endl;
+			// std::cout << value << std::endl;
         }
     }
 }
 
 void	HttpRequest::decodeUrl() {
-	size_t	pos = _requestData.find("\r\n\r\n") + 4;
-
-	std::string tmp = _requestData.substr(pos);
-	getForm(tmp);
+	size_t pos = _requestData.find("\r\n\r\n");
+	if (pos != std::string::npos) {
+		pos += 4;
+		std::string tmp = _requestData.substr(pos);
+		getForm(tmp);
+	}
 }
 
 void	HttpRequest::processMultipartData() {
@@ -265,9 +267,12 @@ void	HttpRequest::processMultipartData() {
 		this->decodeUrl();
 	}
 	else if (_contentType == "text/plain") {
-		return ;
+		std::string plainTextContent = _requestData.substr(_requestData.find("\r\n\r\n") + 4);
+		// std::cout << "Contenu text/plain reçu : " << plainTextContent << std::endl;
+		_plainTextBody = plainTextContent;
 	}
 }
+
 void	HttpRequest::decodeFormData() {
 	size_t	pos = _requestData.find("\r\n\r\n") + 4;
 

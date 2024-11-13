@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/09 15:42:44 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 11:29:15 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ class HttpRequest {
 		std::string							_host;
 		std::string							_cookie;
 		std::string							_boundary;
+		std::string							_plainTextBody;
 		bool								_keepAliveConnection;
 
 		std::string					 		_requestData;        // Contient les données de la requête reçues
