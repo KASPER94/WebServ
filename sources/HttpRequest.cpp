@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 14:28:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 15:01:40 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,7 @@ void HttpRequest::parseHttpRequest() {
 
 bool HttpRequest::appendRequest(const char* data, int length) {
 	_endRequested = false;
+	_tooLarge = false;
 	_headersParsed = false;
 	_receivedBodySize += length;
 
@@ -199,8 +200,8 @@ bool HttpRequest::appendRequest(const char* data, int length) {
         }
 		if (confBodySize && _receivedBodySize >= confBodySize) {
 			std::cerr << "Erreur : La taille du corps de la requête dépasse la limite maximale autorisée." << std::endl;
-			_endRequested = true;
-            return (_endRequested);
+			_tooLarge = true;
+            return (_tooLarge);
 		}
     }
     return (_endRequested);  // Retourne false si la requête n'est pas encore complète
@@ -292,36 +293,78 @@ void	HttpRequest::processMultipartData() {
 	}
 }
 
-void	HttpRequest::decodeFormData() {
-	size_t	pos = _requestData.find("\r\n\r\n") + 4;
+// void	HttpRequest::decodeFormData() {
+// 	size_t	pos = _requestData.find("\r\n\r\n") + 4;
 
+// 	std::string tmp = _requestData.substr(pos);
+// 	if (tmp.find(_boundary) == std::string::npos) {
+// 		std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
+// 		return;
+// 	}
+// 	size_t boundaryPos = tmp.find(_boundary);
+// 	while (boundaryPos != std::string::npos) {
+// 		boundaryPos += _boundary.size() + 1;  // Aller au début du contenu après boundary
+// 		size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
+
+// 		if (nextBoundaryPos == std::string::npos) {
+// 			nextBoundaryPos = tmp.find(_boundary + "--");
+// 		}
+// 			// break;
+
+// 		std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
+
+// 		// Vérifiez si c'est une image ou du texte
+// 		if (part.find("Content-Disposition: form-data; name=\"image\"") != std::string::npos) {
+// 			std::cout << "[Image data - binary content hidden]" << std::endl;
+// 		} else {
+// 			std::cout << "Données de formulaire texte reçues: " << part << std::endl;
+// 		}
+
+// 		boundaryPos = nextBoundaryPos;
+// 	}
+// }
+
+void HttpRequest::decodeFormData() {
+	size_t pos = _requestData.find("\r\n\r\n") + 4;
 	std::string tmp = _requestData.substr(pos);
+
 	if (tmp.find(_boundary) == std::string::npos) {
 		std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
 		return;
 	}
+
 	size_t boundaryPos = tmp.find(_boundary);
 	while (boundaryPos != std::string::npos) {
-		boundaryPos += _boundary.size() + 1;  // Aller au début du contenu après boundary
+		boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
 		size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
-
 		if (nextBoundaryPos == std::string::npos) {
 			nextBoundaryPos = tmp.find(_boundary + "--");
 		}
-			// break;
 
 		std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
 
 		// Vérifiez si c'est une image ou du texte
-		if (part.find("Content-Disposition: form-data; name=\"image\"") != std::string::npos) {
-			std::cout << "[Image data - binary content hidden]" << std::endl;
-		} else {
-			std::cout << "Données de formulaire texte reçues: " << part << std::endl;
+		size_t namePos = part.find("name=\"");
+		if (namePos != std::string::npos) {
+			namePos += 6; // Aller au début du nom après 'name="'
+			size_t endNamePos = part.find("\"", namePos);
+			std::string name = part.substr(namePos, endNamePos - namePos);
+
+			size_t contentPos = part.find("\r\n\r\n") + 4;
+			std::string content = part.substr(contentPos);
+
+			// Vérifier si c'est un fichier
+			if (part.find("filename=\"") != std::string::npos) {
+				_fileData[name] = content;
+			} else {
+				_formData[name] = content;
+			}
 		}
 
 		boundaryPos = nextBoundaryPos;
 	}
 }
+
 
 void HttpRequest::parseHeaders() {
     std::istringstream stream(_requestData);

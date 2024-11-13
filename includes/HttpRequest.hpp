@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 11:46:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 15:00:32 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ class HttpRequest {
 		size_t								_receivedBodySize;
 		bool								_completed;
 		bool								_endRequested;
+		size_t								_tooLarge;
 		std::string							_rawRequest;
 		std::string							_path;
 		bool								_goodRequest;
@@ -56,6 +57,8 @@ class HttpRequest {
 		std::string							_boundary;
 		std::string							_plainTextBody;
 		bool								_keepAliveConnection;
+		std::map<std::string, std::string> 	_formData; // Pour les données texte du formulaire
+    	std::map<std::string, std::string>	_fileData;
 
 		std::string					 		_requestData;        // Contient les données de la requête reçues
 		bool 								_headersParsed;     // Indicateur si les en-têtes ont été analysés
@@ -112,6 +115,9 @@ class HttpRequest {
 		std::string 	getHeader(std::string find);
 		bool		 	getCompleted() const;
 		bool		 	getEnd() const;
+		std::map<std::string, std::string> &getFormData() const;
+		std::map<std::string, std::string> &getfileData() const;
+
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);
