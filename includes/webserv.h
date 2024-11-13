@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/05 16:26:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 16:51:16 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,5 +65,8 @@ Directive getDirective(const std::string &directive);
 unsigned long convertIpToUnsignedLong(const std::string &ip);
 void convertAllowMethods(const std::vector<HttpMethod>& methods) ;
 int		setsocknonblock(int sock);
+void	rtrim(std::string &str);
+void	ltrim(std::string &str);
+
 
 #endif

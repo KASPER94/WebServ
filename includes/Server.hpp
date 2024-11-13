@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 12:28:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 16:42:42 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,13 @@
 # define SERVER_HPP
 
 #include "websocket.hpp"
+#include "Location.hpp"
 #include "webserv.h"
 #include <iostream>
 #include <vector>
 #include <map>
+
+class Location;
 
 class Server : public websocket {
 	private:
@@ -37,6 +40,8 @@ class Server : public websocket {
 		std::string						_uploadPath ;
 		std::vector<std::string>		_binPath ;
 		std::vector<std::string>		_cgiExtension ;
+		std::map<std::string, Location> _locations;
+
 	public:
 		Server();
 		virtual ~Server();
@@ -62,6 +67,9 @@ class Server : public websocket {
 		std::map<int, std::string>		getErrorPage();
 		size_t 							getClientMaxBody();
 		std::vector<std::string> 		*getAllowedMethods() ;
+
+		void addLocation(const std::string &uri, const Location &location);
+    	Location getLocation(const std::string &uri) const;
 };
 
 #endif

@@ -6,7 +6,7 @@
 #    By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/11/03 14:29:07 by skapersk         ###   ########.fr        #
+#    Updated: 2024/11/13 17:28:44 by skapersk         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,6 +31,7 @@ SRC = main.cpp \
 	  Webserv.cpp \
 	  HttpRequest.cpp \
 	  client.cpp \
+	  Location.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 

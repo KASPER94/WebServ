@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 12:44:37 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 17:19:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,72 @@ bool   conf::_findServerBlock(std::string &line) {
     return (false);
 }
 
-void conf::_parseLocation(std::string block) {
-    // std::cout << block << std::endl;
-	(void)block;
+// void conf::_parseLocation(std::string block, Server &serv) {
+//     // std::cout << block << std::endl;
+// 	(void)block;
+// }
+
+void conf::_parseLocation(std::string line, Server &serv, std::ifstream &ConfigFile) {
+std::istringstream word(line);
+	std::string location_keyword;
+	std::string modifier_or_uri;
+	std::string uri;
+
+	// Lire "location" et l'URI ou le modificateur
+	word >> location_keyword >> modifier_or_uri;
+	if (modifier_or_uri == "~" || modifier_or_uri == "~*" || modifier_or_uri == "^~") {
+		// Si un modificateur est détecté, l’URI est le mot suivant
+		word >> uri;
+		// Stocker le modificateur dans la configuration de location (si nécessaire)
+		// ATTETNION PENSER A : locationConfig.setModifier(modifier_or_uri);
+	} else {
+		uri = modifier_or_uri;
+	}
+
+	Location locationConfig;
+	int brace_count = 1;  // '{' trouvé dans "location"
+
+	while (brace_count > 0 && std::getline(ConfigFile, line)) {
+		ltrim(line);
+		rtrim(line);
+		if (line.empty() || line[0] == '#' || line[0] == ';')
+			continue;
+
+		if (line.find("{") != std::string::npos)
+			brace_count++;
+		if (line.find("}") != std::string::npos)
+			brace_count--;
+
+		if (brace_count == 0) break;
+
+		std::vector<std::string> tokens = split_trim_conf(line);
+		if (tokens.empty())
+			continue;
+
+		std::string directive = tokens[0];
+		if (directive == "root") {
+			locationConfig.setRoot(this->_getRoot(tokens));
+		} else if (directive == "index") {
+			locationConfig.setIndex(this->_getIndex(tokens));
+		} else if (directive == "cgi_bin") {
+			locationConfig.setCgiBin(this->_getCgiBin(tokens));
+		} else if (directive == "cgi_extension") {
+			locationConfig.setCgiExtension(this->_getCgiExtension(tokens));
+		} else if (directive == "allowedMethods") {
+			locationConfig.setAllowedMethods(*this->_getAllowedMethods(tokens));
+		} else if (directive == "upload_path") {
+			locationConfig.setUploadPath(this->_getUploadPath(tokens));
+		} else if (directive == "return") {
+			locationConfig.setReturnUri(this->_getRedirection(tokens));
+		} else if (directive == "autoindex") {
+			locationConfig.setAutoindex(this->_getAutoindex(tokens));
+		} else if (directive == "error_page") {
+			locationConfig.setErrorPages(this->_getErrorPage(tokens));
+		} else {
+			throw std::runtime_error("Unknown directive in location block: " + directive);
+		}
+	}
+	serv.addLocation(uri, locationConfig);
 }
 
 void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &allServ) {
@@ -142,14 +205,14 @@ std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
         } else if (this->_found && line.find("location") != std::string::npos) {
             if (line.find("{") != std::string::npos)
                 brace_count++;
-            this->_parseLocation(line);
+            this->_parseLocation(line, serv, ConfigFile);
             if (line.find("}") != std::string::npos) {
                 brace_count--;
                 if (brace_count == 0)
                     continue;
             }
         } else if (this->_found && brace_count > 0) {
-            this->_parseLocation(line);
+            this->_parseLocation(line, serv, ConfigFile);
             if (line.find("}") != std::string::npos) {
                 brace_count--;
                 if (brace_count == 0)

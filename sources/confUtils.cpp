@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/13 12:37:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 17:35:27 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,15 +108,6 @@ std::string    conf::_getHost(std::vector<std::string> line) {
 	return host;
 }
 
-void    conf::_getIndex(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
-
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
-}
-
 std::map<int, std::string>	conf::_getErrorPage(std::vector<std::string> line) {
 	std::string errorPage;
 	std::map<int, std::string> ErrorData;
@@ -174,65 +165,123 @@ std::vector<std::string>    *conf::_getAllowedMethods(std::vector<std::string> l
 	return (methods);
 }
 
-void    conf::_getAutoindex(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+// void    conf::_getRedirection(std::vector<std::string> line) {
+//     std::vector<std::string>::iterator it;
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+//     it = line.begin();
+//     for (; it != line.end(); it++) {
+//         std::cout << *it << std::endl;
+//     }
+// }
+
+// void    conf::_getCgiExtension(std::vector<std::string> line) {
+//     std::vector<std::string>::iterator it;
+
+//     it = line.begin();
+//     for (; it != line.end(); it++) {
+//         std::cout << *it << std::endl;
+//     }
+// }
+
+// void    conf::_getCgiPath(std::vector<std::string> line) {
+//     std::vector<std::string>::iterator it;
+
+//     it = line.begin();
+//     for (; it != line.end(); it++) {
+//         std::cout << *it << std::endl;
+//     }
+// }
+
+// void    conf::_getCgiBin(std::vector<std::string> line) {
+//     std::vector<std::string>::iterator it;
+
+//     it = line.begin();
+//     for (; it != line.end(); it++) {
+//         std::cout << *it << std::endl;
+//     }
+// }
+
+std::string conf::_getRoot(const std::vector<std::string> &line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: root directive requires exactly one argument (root)");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string root = line[1].substr(0, line[1].size() - 1);
+	if (root.empty())
+		throw std::runtime_error("Error: missing root");
+
+	return root;
 }
 
-void    conf::_getUploadPath(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+bool conf::_getAutoindex( std::vector<std::string> &line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: autoindex directive requires exactly one argument");
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string value = line[1].substr(0, line[1].size() - 1);
+
+	if (value == "on")
+		return true;
+	else if (value == "off")
+		return false;
+	else
+		throw std::runtime_error("Error: invalid value for autoindex (must be 'on' or 'off')");
 }
 
-void    conf::_getRoot(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+std::string conf::_getIndex(std::vector<std::string> line) {
+	// if (line.size() != 3)
+	// 	throw std::runtime_error("Error: index directive requires exactly one argument (index)");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string index = line[1].substr(0, line[1].size() - 1);
+	if (index.empty())
+		throw std::runtime_error("Error: missing index");
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+	return index;
 }
 
-void    conf::_getRedirection(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
+std::string conf::_getRedirection(std::vector<std::string> line) {
+	if (line.size() != 3)
+		throw std::runtime_error("Error: redirection directive requires exactly one argument (redirection)");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string redirection = line[1].substr(0, line[1].size() - 1);
+	if (redirection.empty())
+		throw std::runtime_error("Error: missing redirection");
 
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+	return redirection;
 }
 
-void    conf::_getCgiExtension(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
-
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+std::string conf::_getCgiExtension(std::vector<std::string> line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: cgi_extension directive requires exactly one argument");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string extension = line[1].substr(0, line[1].size() - 1);
+	if (extension.empty())
+		throw std::runtime_error("Error: missing extension");
+	return extension;
 }
 
-void    conf::_getCgiPath(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
-
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+std::string conf::_getUploadPath(std::vector<std::string> line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: upload_path directive requires exactly one argument");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string uploadPath = line[1].substr(0, line[1].size() - 1);
+	if (uploadPath.empty())
+		throw std::runtime_error("Error: missing uploadPath");
+	return uploadPath;
 }
 
-void    conf::_getCgiBin(std::vector<std::string> line) {
-    std::vector<std::string>::iterator it;
-
-    it = line.begin();
-    for (; it != line.end(); it++) {
-        std::cout << *it << std::endl;
-    }
+std::string conf::_getCgiBin(std::vector<std::string> line) {
+	if (line.size() != 2)
+		throw std::runtime_error("Error: cgi_bin directive requires exactly one argument");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	std::string cgiBin = line[1].substr(0, line[1].size() - 1);
+	if (cgiBin.empty())
+		throw std::runtime_error("Error: missing cgiBin");
+	return cgiBin;
 }

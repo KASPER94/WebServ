@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 12:44:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 16:38:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,4 +145,16 @@ void	Server::setSock() {
 	this->_address.sin_family = AF_INET;
 	this->_address.sin_port = htons(this->_port);
 	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());
+}
+
+void Server::addLocation(const std::string &uri, const Location &location) {
+	_locations[uri] = location;
+}
+
+Location Server::getLocation(const std::string &uri) const {
+	std::map<std::string, Location>::const_iterator it = _locations.find(uri);
+	if (it != _locations.end()) {
+		return it->second;
+	}
+	throw std::runtime_error("Location not found for URI: " + uri);
 }
