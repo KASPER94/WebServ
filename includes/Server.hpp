@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/04 14:50:19 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:28:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,13 @@
 class Server : public websocket {
 	private:
 		int								_port;
-		std::string					_host;
+		std::string						_host;
 		std::string						_name;
 		bool							_directoryListing;
 		std::string						_root;
 		std::vector<std::string>		_indexes;
 		std::string						_index;
-		long long						_maxBodySize;
+		size_t							_maxBodySize;
 		std::vector<std::string>		*_allowedMethod;
 		std::vector<std::string>		_locationBlock;
 
@@ -44,7 +44,7 @@ class Server : public websocket {
 
 		Server &operator=(const Server &rhs);
 		int connectToNetwork();
-		
+
 		// SETTER
 		void	setPort(int port);
 		void	setHostname(std::string host);
@@ -56,12 +56,12 @@ class Server : public websocket {
 
 
 		// GETTER
-		int		getPort();
-		std::string		getHostname();
-		std::string		getServerName();
+		int								getPort();
+		std::string						getHostname();
+		std::string						getServerName();
 		std::map<int, std::string>		getErrorPage();
-		size_t getClientMaxBody();
-		std::vector<std::string> *getAllowedMethods() ;
+		size_t 							getClientMaxBody();
+		std::vector<std::string> 		*getAllowedMethods() ;
 };
 
 #endif

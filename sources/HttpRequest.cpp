@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 11:33:43 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:28:41 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,14 +175,33 @@ void HttpRequest::parseHttpRequest() {
 bool HttpRequest::appendRequest(const char* data, int length) {
 	_endRequested = false;
 	_headersParsed = false;
+	_receivedBodySize += length;
+
+	size_t maxBody = this->_client->getServer()->getClientMaxBody();
+	// std::cout << "ClientMaxBody (avant conversion): " << maxBody << std::endl;
+
+	// Vérifiez si maxBody est raisonnable et différent de zéro
+	// if (maxBody == 0) {
+	// 	std::cerr << "Erreur : ClientMaxBody est à zéro ou non défini !" << std::endl;
+	// 	return false;
+	// }
+
+	size_t confBodySize = maxBody ;
+	std::cout << "ClientMaxBody après conversion en bytes (confBodySize): " << confBodySize << std::endl;
+
     _requestData.append(data, length);  // Accumule les données reçues dans une std::string
     // Vérifiez si la requête est complète
     if (_requestData.find("\r\n\r\n") != std::string::npos) {  // Fin de l'entête
         // Logique pour vérifier si le corps est complet si Content-Length est spécifié
-        if (hasCompleteBody()) {
+		if (hasCompleteBody()) {
 			_endRequested = true;
             return (_endRequested);
         }
+		if (confBodySize && _receivedBodySize >= confBodySize) {
+			std::cerr << "Erreur : La taille du corps de la requête dépasse la limite maximale autorisée." << std::endl;
+			_endRequested = true;
+            return (_endRequested);
+		}
     }
     return (_endRequested);  // Retourne false si la requête n'est pas encore complète
 }

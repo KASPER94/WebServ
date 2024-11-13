@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/05 17:46:20 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:24:02 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ class Webserv {
 		int 	_epollfd;
         std::vector<Server>				_servers;
 		// Client _clients;
-		std::map<int, Client>			_clients;
-		std::map<int, Server*> 			_serverSockets;  
+		std::map<int, Client*>			_clients;
+		std::map<int, Server*> 			_serverSockets;
 		// Webserv(const Webserv &cpy);
 
 		// Webserv &operator=(const Webserv &rhs);

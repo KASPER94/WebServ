@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/07 17:12:59 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 12:52:48 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,15 +19,15 @@ Client::Client():
 
 // Client::Client(int fd):
 // 	_request(NULL),
-// 	_response(NULL), 
+// 	_response(NULL),
 // 	_fd(fd)
 // 	{}
 
 Client::Client(int fd, Server *servers):
 	_request(NULL),
-	_response(NULL), 
-	 _fd(fd), 
-	 _error(false), 
+	_response(NULL),
+	 _fd(fd),
+	 _error(false),
 	 _servers(servers) {
 		    std::cout << "Client created at " << this << " for socket " << fd << std::endl;
 
@@ -65,7 +65,7 @@ int Client::getFd() const {
 }
 
 void Client::setFd(int fd) {
-    if (_fd >= 0) 
+    if (_fd >= 0)
 		close(_fd);
     _fd = fd;
 }
@@ -74,11 +74,11 @@ void Client::setFd(int fd) {
 // 	if (_request) {
 //         delete _request;  // Delete the existing request to avoid memory leaks
 //     }
-//     _request = new HttpRequest(request);  
+//     _request = new HttpRequest(request);
 // }
 
 HttpRequest& Client::getRequest() {
-    return *_request;  
+    return *_request;
 }
 
 bool	Client::error() const {
@@ -93,6 +93,7 @@ bool	Client::appendRequest(const char *data, int bytes) {
 }
 
 Server	*Client::getServer() const {
+	std::cout << this->_servers << std::endl;
 	return (this->_servers);
 }
 

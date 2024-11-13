@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 11:29:15 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 11:46:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ typedef struct s_form
 class HttpRequest {
 	private:
 		Client								*_client;
+		size_t								_receivedBodySize;
 		bool								_completed;
 		bool								_endRequested;
 		std::string							_rawRequest;

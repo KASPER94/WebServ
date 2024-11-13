@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/08 17:03:52 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/13 14:26:47 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void Webserv::getRequest(int clientSock) {
         std::cerr << "Client introuvable pour le socket " << clientSock << std::endl;
         return;
     }
-    Client &client = this->_clients[clientSock];
+    Client *client = this->_clients[clientSock];
     // Lire les données de la socket client
     bytesRead = recv(clientSock, buffer, BUFFER_SIZE, 0);
     if (bytesRead <= 0) {
@@ -58,14 +58,14 @@ void Webserv::getRequest(int clientSock) {
 
     buffer[bytesRead] = '\0';  // Terminer la chaîne de caractères
     std::cout << "Fragment de requête reçu sur le socket " << clientSock << ": " << buffer << std::endl;
-	bool isRequestComplete = client.appendRequest(buffer, bytesRead);
+	bool isRequestComplete = client->appendRequest(buffer, bytesRead);
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {
         std::cout << "Attente de fragments supplémentaires pour le client " << clientSock << std::endl;
         return;
     }
     // Accumuler le fragment dans la requête du client
-    if (client.getRequest().getEnd()) {
+    if (client->getRequest().getEnd()) {
 		// client.getRequest().parseHttpRequest();
         std::cout << "Requête stockée et prête pour le traitement pour le client " << clientSock << std::endl;
 
@@ -75,7 +75,7 @@ void Webserv::getRequest(int clientSock) {
         clientEvent.events = EPOLLOUT;
         epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent);
 
-    } else if (client.error()) {
+    } else if (client->error()) {
         // Supprimer le client en cas d'erreur de réception ou de parsing
         std::cerr << "Erreur de requête détectée pour le client " << clientSock << std::endl;
         this->deleteClient(clientSock);
@@ -90,12 +90,12 @@ void Webserv::sendResponse(int clientSock) {
         return;
     }
 
-    Client &client = _clients[clientSock];
-	if (!client.getRequestPtr()) {
+    Client *client = _clients[clientSock];
+	if (!client->getRequestPtr()) {
         std::cerr << "Aucune requête pour le client " << clientSock << std::endl;
         return;
     }
-    HttpRequest &httpRequest = client.getRequest();
+    HttpRequest &httpRequest = client->getRequest();
     std::string response;
 	std::cout << "Méthode HTTP reçue : " << httpRequest.HttpMethodTostring() << std::endl;
 
@@ -178,8 +178,8 @@ void Webserv::initializeSockets() {
                 // Create a new Client instance and add to _clients
 				Server *Server =_serverSockets[sock];
 				if (Server) {
-					Client client(clientSock, Server);
-					_clients[clientSock] = client;
+					Client *new_client = new Client(clientSock, Server);
+					_clients[clientSock] = new_client;
 				} else {
 					// Handle the case where the server pointer is null
 					std::cerr << "Server not found for socket " << sock << std::endl;
