@@ -1,56 +1,39 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: peanut <peanut@student.42.fr>              +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/10/22 18:52:16 by peanut           ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-NAME = RPN
-
 CC = c++
 
-INCLUDES = includes/
+CFLAGS = -Wall -Wextra -Werror -std=c++98
 
-CFLAGS = -Wall -Werror -Wextra -std=c++98 -I $(INCLUDES)
+SRC_FILES = main Server Epoller Log 
 
-SRC_DIR = sources/
+SRC_DIR = ./src/
 
-OBJ_DIR = objects/
+OBJ_DIR = ./obj/
 
-SRC = main.cpp \
-	  conf.cpp \
-	  confUtils.cpp \
-	  utils.cpp \
+SRC = $(addprefix $(SRC_DIR), $(addsuffix .cpp, $(SRC_FILES)))
 
-OBJ = $(SRC:.cpp=.o)
+OBJ = $(addprefix $(OBJ_DIR), $(addsuffix .o, $(SRC_FILES)))
 
-SRC_FILES = $(addprefix $(SRC_DIR), $(SRC))
+NAME = webserv
 
-OBJ_FILES = $(addprefix $(OBJ_DIR), $(OBJ))
+GREEN = \e[1;32m
+YELLOW=\e[0;33m
+BLUE=\e[0;34m
+NONE = \e[0m
 
-.PHONY : all clean fclean re
+all: $(NAME)
 
-all : $(NAME)
+$(NAME): $(OBJ)
+	$(CC) $(OBJ) -o $(NAME)
 
-$(OBJ_DIR)%.o : $(SRC_DIR)%.cpp
-	@mkdir -p $(OBJ_DIR)
-	$(CC) -c $(CFLAGS) $< -o $@
+$(OBJ_DIR)%.o: $(SRC_DIR)%.cpp
+	mkdir -p $(@D)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(NAME) : $(OBJ_FILES)
-	@$(CC) $(OBJ_FILES) -o $(NAME)
+clean:
+	rm -rf $(OBJ_DIR)
 
-clean :
-	@$(RM) -rf $(OBJ_DIR)
+fclean: clean
+	rm -f $(NAME)
 
-fclean :
-	@$(RM) -rf $(OBJ_DIR)
-	@$(RM) $(NAME)
+re: fclean all
 
-re :
-	@make fclean --no-print-directory
-	@make all --no-print-directory
+.PHONY: all clean fclean re
