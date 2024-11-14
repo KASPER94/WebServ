@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 16:26:28 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 17:34:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,8 @@ std::istringstream word(line);
 			// locationConfig.setReturnUri(this->_getRedirection(tokens));
 		} else if (directive == "autoindex") {
 			locationConfig.setAutoindex(this->_getAutoindex(tokens));
-		} else if (directive == "autoindex") {
-			locationConfig.setAutoindex(this->_getAutoindex(tokens));
+		} else if (directive == "error_page") {
+			locationConfig.setErrorPages(this->_getErrorPage(tokens));
 		} else if (directive == "client_max_body_size") {
 			locationConfig.setClientMaxBody(this->_getClientMaxBodySize(tokens));
 		} else {
