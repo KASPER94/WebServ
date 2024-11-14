@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/13 16:51:16 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 13:02:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,6 @@ void convertAllowMethods(const std::vector<HttpMethod>& methods) ;
 int		setsocknonblock(int sock);
 void	rtrim(std::string &str);
 void	ltrim(std::string &str);
-
+std::string intToString(int number);
 
 #endif

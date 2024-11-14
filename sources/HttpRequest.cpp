@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 15:01:40 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 12:20:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -434,4 +434,8 @@ bool		 	HttpRequest::getCompleted() const {
 
 bool		 	HttpRequest::getEnd() const {
 	return (_endRequested);
+}
+
+bool HttpRequest::tooLarge() const {
+	return (_tooLarge);
 }

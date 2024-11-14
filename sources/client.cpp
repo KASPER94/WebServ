@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 11:40:40 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 13:05:15 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ HttpRequest	*Client::getRequest() const {
 	return (this->_request);
 }
 
-HttpRequest	*Client::getResponse() const {
+HttpResponse	*Client::getResponse() const {
 	return (this->_response);
 }
 
@@ -70,9 +70,9 @@ void Client::setFd(int fd) {
     _fd = fd;
 }
 
-HttpRequest& Client::getRequest() {
-    return *_request;
-}
+// HttpRequest& Client::getRequest() {
+//     return *_request;
+// }
 
 bool	Client::error() const {
 	return (this->_error);
@@ -91,6 +91,10 @@ Server	*Client::getServer() const {
 }
 
 void	Client::sendResponse() {
-	this->_response = new HttpReponse(this);
-	this->_reponse->sendResponse();
+	this->_response = new HttpResponse(this);
+	this->_response->sendResponse();
+}
+
+std::string	Client::getResponsestr() const {
+	return (this->_response->getResponse());
 }

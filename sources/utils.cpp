@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/31 18:18:39 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 13:00:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,12 @@ void	rtrim(std::string &str) {
 	while (isspace(str[i]))
 		i--;
 	str = str.substr(0, i + 1);
+}
+
+std::string intToString(int number) {
+	std::stringstream ss;
+	ss << number;
+	return ss.str();
 }
 
 void convertAllowMethods(const std::vector<HttpMethod>& methods) {

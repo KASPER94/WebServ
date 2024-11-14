@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 15:00:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 12:37:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ class HttpRequest {
 		size_t								_receivedBodySize;
 		bool								_completed;
 		bool								_endRequested;
-		size_t								_tooLarge;
+		bool								_tooLarge;
 		std::string							_rawRequest;
 		std::string							_path;
 		bool								_goodRequest;
@@ -70,7 +70,6 @@ class HttpRequest {
 		// void	setMethod(std::string str);
 		// void	parseAcceptedMimes(std::string line);
 		// void	parseConnection(std::string line);
-
 	public:
 		HttpRequest();
 		HttpRequest(Client *client);
@@ -117,7 +116,7 @@ class HttpRequest {
 		bool		 	getEnd() const;
 		std::map<std::string, std::string> &getFormData() const;
 		std::map<std::string, std::string> &getfileData() const;
-
+		bool tooLarge() const ;
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);
