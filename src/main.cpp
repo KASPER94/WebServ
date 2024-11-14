@@ -6,7 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 17:27:11 by yrigny            #+#    #+#             */
-/*   Updated: 2024/11/13 15:00:06 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/11/14 14:39:45 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 int main()
 {
 	Server		server;
-	vecServer 	cluster;
+	VecServer 	cluster;
 	cluster.push_back(server);
 
 	Epoller	epoller(cluster);
