@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:59 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/13 16:53:30 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 16:28:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ private:
     bool _autoindex;
     std::vector<std::string> _allowed_methods;
     std::map<int, std::string> _error_pages;
+	size_t								_maxBodySize;
 
 public:
     // Constructeur par défaut
@@ -44,6 +45,7 @@ public:
     bool getAutoindex() const;
     std::vector<std::string> getAllowedMethods() const;
     std::map<int, std::string> getErrorPages() const;
+	size_t getClientMaxBody() const;
 
     // Setters avec validation
     void setRoot(const std::string &root);
@@ -55,6 +57,7 @@ public:
     void setAutoindex(bool autoindex);
     void setAllowedMethods(const std::vector<std::string> &methods);
     void setErrorPages(const std::map<int, std::string> &errorPages);
+	void setClientMaxBody(const size_t &maxBodySize);
 
     // Ajout de méthodes supplémentaires pour la gestion de la configuration
     void addAllowedMethod(const std::string &method);

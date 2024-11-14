@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 18:47:55 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 16:26:28 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,10 @@ std::istringstream word(line);
 			// locationConfig.setReturnUri(this->_getRedirection(tokens));
 		} else if (directive == "autoindex") {
 			locationConfig.setAutoindex(this->_getAutoindex(tokens));
-		} else if (directive == "error_page") {
-			locationConfig.setErrorPages(this->_getErrorPage(tokens));
+		} else if (directive == "autoindex") {
+			locationConfig.setAutoindex(this->_getAutoindex(tokens));
+		} else if (directive == "client_max_body_size") {
+			locationConfig.setClientMaxBody(this->_getClientMaxBodySize(tokens));
 		} else {
 			throw std::runtime_error("Unknown directive in location block: " + directive);
 		}
@@ -147,7 +149,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setHostname(this->_getHost(line_trim));
 			break;
 		case INDEX:
-			// this->_getIndex(line_trim);
+			serv.setIndexes(this->_getIndex(line_trim));
 			break;
 		case ERROR_PAGE:
 			serv.setErrorPage(this->_getErrorPage(line_trim));
@@ -168,7 +170,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			// this->_getUploadPath(line_trim);
 			break;
 		case ROOT:
-			// this->_getRoot(line_trim);
+			serv.setRoot(this->_getRoot(line_trim));
 			break;
 		case RETURN:
 			// this->_getRedirection(line_trim);

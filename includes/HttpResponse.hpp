@@ -29,6 +29,17 @@ class HttpResponse {
 		std::map<std::string, std::string>	_headers;
 		std::string 						_body;
 		bool								_readyToSend;
+		std::string							_root;
+		std::vector<std::string>			_indexes;
+		std::string							_locPath;
+		size_t								_maxBodySize;
+		std::vector<std::string>		_allowedMethod;
+		// bool								_directoryListing;
+		std::map<int,std::string>				_returnURI;
+		std::string							_uploadPath;
+		std::vector<std::string>					_cgiBin;
+		std::vector<std::string>					_cgiExt;
+		bool								_isLocation;
 
 		void error(const std::string &message);
 	public:
@@ -42,7 +53,9 @@ class HttpResponse {
 		HttpRequest	*getRequest() const;
 		std::string	getResponse();
 		void handleError(int code, const std::string &message);
-
+		void	setInfos();
+		bool	initializeResponse();
+		Server	*getServer() const;
 };
 
 #endif

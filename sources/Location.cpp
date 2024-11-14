@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/13 17:31:23 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 16:29:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ std::string Location::getReturnUri() const { return _return_uri; }
 bool Location::getAutoindex() const { return _autoindex; }
 std::vector<std::string> Location::getAllowedMethods() const { return _allowed_methods; }
 std::map<int, std::string> Location::getErrorPages() const { return _error_pages; }
+size_t Location::getClientMaxBody() const {return _maxBodySize;}
 
 // Setters avec validation
 void Location::setRoot(const std::string &root) { _root = root; }
@@ -36,6 +37,7 @@ void Location::setReturnUri(const std::string &returnUri) { _return_uri = return
 void Location::setAutoindex(bool autoindex) { _autoindex = autoindex; }
 void Location::setAllowedMethods(const std::vector<std::string> &methods) { _allowed_methods = methods; }
 void Location::setErrorPages(const std::map<int, std::string> &errorPages) { _error_pages = errorPages; }
+void Location::setClientMaxBody(const size_t &maxBodySize) { _maxBodySize = maxBodySize; }
 
 void Location::addAllowedMethod(const std::string &method) {
 	if (isValidMethod(method)) {

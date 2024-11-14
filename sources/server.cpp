@@ -6,18 +6,18 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 16:38:38 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 16:09:55 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-Server::Server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(8080), _host("127.0.0.1"), _name("default")  {
+Server::Server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(8080), _host("127.0.0.1"), _name("default"), _uri(NULL)  {
     // this->initializeConnection();
 }
 
 Server::~Server() {
-
+	// delete _uri;
 }
 
 Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port, inet_addr(cpy._host.c_str())) {
@@ -39,6 +39,7 @@ Server &Server::operator=(const Server &rhs) {
 	this->_uploadPath = rhs._uploadPath;
 	this->_binPath = rhs._binPath;
 	this->_cgiExtension = rhs._cgiExtension;
+	this->_uri = rhs._uri;
 	return (*this);
 }
 
@@ -94,6 +95,22 @@ int	Server::getPort() {
 	return (this->_port);
 }
 
+void	Server::setIndexes(std::vector<std::string> indexes){
+	_indexes = indexes;
+}
+
+std::vector<std::string> Server::getIndexes() {
+	return (_indexes);
+}
+
+void	Server::setRoot(std::string root) {
+	this->_root = root;
+}
+
+std::string	Server::getRoot() {
+	return (this->_root);
+}
+
 void	Server::setServerName(std::string name) {
 	this->_name = name;
 }
@@ -147,8 +164,20 @@ void	Server::setSock() {
 	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());
 }
 
+void Server::setUri(std::string uri) {
+	if (!_uri) {
+		_uri = new std::vector<std::string>;
+	}
+	_uri->push_back(uri);
+}
+
+std::vector<std::string> *Server::getUri() {
+	return (_uri);
+}
+
 void Server::addLocation(const std::string &uri, const Location &location) {
 	_locations[uri] = location;
+	setUri(uri);
 }
 
 Location Server::getLocation(const std::string &uri) const {

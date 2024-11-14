@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/13 17:35:27 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 16:24:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,16 +229,40 @@ bool conf::_getAutoindex( std::vector<std::string> &line) {
 		throw std::runtime_error("Error: invalid value for autoindex (must be 'on' or 'off')");
 }
 
-std::string conf::_getIndex(std::vector<std::string> line) {
-	// if (line.size() != 3)
-	// 	throw std::runtime_error("Error: index directive requires exactly one argument (index)");
-	if (line[1][line[1].size() - 1] != ';')
-		throw std::runtime_error("Error: missing ';'");
-	std::string index = line[1].substr(0, line[1].size() - 1);
-	if (index.empty())
-		throw std::runtime_error("Error: missing index");
+std::vector<std::string> conf::_getIndex(std::vector<std::string> line) {
+	if (line.size() < 2)
+		throw std::runtime_error("Error: 'index' directive requires at least one argument.");
+	std::string indices_str;
+	unsigned long i = 0;
+	while (line.size() > i) {
+		indices_str += line[i];
+		i++;
+	}
+	if (indices_str[indices_str.size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';' at the end of 'index' directive.");
+	indices_str = indices_str.substr(0, indices_str.size() - 1);
+	if (indices_str.empty())
+		throw std::runtime_error("Error: missing index values in 'index' directive.");
 
-	return index;
+	std::vector<std::string> indices;
+	std::istringstream iss(indices_str);
+	std::string token;
+
+	while (std::getline(iss, token, ',')) {
+		size_t start = 0;
+		while (start < token.size() && std::isspace(token[start]))
+			start++;
+		size_t end = token.size();
+		while (end > start && std::isspace(token[end - 1]))
+			end--;
+		token = token.substr(start, end - start);
+		if (token.empty())
+			throw std::runtime_error("Error: empty index name found in 'index' directive.");
+		indices.push_back(token);
+	}
+	if (indices.empty())
+		throw std::runtime_error("Error: no valid indices provided in 'index' directive.");
+	return indices;
 }
 
 std::string conf::_getRedirection(std::vector<std::string> line) {

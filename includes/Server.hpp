@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/13 16:42:42 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 16:11:00 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class Server : public websocket {
 		std::vector<std::string>		_binPath ;
 		std::vector<std::string>		_cgiExtension ;
 		std::map<std::string, Location> _locations;
+		std::vector<std::string>		*_uri;
 
 	public:
 		Server();
@@ -52,21 +53,27 @@ class Server : public websocket {
 
 		// SETTER
 		void	setPort(int port);
+		void	setRoot(std::string root);
 		void	setHostname(std::string host);
 		void	setServerName(std::string name);
 		void	setErrorPage(std::map<int, std::string>);
 		void	setClientMaxBody(size_t body);
 		void 	setAllowedMethods(std::vector<std::string> *methods);
 		void	setSock();
+		void	setUri(std::string uri);
+		void	setIndexes(std::vector<std::string> indexes);
 
 
 		// GETTER
 		int								getPort();
 		std::string						getHostname();
+		std::string						getRoot();
 		std::string						getServerName();
 		std::map<int, std::string>		getErrorPage();
 		size_t 							getClientMaxBody();
 		std::vector<std::string> 		*getAllowedMethods() ;
+		std::vector<std::string>		*getUri();
+		std::vector<std::string>		getIndexes();
 
 		void addLocation(const std::string &uri, const Location &location);
     	Location getLocation(const std::string &uri) const;
