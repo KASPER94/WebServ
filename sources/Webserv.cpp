@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/13 14:26:47 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 11:42:32 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,40 +85,40 @@ void Webserv::getRequest(int clientSock) {
 
 
 void Webserv::sendResponse(int clientSock) {
-    if (_clients.find(clientSock) == _clients.end()) {
-        std::cerr << "Client introuvable pour le socket " << clientSock << std::endl;
-        return;
-    }
+	if (_clients.find(clientSock) == _clients.end()) {
+		std::cerr << "Client introuvable pour le socket " << clientSock << std::endl;
+		return;
+	}
 
-    Client *client = _clients[clientSock];
+	Client *client = _clients[clientSock];
 	if (!client->getRequestPtr()) {
-        std::cerr << "Aucune requête pour le client " << clientSock << std::endl;
-        return;
-    }
-    HttpRequest &httpRequest = client->getRequest();
-    std::string response;
+		std::cerr << "Aucune requête pour le client " << clientSock << std::endl;
+		return;
+	}
+	HttpRequest &httpRequest = client->getRequest();
+	std::string response;
 	std::cout << "Méthode HTTP reçue : " << httpRequest.HttpMethodTostring() << std::endl;
 
-    if (httpRequest.getMethod() == GET) {
-        response = "HTTP/1.1 200 OK\r\n"
-                   "Content-Type: text/plain\r\n"
-                   "Content-Length: 13\r\n"
-                   "\r\n"
-                   "COUCOU WEBSERV !!!";
-    } else {
-        response = "HTTP/1.1 405 Method Not Allowed\r\n"
-                   "Content-Length: 0\r\n"
-                   "\r\n";
-    }
+	if (httpRequest.getMethod() == GET) {
+		response = "HTTP/1.1 200 OK\r\n"
+					"Content-Type: text/plain\r\n"
+					"Content-Length: 13\r\n"
+					"\r\n"
+					"COUCOU WEBSERV !!!";
+	} else {
+		response = "HTTP/1.1 405 Method Not Allowed\r\n"
+					"Content-Length: 0\r\n"
+					"\r\n";
+	}
 
-    int ret = send(clientSock, response.c_str(), response.size(), 0);
-    if (ret < 0) {
-        std::cerr << "Erreur lors de l'envoi de la réponse" << std::endl;
-        close(clientSock);
-        _clients.erase(clientSock);
-    } else {
-        std::cout << "Réponse envoyée au client." << std::endl;
-    }
+	int ret = send(clientSock, response.c_str(), response.size(), 0);
+	if (ret < 0) {
+		std::cerr << "Erreur lors de l'envoi de la réponse" << std::endl;
+		close(clientSock);
+		_clients.erase(clientSock);
+	} else {
+		std::cout << "Réponse envoyée au client." << std::endl;
+	}
 }
 
 
@@ -222,12 +222,12 @@ void Webserv::initializeSockets() {
 
 
 bool Webserv::isServerSocket(int sock) const {
-    for (size_t i = 0; i < _servers.size(); ++i) {
-        if (_servers[i].getSock() == sock) {
-            return true;
-        }
-    }
-    return false;
+	for (size_t i = 0; i < _servers.size(); ++i) {
+		if (_servers[i].getSock() == sock) {
+			return true;
+		}
+	}
+	return false;
 }
 
 

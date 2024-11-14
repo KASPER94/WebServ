@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/05 17:37:52 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 11:39:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,22 @@
 
 # include "Server.hpp"
 # include "HttpRequest.hpp"
+# include "HttpResponse.hpp"
 # include <map>
 
-// # include "HttpResponse.hpp"
 
 class Server;
 class HttpRequest;
+class HttpReponse;
 
 class Client {
 	private:
 		HttpRequest		*_request;
-		HttpRequest		*_response;
+		HttpReponse		*_response;
 		int				_fd;
 		bool			_error;
 		Server			*_servers;
-		
+
 		// std::string _requestData;        // Contient les données de la requête reçues
 		// bool _headersParsed;     // Indicateur si les en-têtes ont été analysés
 		// std::map<std::string, std::string> _headers; // Contient les en-têtes HTTP
@@ -52,14 +53,14 @@ class Client {
 		void 			setRequest(HttpRequest& request);
 		HttpRequest* getRequestPtr() const { return _request; };
 
-    	HttpRequest& 	getRequest();   
+    	HttpRequest& 	getRequest();
 		bool			appendRequest(const char *data, int bytes);
 		// std::string 	getFullRequest() const;
 		// bool 			hasCompleteBody();
 		// void 			parseHeaders();
 		// bool 			isChunkedBodyComplete();
 		// std::string		getRawRequest() const;
-		// void			sendResponse();
+		void			sendResponse();
 		bool	error() const;
 		int getFd() const;
 		void setFd(int fd);
