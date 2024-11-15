@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/15 11:02:20 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 13:41:39 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,37 @@ void HttpResponse::sendResponse() {
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
 	if (!initializeResponse())
 		return handleError(400, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
+	// if (!this->methodAllowed(this->getRequest()->getMethod())) {
+    //     return handleError(405, "Method Not Allowed");
+    // }
+    std::string uri;
+    bool isDir;
+    if (!resolveUri(uri, isDir)) {
+        return handleError(404, "Not Found");
+    }
+    // if (this->getRequest()->getMethod() == DELETE) {
+    //     return handleDelete(uri);
+    // }
+    
+    // if (isDir) {
+    //     return handleDirectory(uri);
+    // }
+    
+    // if (!hasAccess(uri)) {
+    //     return handleError(403, "Forbidden");
+    // }
 
+    // if (isCGIRequest(uri)) {
+    //     if (!handleCGI(uri)) {
+    //         return handleError(500, "Internal Server Error");
+    //     }
+    // } else {
+    //     if (!handleFileResponse(uri)) {
+    //         return handleError(404, "Not Found");
+    //     }
+    // }
+    
+    // finalizeResponse();
 	if (this->getRequest()->getMethod() == GET) {
 		_response = "HTTP/1.1 200 OK\r\n"
 					"Content-Type: text/plain\r\n"
@@ -66,14 +96,59 @@ void	HttpResponse::setInfos() {
 	this->_indexes = this->getServer()->getIndexes();
 }
 
+bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
+    (void)uri;
+	(void)isDir;
+	return (true);
+}
+
 bool	HttpResponse::initializeResponse() {
 	this->setInfos();
 	if (!this->getRequest()->isGood()) {
 		this->handleError(400, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
 		return (false);
 	}
+	if (!this->_returnURI.empty()) {
+        std::map<int, std::string>::iterator redirect = this->_returnURI.begin();
+        if (redirect->first == 301) {
+            this->movedPermanently(redirect->second);
+        } else if (redirect->first >= 300 && redirect->first < 400) { 
+            this->handleRedirect(redirect->first, redirect->second);
+		} else {
+            this->handleError(500, "Unexpected redirection code in configuration.");
+        }
+        return (false);
+    }
 	return (true);
 }
+
+void HttpResponse::handleRedirect(int code, const std::string &uri) {
+    this->_statusCode = code;
+    this->_headers["Location"] = uri;
+
+    // Prepare a simple body for the redirect response
+    this->_body = "<html><head><title>Redirect</title></head>";
+    this->_body += "<body><h1>" + intToString(code) + " Redirect</h1>";
+    this->_body += "<p>The document has moved <a href=\"" + uri + "\">here</a>.</p>";
+    this->_body += "</body></html>";
+
+    this->_headers["Content-Length"] = intToString(this->_body.size());
+    this->_headers["Content-Type"] = "text/html";
+
+    // Log the redirect for debugging
+    std::cerr << "Redirecting to " << uri << " with status code " << code << std::endl;
+}
+
+void HttpResponse::movedPermanently(const std::string &url) {
+    this->_statusCode = 301;
+    this->_headers["Location"] = url;
+    this->_body = "<html><head><title>301 Moved Permanently</title></head>"
+                  "<body><h1>301 Moved Permanently</h1>"
+                  "<p>The requested resource has been permanently moved to "
+                  "<a href=\"" + url + "\">" + url + "</a>.</p></body></html>";
+    this->_headers["Content-Length"] = intToString(this->_body.size());
+}
+
 
 HttpRequest	*HttpResponse::getRequest() const {
 	return (this->_client->getRequest());
