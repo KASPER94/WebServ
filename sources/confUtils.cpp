@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/14 16:24:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 11:21:42 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,17 +265,33 @@ std::vector<std::string> conf::_getIndex(std::vector<std::string> line) {
 	return indices;
 }
 
-std::string conf::_getRedirection(std::vector<std::string> line) {
-	if (line.size() != 3)
-		throw std::runtime_error("Error: redirection directive requires exactly one argument (redirection)");
-	if (line[1][line[1].size() - 1] != ';')
-		throw std::runtime_error("Error: missing ';'");
-	std::string redirection = line[1].substr(0, line[1].size() - 1);
-	if (redirection.empty())
-		throw std::runtime_error("Error: missing redirection");
-
-	return redirection;
+std::map<int, std::string> conf::_getRedirection(std::vector<std::string> line) {
+    if (line.size() != 3)
+        throw std::runtime_error("Error: redirection directive requires exactly one argument (redirection).");
+    std::string return_str;
+    unsigned long i = 0;
+    while (line.size() > i) {
+        return_str += line[i];
+        i++;
+    }
+    if (return_str[return_str.size() - 1] != ';')
+        throw std::runtime_error("Error: missing ';' at the end of 'index' directive.");
+    std::string redirection = line[2].substr(0, line[2].size() - 1);
+    for (std::string::const_iterator it = line[1].begin(); it != line[1].end(); ++it) {
+        if (!isdigit(*it))
+            throw std::runtime_error("Error: invalid HTTP code in redirection directive.");
+    }
+    int code = std::atoi(line[1].c_str());
+    if (code < 200 || code > 599) {
+        throw std::runtime_error("Error: unsupported HTTP code in redirection directive.");
+    }
+    if (redirection.empty())
+        throw std::runtime_error("Error: [emerg] invalid return code \"700\" in /etc/nginx/nginx.conf:XX");
+    std::map<int, std::string> ret;
+    ret.insert(std::make_pair(code, redirection));
+    return ret;
 }
+
 
 std::string conf::_getCgiExtension(std::vector<std::string> line) {
 	if (line.size() != 2)

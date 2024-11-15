@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 12:37:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 23:16:43 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class HttpRequest {
 		bool								_completed;
 		bool								_endRequested;
 		bool								_tooLarge;
+		bool								_isGood;
 		std::string							_rawRequest;
 		std::string							_path;
 		bool								_goodRequest;
@@ -117,6 +118,7 @@ class HttpRequest {
 		std::map<std::string, std::string> &getFormData() const;
 		std::map<std::string, std::string> &getfileData() const;
 		bool tooLarge() const ;
+		bool	isGood() const;
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);

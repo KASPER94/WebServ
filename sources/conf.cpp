@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 17:34:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 11:02:58 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ std::istringstream word(line);
 		} else if (directive == "upload_path") {
 			locationConfig.setUploadPath(this->_getUploadPath(tokens));
 		} else if (directive == "return") {
-			// locationConfig.setReturnUri(this->_getRedirection(tokens));
+			locationConfig.setReturnUri(this->_getRedirection(tokens));
 		} else if (directive == "autoindex") {
 			locationConfig.setAutoindex(this->_getAutoindex(tokens));
 		} else if (directive == "error_page") {
@@ -159,6 +159,9 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			break;
 		case ALLOWED_METHODS:
 			serv.setAllowedMethods(this->_getAllowedMethods(line_trim));
+			break;
+		case RETURN_URI:
+			serv.setReturnUri(this->_getRedirection(line_trim));
 			break;
 		case CGI_BIN:
 			// this->_getCgiBin(line_trim);

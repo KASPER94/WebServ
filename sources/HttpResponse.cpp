@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 16:16:15 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 11:02:20 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	HttpResponse::setInfos() {
 	this->_allowedMethod = *(this->getServer()->getAllowedMethods());
 	// this->_directoryListing = this->getServer()->getDirectoryListing();
 	this->_errorPage = this->getServer()->getErrorPage();
-	// this->_returnURI = this->getServer()->getReturnURI();
+	this->_returnURI = this->getServer()->getReturnUri();
 	// this->_uploadPath = this->getServer()->getUploadPath();
 	// this->_cgiBin = this->getServer()->getBinPath();
 	// this->_cgiExt = this->getServer()->getCgiExtension();
@@ -68,6 +68,10 @@ void	HttpResponse::setInfos() {
 
 bool	HttpResponse::initializeResponse() {
 	this->setInfos();
+	if (!this->getRequest()->isGood()) {
+		this->handleError(400, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
+		return (false);
+	}
 	return (true);
 }
 

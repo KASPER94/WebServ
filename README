@@ -119,3 +119,5 @@ Cookie: _ga=GA1.1.1076777069.1720866757; _fbp=fb.1.1724245589713.863225963959914
 
 Nouvelle connexion acceptée sur le socket 44
 ^C
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b

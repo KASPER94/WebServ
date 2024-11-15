@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/14 13:00:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 10:43:51 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ Directive getDirective(const std::string &directive) {
 	if (directive == "root")
 		return ROOT;
 	if (directive == "return")
-		return RETURN;
+		return RETURN_URI;
 	if (directive == "cgi_extension")
 		return CGI_EXTENSION;
 	if (directive == "cgi_path")

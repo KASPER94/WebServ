@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/14 13:02:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 10:30:06 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ enum Directive {
 	CGI_EXTENSION,
 	CGI_PATH,
 	CLOSE_BRACKET,
+	RETURN_URI,
 	UNKNOWN
 };
 

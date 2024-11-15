@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 16:11:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 11:01:35 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Server : public websocket {
 		void 	setAllowedMethods(std::vector<std::string> *methods);
 		void	setSock();
 		void	setUri(std::string uri);
+		void	setReturnUri(std::map<int, std::string> returnUri);
 		void	setIndexes(std::vector<std::string> indexes);
 
 
@@ -73,6 +74,7 @@ class Server : public websocket {
 		size_t 							getClientMaxBody();
 		std::vector<std::string> 		*getAllowedMethods() ;
 		std::vector<std::string>		*getUri();
+    	std::map<int, std::string> 		getReturnUri() const;
 		std::vector<std::string>		getIndexes();
 
 		void addLocation(const std::string &uri, const Location &location);

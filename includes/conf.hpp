@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 16:12:46 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 10:49:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ class conf {
 		bool _getAutoindex(std::vector<std::string> &line);
 		std::string _getUploadPath(std::vector<std::string> line);
 		// void _getRoot(std::vector<std::string> line);
-		std::string _getRedirection(std::vector<std::string> line);
+		std::map<int,std::string> _getRedirection(std::vector<std::string> line);
 		std::string _getCgiExtension(std::vector<std::string> line);
 		std::string _getCgiPath(std::vector<std::string> line);
 		std::string _getCgiBin(std::vector<std::string> line);

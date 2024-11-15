@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 12:20:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/14 23:27:02 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,6 +176,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 	_endRequested = false;
 	_tooLarge = false;
 	_headersParsed = false;
+	_isGood = true;
 	_receivedBodySize += length;
 
 	size_t maxBody = this->_client->getServer()->getClientMaxBody();
@@ -291,6 +292,12 @@ void	HttpRequest::processMultipartData() {
 		// std::cout << "Contenu text/plain reçu : " << plainTextContent << std::endl;
 		_plainTextBody = plainTextContent;
 	}
+	// else
+		// this->_isGood = false;
+}
+
+bool	HttpRequest::isGood() const {
+	return (this->_isGood);
 }
 
 // void	HttpRequest::decodeFormData() {

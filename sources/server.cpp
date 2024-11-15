@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 16:09:55 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 11:01:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,6 +173,17 @@ void Server::setUri(std::string uri) {
 
 std::vector<std::string> *Server::getUri() {
 	return (_uri);
+}
+
+void Server::setReturnUri(std::map<int, std::string> returnuri) {
+	// if (!_returnURI) {
+	// 	_returnURI = new std::map<int, std::string>;
+	// }
+	_returnURI = returnuri;
+}
+
+std::map<int, std::string> Server::getReturnUri() const {
+	return (_returnURI);
 }
 
 void Server::addLocation(const std::string &uri, const Location &location) {

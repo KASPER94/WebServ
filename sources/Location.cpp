@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/14 16:29:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 11:04:18 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ std::string Location::getIndex() const { return _index; }
 std::string Location::getCgiBin() const { return _cgi_bin; }
 std::string Location::getCgiExtension() const { return _cgi_extension; }
 std::string Location::getUploadPath() const { return _upload_path; }
-std::string Location::getReturnUri() const { return _return_uri; }
+std::map<int, std::string> Location::getReturnUri() const { return _return_uri; }
 bool Location::getAutoindex() const { return _autoindex; }
 std::vector<std::string> Location::getAllowedMethods() const { return _allowed_methods; }
 std::map<int, std::string> Location::getErrorPages() const { return _error_pages; }
@@ -33,7 +33,7 @@ void Location::setIndex(const std::string &index) { _index = index; }
 void Location::setCgiBin(const std::string &cgiBin) { _cgi_bin = cgiBin; }
 void Location::setCgiExtension(const std::string &cgiExtension) { _cgi_extension = cgiExtension; }
 void Location::setUploadPath(const std::string &uploadPath) { _upload_path = uploadPath; }
-void Location::setReturnUri(const std::string &returnUri) { _return_uri = returnUri; }
+void Location::setReturnUri(const std::map<int, std::string> &returnUri) { _return_uri = returnUri; }
 void Location::setAutoindex(bool autoindex) { _autoindex = autoindex; }
 void Location::setAllowedMethods(const std::vector<std::string> &methods) { _allowed_methods = methods; }
 void Location::setErrorPages(const std::map<int, std::string> &errorPages) { _error_pages = errorPages; }

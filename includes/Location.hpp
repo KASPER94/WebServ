@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:59 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/14 16:28:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 11:00:32 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ private:
     std::string _cgi_bin;
     std::string _cgi_extension;
     std::string _upload_path;
-    std::string _return_uri;
+    std::map<int, std::string> _return_uri;
     bool _autoindex;
     std::vector<std::string> _allowed_methods;
     std::map<int, std::string> _error_pages;
@@ -41,7 +41,7 @@ public:
     std::string getCgiBin() const;
     std::string getCgiExtension() const;
     std::string getUploadPath() const;
-    std::string getReturnUri() const;
+    std::map<int, std::string> getReturnUri() const;
     bool getAutoindex() const;
     std::vector<std::string> getAllowedMethods() const;
     std::map<int, std::string> getErrorPages() const;
@@ -53,7 +53,7 @@ public:
     void setCgiBin(const std::string &cgiBin);
     void setCgiExtension(const std::string &cgiExtension);
     void setUploadPath(const std::string &uploadPath);
-    void setReturnUri(const std::string &returnUri);
+    void setReturnUri(const std::map<int, std::string> &returnUri);
     void setAutoindex(bool autoindex);
     void setAllowedMethods(const std::vector<std::string> &methods);
     void setErrorPages(const std::map<int, std::string> &errorPages);
