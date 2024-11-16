@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/15 13:41:39 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/16 09:33:02 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,36 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &rhs) {
 	return (*this);
 }
 
+void HttpResponse::sendHeader() {
+    std::string header = "HTTP/1.1 " + intToString(this->_statusCode) + " ";
+
+    std::string statusDescription;
+    switch (this->_statusCode) {
+        case 200: statusDescription = "OK"; break;
+        case 301: statusDescription = "Moved Permanently"; break;
+        case 400: statusDescription = "Bad Request"; break;
+        case 403: statusDescription = "Forbidden"; break;
+        case 404: statusDescription = "Not Found"; break;
+        case 413: statusDescription = "Payload Too Large"; break;
+        case 500: statusDescription = "Internal Server Error"; break;
+        default:  statusDescription = "Unknown Status"; break;
+    }
+    header += statusDescription + "\r\n";
+
+    // Ajout en-têtes HTTP à partir de _headers
+    for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it) {
+        header += it->first + ": " + it->second + "\r\n";
+    }
+
+    // Terminer les en-têtes avec une ligne vide
+    header += "\r\n";
+
+    int bytes = send(this->_client->getFd(), header.c_str(), header.length(), 0);
+    (void)bytes;
+	// this->checkSend(bytes);
+}
+
+
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
@@ -42,6 +72,7 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
+
     // if (this->getRequest()->getMethod() == DELETE) {
     //     return handleDelete(uri);
     // }
@@ -108,7 +139,9 @@ bool	HttpResponse::initializeResponse() {
 		this->handleError(400, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
 		return (false);
 	}
-	if (!this->_returnURI.empty()) {
+	std::string uri = this->_returnURI.begin()->second;
+	if (!uri.empty()) {
+		std::cout << uri << std::endl;
         std::map<int, std::string>::iterator redirect = this->_returnURI.begin();
         if (redirect->first == 301) {
             this->movedPermanently(redirect->second);
@@ -126,7 +159,7 @@ void HttpResponse::handleRedirect(int code, const std::string &uri) {
     this->_statusCode = code;
     this->_headers["Location"] = uri;
 
-    // Prepare a simple body for the redirect response
+    // sample body for the redirect response
     this->_body = "<html><head><title>Redirect</title></head>";
     this->_body += "<body><h1>" + intToString(code) + " Redirect</h1>";
     this->_body += "<p>The document has moved <a href=\"" + uri + "\">here</a>.</p>";

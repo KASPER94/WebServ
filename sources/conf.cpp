@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/15 11:02:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/16 09:30:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,11 +52,6 @@ bool   conf::_findServerBlock(std::string &line) {
     }
     return (false);
 }
-
-// void conf::_parseLocation(std::string block, Server &serv) {
-//     // std::cout << block << std::endl;
-// 	(void)block;
-// }
 
 void conf::_parseLocation(std::string line, Server &serv, std::ifstream &ConfigFile) {
 std::istringstream word(line);
@@ -132,6 +127,9 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 	if (!this->_blockLevel && w.compare("{") != 0) {
 		throw std::runtime_error("Error: Invalid server block");
     }
+	else if ( w.compare("#") == 0) {
+		return ;
+    }
     else
         this->_blockLevel = 1;
     line_trim = split_trim_conf(line);
@@ -186,6 +184,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			break;
 		case CLOSE_BRACKET:
 			allServ.push_back(serv);
+			serv.reset();
 			this->_found = false;
 			return;
 		case UNKNOWN:
@@ -237,15 +236,16 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 
 std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
     std::string line;
-	std::vector<Server> allServ;
 	Server	serv;
+	std::vector<Server> allServ;
     this->_found = false;
     int brace_count = 0;
     this->_nbServer = 0;
 
     while (std::getline(ConfigFile, line)) {
+		// Server	serv;
         if (line.empty() || line[0] == '#' || line[0] == ';')
-            continue;
+            continue ;
         if (!this->_found) {
             this->_findServerBlock(line);
         } else if (this->_found && brace_count > 0) {

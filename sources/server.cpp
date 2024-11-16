@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/15 11:01:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/16 09:29:35 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ Server &Server::operator=(const Server &rhs) {
 int Server::connectToNetwork() {
     setSock();  // Set the socket address structure
 
-    const int max_retries = 5;  // Maximum retries for binding
-    int retry_count = 0;
+    // const int max_retries = 5;  // Maximum retries for binding
+    // int retry_count = 0;
 
     // Create the socket
     this->_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -65,15 +65,15 @@ int Server::connectToNetwork() {
     }
 
     // Attempt to bind the socket with retry logic
-    while (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
-        if (++retry_count > max_retries) {
-            std::cerr << "Erreur: Échec de la liaison après " << max_retries << " tentatives." << std::endl;
-            close(this->_sock);
-            return -1;
-        }
+    if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
+        // if (++retry_count > max_retries) {
+        //     std::cerr << "Erreur: Échec de la liaison après " << max_retries << " tentatives." << std::endl;
+        //     close(this->_sock);
+        //     return -1;
+        // }
         std::cerr << "Port " << this->_port << " en cours d'utilisation, tentative avec le port " << (this->_port + 1) << std::endl;
-        this->_port++;  // Increment the port
-        setSock();  // Update the socket address with the new port
+        // this->_port++;  // Increment the port
+        // setSock();  // Update the socket address with the new port
     }
 
     // Listen on the socket for incoming connections
@@ -189,6 +189,20 @@ std::map<int, std::string> Server::getReturnUri() const {
 void Server::addLocation(const std::string &uri, const Location &location) {
 	_locations[uri] = location;
 	setUri(uri);
+}
+
+void Server::reset() {
+    // Réinitialise tous les membres de l'objet
+    this->_port = 0;
+    this->_host.clear();
+    this->_name.clear();
+    this->_indexes.clear();
+    this->_errorPages.clear();
+    this->_maxBodySize = 0;
+    this->_allowedMethod->clear();
+    this->_returnURI.clear();
+    this->_root.clear();
+    // Réinitialise d'autres champs si nécessaire
 }
 
 Location Server::getLocation(const std::string &uri) const {

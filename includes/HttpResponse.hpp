@@ -59,6 +59,7 @@ class HttpResponse {
 		bool resolveUri(std::string &uri, bool &isDir);
 		void movedPermanently(const std::string &url);
 		void handleRedirect(int code, const std::string &uri);
+		void	sendHeader();
 };
 
 #endif

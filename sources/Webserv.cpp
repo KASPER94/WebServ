@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/14 12:59:31 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 19:05:35 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,12 @@ std::vector<Server> &Webserv::getAllServer() {
 }
 
 void	Webserv::deleteClient(int fd) {
-	epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, fd, NULL);
-	if (close(fd) < 0) {
-		perror("");
-	}
-	this->_clients.erase(fd);
+    if (_clients.find(fd) != _clients.end()) {
+        epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+        delete _clients[fd];
+        _clients.erase(fd);
+    }
 }
 
 void Webserv::getRequest(int clientSock) {
@@ -145,6 +146,7 @@ void Webserv::sendResponse(int clientSock) {
 }
 
 void Webserv::initializeSockets() {
+	int serverSock;
     std::vector<Server> &servers = this->getAllServer();
     _epollfd = epoll_create1(0);
     if (_epollfd == -1) {
@@ -158,8 +160,8 @@ void Webserv::initializeSockets() {
             std::cerr << "Échec de la connexion pour le serveur " << i << std::endl;
             continue;
         }
-
-        int serverSock = servers[i].getSock();
+		std::cout << "..... " << servers[i].getReturnUri().begin()->second << " ... end"<< std::endl;
+        serverSock = servers[i].getSock();
         _serverSockets[serverSock] = &servers[i];
 
         struct epoll_event event;

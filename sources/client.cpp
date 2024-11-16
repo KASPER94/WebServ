@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 13:05:15 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/15 18:23:58 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ Client::Client(int fd, Server *servers):
 	 _fd(fd),
 	 _error(false),
 	 _servers(servers) {
-		    std::cout << "Client created at " << this << " for socket " << fd << std::endl;
+		    std::cout << "[DEBUG] Client created for socket " << fd
+              << " on server listening on port " << _servers->getPort() << "\n";
 
 }
 
@@ -42,7 +43,7 @@ Client::~Client() {
 		delete this->_request;
 	if (this->_response)
 		delete this->_response;
-	 std::cout << "Client destroyed at " << this << std::endl;
+	 std::cout << "[DEBUG] Client destroyed for socket " << _fd << "\n";
 }
 
 Client	&Client::operator=(const Client &rhs) {
