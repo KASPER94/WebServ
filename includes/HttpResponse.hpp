@@ -60,6 +60,7 @@ class HttpResponse {
 		void movedPermanently(const std::string &url);
 		void handleRedirect(int code, const std::string &uri);
 		void	sendHeader();
+		void	checkSend(int bytes);
 };
 
 #endif

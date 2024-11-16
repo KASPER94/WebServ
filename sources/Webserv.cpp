@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/15 19:05:35 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/16 10:11:45 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,8 +75,7 @@ void Webserv::getRequest(int clientSock) {
         clientEvent.data.fd = clientSock;
         clientEvent.events = EPOLLOUT;
         epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent);
-
-    } else if (client->error()) {
+    } else if (client->getError()) {
         // Supprimer le client en cas d'erreur de réception ou de parsing
         std::cerr << "Erreur de requête détectée pour le client " << clientSock << std::endl;
         this->deleteClient(clientSock);
@@ -134,6 +133,12 @@ void Webserv::sendResponse(int clientSock) {
 		return;
 	}
 	client->sendResponse();
+	if (client->getError()) {
+		epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, clientSock, NULL);
+		close(clientSock);
+		_clients.erase(clientSock);
+		return ;
+	}
 	std::string response = client->getResponsestr();
 	int ret = send(clientSock, response.c_str(), response.size(), 0);
 	if (ret < 0) {

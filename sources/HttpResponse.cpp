@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/16 09:33:02 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/16 10:23:13 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,12 +52,17 @@ void HttpResponse::sendHeader() {
 
     // Terminer les en-têtes avec une ligne vide
     header += "\r\n";
+	std::cout << header << std::endl;
 
     int bytes = send(this->_client->getFd(), header.c_str(), header.length(), 0);
-    (void)bytes;
-	// this->checkSend(bytes);
+	this->checkSend(bytes);
 }
 
+void	HttpResponse::checkSend(int bytes) {
+	if (bytes <= 0) {
+		this->_client->setError();
+	}
+}
 
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
@@ -180,6 +185,8 @@ void HttpResponse::movedPermanently(const std::string &url) {
                   "<p>The requested resource has been permanently moved to "
                   "<a href=\"" + url + "\">" + url + "</a>.</p></body></html>";
     this->_headers["Content-Length"] = intToString(this->_body.size());
+	this->sendHeader();
+	this->_client->setError();
 }
 
 

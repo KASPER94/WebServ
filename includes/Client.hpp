@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/14 13:03:40 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/16 09:46:47 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,8 @@ class Client {
 		// bool 			isChunkedBodyComplete();
 		// std::string		getRawRequest() const;
 		void			sendResponse();
-		bool	error() const;
+		bool	getError() const;
+		void	setError();
 		int getFd() const;
 		void setFd(int fd);
 };

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/15 18:23:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/16 09:45:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ void Client::setFd(int fd) {
 //     return *_request;
 // }
 
-bool	Client::error() const {
+bool	Client::getError() const {
 	return (this->_error);
 }
 
@@ -98,4 +98,8 @@ void	Client::sendResponse() {
 
 std::string	Client::getResponsestr() const {
 	return (this->_response->getResponse());
+}
+
+void	Client::setError() {
+	this->_error = true;
 }
