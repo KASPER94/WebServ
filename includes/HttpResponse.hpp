@@ -30,6 +30,7 @@ class HttpResponse {
 		std::string 						_body;
 		bool								_readyToSend;
 		std::string							_root;
+		std::string							_uri;
 		std::vector<std::string>			_indexes;
 		std::string							_locPath;
 		size_t								_maxBodySize;
@@ -61,6 +62,10 @@ class HttpResponse {
 		void handleRedirect(int code, const std::string &uri);
 		void	sendHeader();
 		void	checkSend(int bytes);
+		void	sendChunkEnd();
+		void	sendFinalChunk();
+		bool hasAccess(const std::string &uri);
+		std::string matchLocation(std::string &requestUri) const;
 };
 
 #endif
