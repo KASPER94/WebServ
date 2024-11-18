@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/16 09:46:47 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/17 20:16:55 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class Client {
 		void	setError();
 		int getFd() const;
 		void setFd(int fd);
+		void resetForNextRequest();
 };
 
 std::ostream &operator<<(std::ostream &o, const Client &client);

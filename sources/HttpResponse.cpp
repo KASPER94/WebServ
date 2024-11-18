@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/17 13:41:42 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/17 19:49:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,11 +112,11 @@ void HttpResponse::sendResponse() {
     
     // finalizeResponse();
 	if (this->getRequest()->getMethod() == GET) {
-		_response = "HTTP/1.1 200 OK\r\n"
-					"Content-Type: text/plain\r\n"
-					"Content-Length: 13\r\n"
-					"\r\n"
-					"COUCOU WEBSERV !!!";
+		std::string body = "COUCOU WEBSERV !!!";
+		std::string headers = "HTTP/1.1 200 OK\r\n"
+							"Content-Type: text/plain\r\n"
+							"Content-Length: " + intToString(body.size()) + "\r\n\r\n";
+		_response = headers + body;
 	} else {
 		_response = "HTTP/1.1 405 Method Not Allowed\r\n"
 					"Content-Length: 0\r\n"

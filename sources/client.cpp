@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/16 09:45:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/18 10:18:39 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,3 +103,23 @@ std::string	Client::getResponsestr() const {
 void	Client::setError() {
 	this->_error = true;
 }
+
+void Client::resetForNextRequest() {
+	std::cout << "[DEBUG] Réinitialisation du client pour socket " << _fd << std::endl;
+    if (_request) {
+        delete _request;  // Libère la mémoire allouée à la requête précédente
+        _request = NULL;
+    }
+
+    if (_response) {
+        delete _response;  // Libère la mémoire allouée à la réponse précédente
+        _response = NULL;
+    }
+
+    _request = new HttpRequest(this);  // Crée une nouvelle requête
+    _response = new HttpResponse(this);  // Crée une nouvelle réponse
+
+    // Réinitialise les erreurs et autres indicateurs
+    _error = false;
+}
+
