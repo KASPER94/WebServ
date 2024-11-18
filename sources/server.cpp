@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/16 09:29:35 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/18 18:35:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,6 @@ void Server::setAllowedMethods(std::vector<std::string> *methods) {
 }
 
 std::vector<std::string> *Server::getAllowedMethods() {
-
     return _allowedMethod;
 }
 
@@ -199,7 +198,8 @@ void Server::reset() {
     this->_indexes.clear();
     this->_errorPages.clear();
     this->_maxBodySize = 0;
-    this->_allowedMethod->clear();
+    // this->_allowedMethod->clear();
+	//REVENIR SUR LE RESET DU POINTEUR ALLOWED MTHODE
     this->_returnURI.clear();
     this->_root.clear();
     // Réinitialise d'autres champs si nécessaire
@@ -211,4 +211,8 @@ Location Server::getLocation(const std::string &uri) const {
 		return it->second;
 	}
 	throw std::runtime_error("Location not found for URI: " + uri);
+}
+
+std::map<std::string, Location> Server::returnLoc() {
+	return (_locations);
 }

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/16 09:25:36 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/18 18:36:06 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ class Server : public websocket {
 		void reset();
 		void addLocation(const std::string &uri, const Location &location);
     	Location getLocation(const std::string &uri) const;
+		std::map<std::string, Location> returnLoc();
 };
 
 #endif

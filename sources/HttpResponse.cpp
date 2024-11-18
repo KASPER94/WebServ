@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/18 13:00:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/18 18:46:29 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,24 +70,43 @@ bool HttpResponse::hasAccess(const std::string &uri) {
     // return access(uri.c_str(), F_OK) != -1 && access(uri.c_str(), R_OK) != -1;
 }
 
+bool	HttpResponse::methodAllowed(enum HttpMethod method) {
+	std::vector<std::string>::iterator it = this->_allowedMethod.begin();
+	(void)method;
+	if (it == this->_allowedMethod.end())
+		if (*it == this->getRequest()->HttpMethodTostring())
+			return (true);
+	for (; it != this->_allowedMethod.end(); it++) {
+		std::cout << *it << std::endl;
+		if (*it == this->getRequest()->HttpMethodTostring())
+			return (true);
+	}
+	return (false);
+}
+
+// void HttpResponse::handleError(string uri) {
+// 	string root;
+
+// 	if (this->)
+// }
+
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
 	if (!initializeResponse())
 		return handleError(400, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
-	// if (!this->methodAllowed(this->getRequest()->getMethod())) {
-    //     return handleError(405, "Method Not Allowed");
-    // }
-    std::string uri;
-    bool isDir;
-    if (!resolveUri(uri, isDir)) {
-        return handleError(404, "Not Found");
+	if (!this->methodAllowed(this->getRequest()->getMethod())) {
+        return handleError(405, "Method Not Allowed");
     }
+    // std::string uri = this->getRequest()->returnURI();
+    // bool isDir;
+    // if (!resolveUri(uri, isDir)) {
+    //     return handleError(404, "Not Found");
+    // }
 	std::string bestMatch = matchLocation(this->_uri);
     if (bestMatch.empty()) {
         return handleError(404, "Not Found");
     }
-
     // if (this->getRequest()->getMethod() == DELETE) {
     //     return handleDelete(uri);
     // }
@@ -132,6 +151,11 @@ void	HttpResponse::setInfos() {
 	std::vector<std::string>::iterator it = tmp->begin();
 	this->_uri = *it;
 
+	std::map<std::string, Location> locs = this->getServer()->returnLoc();
+	if (!locs.empty()) {
+		this->_isLocation = true;
+	}
+	this->_isLocation = false;
 	this->_root = this->getServer()->getRoot();
 	this->_maxBodySize = this->getServer()->getClientMaxBody();
 	this->_allowedMethod = *(this->getServer()->getAllowedMethods());
@@ -141,13 +165,21 @@ void	HttpResponse::setInfos() {
 	// this->_uploadPath = this->getServer()->getUploadPath();
 	// this->_cgiBin = this->getServer()->getBinPath();
 	// this->_cgiExt = this->getServer()->getCgiExtension();
-	this->_isLocation = false;
 	this->_indexes = this->getServer()->getIndexes();
 }
 
 bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
-    (void)uri;
-	(void)isDir;
+    // struct stat	s;
+	std::string resolvePath = _root + _uri;
+	isDir = false;
+	
+	 std::cout << "###### " << this->getServer()->getLocation(uri).getRoot() << std::endl;
+
+	// if (this->_isLocation) {
+
+	// }
+	
+	(void)uri;
 	return (true);
 }
 

@@ -15,6 +15,9 @@
 
 # include <iostream>
 # include "webserv.h"
+# include <sys/stat.h>
+# include <string>
+# include <unistd.h>
 # include	<map>
 
 class Client;
@@ -66,6 +69,7 @@ class HttpResponse {
 		void	sendFinalChunk();
 		bool hasAccess(const std::string &uri);
 		std::string matchLocation(std::string &requestUri) const;
+		bool	methodAllowed(enum HttpMethod method);
 };
 
 #endif
