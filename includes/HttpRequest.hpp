@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/18 18:09:02 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/19 12:34:00 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,7 @@ class HttpRequest {
 		bool tooLarge() const ;
 		bool	isGood() const;
 		std::string	returnURI();
+		std::string	returnPATH();
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);

@@ -34,6 +34,7 @@ class HttpResponse {
 		bool								_readyToSend;
 		std::string							_root;
 		std::string							_uri;
+		std::string							_path;
 		std::vector<std::string>			_indexes;
 		std::string							_locPath;
 		size_t								_maxBodySize;

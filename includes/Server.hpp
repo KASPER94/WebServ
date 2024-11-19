@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/18 18:36:06 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/19 16:12:45 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ class Server : public websocket {
 		std::string						_uploadPath ;
 		std::vector<std::string>		_binPath ;
 		std::vector<std::string>		_cgiExtension ;
-		std::map<std::string, Location> _locations;
+		std::map<std::string, Location*> _locations;
 		std::vector<std::string>		*_uri;
 
 	public:
@@ -79,8 +79,11 @@ class Server : public websocket {
 
 		void reset();
 		void addLocation(const std::string &uri, const Location &location);
-    	Location getLocation(const std::string &uri) const;
-		std::map<std::string, Location> returnLoc();
+    	Location *getLocation(const std::string &uri) const;
+    	std::map<std::string, Location*> getLocs() const;
+		std::map<std::string, Location*> returnLoc();
 };
+
+std::ostream &operator<<(std::ostream &o, Server &server);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/18 18:31:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/19 16:22:14 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -453,4 +453,8 @@ bool HttpRequest::keepAlive() const {
 
 std::string	HttpRequest::returnURI() {
 	return (_uri);
+}
+
+std::string	HttpRequest::returnPATH() {
+	return (_path);
 }

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/18 18:35:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/19 17:03:11 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,22 +25,35 @@ Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port,
 }
 
 Server &Server::operator=(const Server &rhs) {
-    this->_port = rhs._port;
-	this->_host = rhs._host;
-	this->_name = rhs._name;
-	this->_directoryListing = rhs._directoryListing;
-	this->_root = rhs._root;
-	this->_indexes = rhs._indexes;
-	this->_maxBodySize = rhs._maxBodySize;
-	this->_allowedMethod = rhs._allowedMethod;
-	this->_locationBlock = rhs._locationBlock;
-	this->_errorPages = rhs._errorPages;
-	this->_returnURI = rhs._returnURI;
-	this->_uploadPath = rhs._uploadPath;
-	this->_binPath = rhs._binPath;
-	this->_cgiExtension = rhs._cgiExtension;
-	this->_uri = rhs._uri;
-	return (*this);
+    if (this != &rhs) {
+        this->_port = rhs._port;
+        this->_host = rhs._host;
+        this->_name = rhs._name;
+        this->_directoryListing = rhs._directoryListing;
+        this->_root = rhs._root;
+        this->_indexes = rhs._indexes;
+        this->_maxBodySize = rhs._maxBodySize;
+        this->_allowedMethod = rhs._allowedMethod;
+        this->_returnURI = rhs._returnURI;
+        this->_uploadPath = rhs._uploadPath;
+        this->_binPath = rhs._binPath;
+        this->_cgiExtension = rhs._cgiExtension;
+
+        for (std::map<std::string, Location *>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
+            delete it->second;
+        }
+        _locations.clear();
+        for (std::map<std::string, Location *>::const_iterator it = rhs._locations.begin(); it != rhs._locations.end(); ++it) {
+            _locations[it->first] = new Location(*it->second);
+        }
+
+        if (rhs._uri) {
+            this->_uri = new std::vector<std::string>(*rhs._uri);
+        } else {
+            this->_uri = NULL;
+        }
+    }
+    return *this;
 }
 
 int Server::connectToNetwork() {
@@ -168,6 +181,11 @@ void Server::setUri(std::string uri) {
 		_uri = new std::vector<std::string>;
 	}
 	_uri->push_back(uri);
+	std::cout << "URIs actuels : ";
+    for (size_t i = 0; i < _uri->size(); ++i) {
+        std::cout << _uri->at(i) << " ";
+    }
+    std::cout << std::endl;
 }
 
 std::vector<std::string> *Server::getUri() {
@@ -186,7 +204,10 @@ std::map<int, std::string> Server::getReturnUri() const {
 }
 
 void Server::addLocation(const std::string &uri, const Location &location) {
-	_locations[uri] = location;
+	if (_locations.find(uri) != _locations.end()) {
+        delete _locations[uri];
+    }
+    _locations[uri] = new Location(location);
 	setUri(uri);
 }
 
@@ -194,9 +215,14 @@ void Server::reset() {
     // Réinitialise tous les membres de l'objet
     this->_port = 0;
     this->_host.clear();
+    if (this->_uri) {
+        this->_uri->clear(); // Efface les éléments existants
+    }
+	this->_uri = new std::vector<std::string>; // Crée une nouvelle instance si NULL
     this->_name.clear();
     this->_indexes.clear();
     this->_errorPages.clear();
+    this->_locations.clear();
     this->_maxBodySize = 0;
     // this->_allowedMethod->clear();
 	//REVENIR SUR LE RESET DU POINTEUR ALLOWED MTHODE
@@ -205,14 +231,31 @@ void Server::reset() {
     // Réinitialise d'autres champs si nécessaire
 }
 
-Location Server::getLocation(const std::string &uri) const {
-	std::map<std::string, Location>::const_iterator it = _locations.find(uri);
+Location *Server::getLocation(const std::string &uri) const {
+	std::map<std::string, Location*>::const_iterator it = _locations.find(uri);
+	std::cout << (it == _locations.end()) << std::endl;
+
 	if (it != _locations.end()) {
 		return it->second;
 	}
-	throw std::runtime_error("Location not found for URI: " + uri);
+	return (NULL);
+	// throw std::runtime_error("Location not found for URI: " + uri);
 }
 
-std::map<std::string, Location> Server::returnLoc() {
+std::map<std::string, Location*> Server::returnLoc() {
 	return (_locations);
+}
+
+std::ostream	&operator<<(std::ostream &o, Server &server) {
+	o << server.getServerName() << " → ";
+	o << server.getHostname() << ":" << server.getPort();
+	o << "\n";
+    o << "URIs:\n";
+    std::map<std::string, Location*> locations = server.returnLoc();
+    for (std::map<std::string, Location*>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+		std::string tmp = (it->second)->getRoot();
+        o << " - " << tmp << "\n";
+    }
+	o << " (fd: " << server.getSock() << ")";
+	return(o);
 }

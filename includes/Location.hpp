@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:59 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/15 11:00:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/19 15:52:07 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,11 @@ private:
 	size_t								_maxBodySize;
 
 public:
-    // Constructeur par défaut
     Location();
+    Location(const Location &cpy);
+	~Location();
+
+	Location &operator=(const Location &rhs);
 
     // Getters
     std::string getRoot() const;
