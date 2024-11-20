@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 18:20:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 18:56:57 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,9 @@ void HttpResponse::sendResponse() {
 }
 
 void	HttpResponse::setInfos() {
+	this->_isLocation = false;
 	std::map<std::string, Location*> locs = this->getServer()->returnLoc();
+
 	if (!locs.empty()) {
 		this->_isLocation = true;
 		std::vector<std::string> *tmp = this->_client->getServer()->getUri();
@@ -155,7 +157,6 @@ void	HttpResponse::setInfos() {
 		this->_uri = *it;
 	}
 	this->_uri = "";
-	this->_isLocation = false;
 	this->_root = this->getServer()->getRoot();
 	this->_maxBodySize = this->getServer()->getClientMaxBody();
 	this->_allowedMethod = *(this->getServer()->getAllowedMethods());
@@ -175,43 +176,45 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	bool follow = true;
 	isDir = false;
 	
-	if (uri == "/" || uri == "") {
-		if (this->_indexes[0].c_str()[0] == '/')
-			resolvePath = _root + this->_indexes[0];
-		else 
-			resolvePath = _root + "/" + this->_indexes[0];
-	}
-	else if (_isLocation) {
+	if (_isLocation) {
 		location = matchLocation(uri);
 		if (!location.empty()) {
 			resolvePath = _root + location;
 		} else {
 			follow = false;
-			return (follow);
+			// return (follow);
 		}
 	}
+	if (uri == "/" || uri == "") {
+		if (this->_indexes[0].c_str()[0] == '/')
+			resolvePath = _root + this->_indexes[0];
+		else 
+			resolvePath = _root + "/" + this->_indexes[0];
+		follow = true;
+	}
 	for (std::vector<std::string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
-	if (*it != "" && uri.find(*it + "/") != std::string::npos) {
-            std::cout << "CGI Request Detected: " << resolvePath << std::endl;
+		if (*it != "" && (uri.find(*it) != std::string::npos || uri.find(*it) != std::string::npos)) {
+			resolvePath = _root + uri;
+            // std::cout << "CGI Request Detected: " << resolvePath << std::endl;
+			follow = true;
             break;
+		}
+		else if (uri != "") {
+			follow = false;
 		}
 	}
 
 	if (!hasAccess(resolvePath)) {
-        return (false);
+        return (follow);
     }
-	return (true);
+	return (follow);
 }
 
 std::string HttpResponse::matchLocation(std::string &requestUri) const {
     std::vector<std::string> *locations = this->_client->getServer()->getUri();
-    std::vector<std::string>::iterator it = locations->begin();
     std::string bestMatch = "";
     size_t bestMatchLength = 0;
-		std::cout << *it << " vfdvfdv" <<std::endl;
-	// std::cout << locations->size() << std::endl;
-	for (; it != locations->end(); it++)
-		std::cout << *it << " vfdvfdv" <<std::endl;
+
     for (std::vector<std::string>::iterator it = locations->begin(); it != locations->end(); ++it) {
         const std::string &location = *it;
         if (requestUri.find(location) == 0 && location.length() > bestMatchLength) {
