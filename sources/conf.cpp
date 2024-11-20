@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/19 17:01:27 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 12:25:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void conf::_parseLocation(std::string line, Server &serv, std::ifstream &ConfigF
 		} else if (directive == "cgi_bin") {
 			locationConfig.setCgiBin(this->_getCgiBin(tokens));
 		} else if (directive == "cgi_extension") {
-			locationConfig.setCgiExtension(this->_getCgiExtension(tokens));
+			locationConfig.setCgiExtension(this->_getCgiExtensions(tokens));
 		} else if (directive == "allowedMethods") {
 			locationConfig.setAllowedMethods(*this->_getAllowedMethods(tokens));
 		} else if (directive == "upload_path") {
@@ -163,13 +163,13 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setReturnUri(this->_getRedirection(line_trim));
 			break;
 		case CGI_BIN:
-			// this->_getCgiBin(line_trim);
+			serv.setCgiBin(this->_getCgiBin(line_trim));
 			break;
 		case AUTOINDEX:
-			// this->_getAutoindex(line_trim);
+			serv.setAutoindex(this->_getAutoindex(line_trim));
 			break;
 		case UPLOAD_PATH:
-			// this->_getUploadPath(line_trim);
+			serv.setUploadPath(this->_getUploadPath(line_trim));
 			break;
 		case ROOT:
 			serv.setRoot(this->_getRoot(line_trim));
@@ -178,7 +178,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			// this->_getRedirection(line_trim);
 			break;
 		case CGI_EXTENSION:
-			// this->_getCgiExtension(line_trim);
+			serv.setCgiExtension(this->_getCgiExtensions(line_trim));
 			break;
 		case CGI_PATH:
 			// this->_getCgiPath(line_trim);

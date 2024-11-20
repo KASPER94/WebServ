@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/19 16:21:48 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 11:51:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,10 +99,10 @@ void HttpResponse::sendResponse() {
         return handleError(405, "Method Not Allowed");
     }
     std::string uri = this->getRequest()->returnPATH();
-    // bool isDir;
-    // if (!resolveUri(uri, isDir)) {
-    //     return handleError(404, "Not Found");
-    // }
+    bool isDir;
+    if (!resolveUri(uri, isDir)) {
+        return handleError(404, "Not Found");
+    }
 	std::string bestMatch = matchLocation(uri);
     if (bestMatch.empty()) {
         return handleError(404, "Not Found");
@@ -173,8 +173,8 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	std::string resolvePath = _root + uri;
 	isDir = false;
 	
-	Location *loc = this->getServer()->getLocation(uri);
-	std::cout << "{{{ " << resolvePath << "###### " << loc->getRoot() << std::endl;
+	// Location *loc = this->getServer()->getLocation(uri);
+	std::cout << "{{{ " << resolvePath << "###### "<< std::endl;
 
 	// if (this->_isLocation) {
 
@@ -190,7 +190,7 @@ std::string HttpResponse::matchLocation(std::string &requestUri) const {
     std::string bestMatch = "";
     size_t bestMatchLength = 0;
 		std::cout << *it << " vfdvfdv" <<std::endl;
-	std::cout << locations->size() << std::endl;
+	// std::cout << locations->size() << std::endl;
 	for (; it != locations->end(); it++)
 		std::cout << *it << " vfdvfdv" <<std::endl;
     for (std::vector<std::string>::iterator it = locations->begin(); it != locations->end(); ++it) {
@@ -200,7 +200,6 @@ std::string HttpResponse::matchLocation(std::string &requestUri) const {
             bestMatchLength = location.length();
         }
     }
-
     return bestMatch;
 }
 
@@ -290,7 +289,15 @@ void HttpResponse::error(const std::string &message) {
 	this->_body += "<p>" + message + "</p></body></html>";
 
 	this->_headers["Content-Length"] = intToString(this->_body.size());
+	// std::string header;
+	// for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it) {
+    //     header += it->first + ": " + it->second + "\r\n";
+    // }
 
+    // // Terminer les en-têtes avec une ligne vide
+    // header += "\r\n";
+	_response = _body;
+	sendHeader();
 	this->_readyToSend = true;
 }
 

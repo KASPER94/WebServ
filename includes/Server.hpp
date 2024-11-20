@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/19 16:12:45 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 12:20:41 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Server : public websocket {
 		std::string						_host;
 		std::string						_name;
 		bool							_directoryListing;
+		bool							_autoindex;
 		std::string						_root;
 		std::vector<std::string>		_indexes;
 		std::string						_index;
@@ -39,7 +40,9 @@ class Server : public websocket {
 		std::map<int,std::string>		_returnURI ;
 		std::string						_uploadPath ;
 		std::vector<std::string>		_binPath ;
-		std::vector<std::string>		_cgiExtension ;
+		std::string						_cgiBin ;
+		std::vector<std::string>		_cgiExtensions ;
+		// std::string						_cgiExtension ;
 		std::map<std::string, Location*> _locations;
 		std::vector<std::string>		*_uri;
 
@@ -63,6 +66,10 @@ class Server : public websocket {
 		void	setUri(std::string uri);
 		void	setReturnUri(std::map<int, std::string> returnUri);
 		void	setIndexes(std::vector<std::string> indexes);
+		void 	setCgiBin(const std::string &cgiBin);
+		void 	setCgiExtension(const std::vector<std::string> &cgiExtension);
+		void 	setUploadPath(const std::string &uploadPath);
+		void 	setAutoindex(bool autoindex);
 
 
 		// GETTER

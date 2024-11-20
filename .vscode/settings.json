@@ -75,6 +75,7 @@
 		"random": "cpp",
 		"utility": "cpp",
 		"numbers": "cpp",
-		"cinttypes": "cpp"
+		"cinttypes": "cpp",
+		"cerrno": "cpp"
 	}
 }

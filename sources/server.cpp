@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/19 17:03:11 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 12:26:00 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ Server &Server::operator=(const Server &rhs) {
         this->_returnURI = rhs._returnURI;
         this->_uploadPath = rhs._uploadPath;
         this->_binPath = rhs._binPath;
-        this->_cgiExtension = rhs._cgiExtension;
+        this->_cgiExtensions = rhs._cgiExtensions;
 
         for (std::map<std::string, Location *>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
             delete it->second;
@@ -99,6 +99,11 @@ int Server::connectToNetwork() {
     std::cout << "Serveur en écoute sur le port: " << this->_port << std::endl;
     return 0;
 }
+
+void Server::setCgiBin(const std::string &cgiBin) { _cgiBin = cgiBin; }
+void Server::setCgiExtension(const std::vector<std::string> &cgiExtensions) { _cgiExtensions = cgiExtensions; }
+void Server::setUploadPath(const std::string &uploadPath) { _uploadPath = uploadPath; }
+void Server::setAutoindex(bool autoindex) { _autoindex = autoindex; }
 
 void	Server::setPort(int port) {
 	this->_port = port;

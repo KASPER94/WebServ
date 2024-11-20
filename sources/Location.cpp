@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/19 17:00:14 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 12:27:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ Location::~Location() {
 std::string Location::getRoot() const { return _root; }
 std::string Location::getIndex() const { return _index; }
 std::string Location::getCgiBin() const { return _cgi_bin; }
-std::string Location::getCgiExtension() const { return _cgi_extension; }
+std::vector<std::string> Location::getCgiExtension() const { return _cgiExtensions; }
 std::string Location::getUploadPath() const { return _upload_path; }
 std::map<int, std::string> Location::getReturnUri() const { return _return_uri; }
 bool Location::getAutoindex() const { return _autoindex; }
@@ -41,7 +41,7 @@ size_t Location::getClientMaxBody() const {return _maxBodySize;}
 void Location::setRoot(const std::string &root) { _root = root; }
 void Location::setIndex(const std::string &index) { _index = index; }
 void Location::setCgiBin(const std::string &cgiBin) { _cgi_bin = cgiBin; }
-void Location::setCgiExtension(const std::string &cgiExtension) { _cgi_extension = cgiExtension; }
+void Location::setCgiExtension(const std::vector<std::string> &cgiExtension) { _cgiExtensions = cgiExtension; }
 void Location::setUploadPath(const std::string &uploadPath) { _upload_path = uploadPath; }
 void Location::setReturnUri(const std::map<int, std::string> &returnUri) { _return_uri = returnUri; }
 void Location::setAutoindex(bool autoindex) { _autoindex = autoindex; }

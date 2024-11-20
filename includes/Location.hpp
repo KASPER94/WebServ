@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:59 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/19 15:52:07 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 12:28:00 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ private:
     std::string _index;
     std::string _cgi_bin;
     std::string _cgi_extension;
+	std::vector<std::string>		_cgiExtensions ;
     std::string _upload_path;
     std::map<int, std::string> _return_uri;
     bool _autoindex;
@@ -42,7 +43,7 @@ public:
     std::string getRoot() const;
     std::string getIndex() const;
     std::string getCgiBin() const;
-    std::string getCgiExtension() const;
+    std::vector<std::string> getCgiExtension() const;
     std::string getUploadPath() const;
     std::map<int, std::string> getReturnUri() const;
     bool getAutoindex() const;
@@ -54,7 +55,7 @@ public:
     void setRoot(const std::string &root);
     void setIndex(const std::string &index);
     void setCgiBin(const std::string &cgiBin);
-    void setCgiExtension(const std::string &cgiExtension);
+    void setCgiExtension(const std::vector<std::string> &cgiExtension);
     void setUploadPath(const std::string &uploadPath);
     void setReturnUri(const std::map<int, std::string> &returnUri);
     void setAutoindex(bool autoindex);

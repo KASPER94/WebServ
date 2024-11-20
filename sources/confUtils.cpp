@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/15 11:21:42 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 12:19:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,15 +293,30 @@ std::map<int, std::string> conf::_getRedirection(std::vector<std::string> line) 
 }
 
 
-std::string conf::_getCgiExtension(std::vector<std::string> line) {
-	if (line.size() != 2)
-		throw std::runtime_error("Error: cgi_extension directive requires exactly one argument");
-	if (line[1][line[1].size() - 1] != ';')
-		throw std::runtime_error("Error: missing ';'");
-	std::string extension = line[1].substr(0, line[1].size() - 1);
-	if (extension.empty())
-		throw std::runtime_error("Error: missing extension");
-	return extension;
+// std::string conf::_getCgiExtension(std::vector<std::string> line) {
+// 	if (line.size() != 2)
+// 		throw std::runtime_error("Error: cgi_extension directive requires exactly one argument");
+// 	if (line[1][line[1].size() - 1] != ';')
+// 		throw std::runtime_error("Error: missing ';'");
+// 	std::string extension = line[1].substr(0, line[1].size() - 1);
+// 	if (extension.empty())
+// 		throw std::runtime_error("Error: missing extension");
+// 	return extension;
+// }
+
+std::vector<std::string> conf::_getCgiExtensions(std::vector<std::string> line) {
+	if (line.size() < 2)
+		throw std::runtime_error("Error: cgi_extension directive requires at least one argument");
+	if (line[line.size() - 1][line[line.size() - 1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';' at the end of the directive");
+	line[line.size() - 1] = line[line.size() - 1].substr(0, line[line.size() - 1].size() - 1);
+	std::vector<std::string> extensions;
+	for (size_t i = 1; i < line.size(); ++i) {
+		if (line[i].empty())
+			throw std::runtime_error("Error: missing extension");
+		extensions.push_back(line[i]);
+	}
+	return extensions;
 }
 
 std::string conf::_getUploadPath(std::vector<std::string> line) {

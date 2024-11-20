@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/19 16:22:54 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 11:36:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,16 +140,19 @@ void Webserv::sendResponse(int clientSock) {
 		return;
 	}
 	client->sendResponse();
+	std::string response = client->getResponsestr();
+	size_t totalBytesSent = 0;
+    size_t responseSize = response.size();
+	std::cerr << "Response sent: " << response << std::endl;
+
 	if (client->getError()) {
+		while (totalBytesSent < responseSize)
+			totalBytesSent += send(clientSock, response.c_str(), response.size(), 0);
 		epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, clientSock, NULL);
 		close(clientSock);
 		_clients.erase(clientSock);
 		return ;
 	}
-	std::string response = client->getResponsestr();
-    size_t totalBytesSent = 0;
-    size_t responseSize = response.size();
-	std::cerr << "Response sent: " << response << std::endl;
 
     while (totalBytesSent < responseSize) {
         int bytesSent = send(clientSock, response.c_str() + totalBytesSent, responseSize - totalBytesSent, 0);
