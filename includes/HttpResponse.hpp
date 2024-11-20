@@ -42,7 +42,8 @@ class HttpResponse {
 		// bool								_directoryListing;
 		std::map<int,std::string>				_returnURI;
 		std::string							_uploadPath;
-		std::vector<std::string>					_cgiBin;
+		// std::vector<std::string>					_cgiBin;
+		std::string									_cgiBin;
 		std::vector<std::string>					_cgiExt;
 		bool								_isLocation;
 

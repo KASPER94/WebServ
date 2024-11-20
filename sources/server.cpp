@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 12:26:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 17:20:33 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,11 @@ void Server::setCgiBin(const std::string &cgiBin) { _cgiBin = cgiBin; }
 void Server::setCgiExtension(const std::vector<std::string> &cgiExtensions) { _cgiExtensions = cgiExtensions; }
 void Server::setUploadPath(const std::string &uploadPath) { _uploadPath = uploadPath; }
 void Server::setAutoindex(bool autoindex) { _autoindex = autoindex; }
+
+std::string Server::getCgiBin() const { return _cgiBin; }
+std::vector<std::string> Server::getCgiExtension() const { return _cgiExtensions; }
+std::string Server::getUploadPath() const { return _uploadPath; }
+bool Server::getAutoindex() const { return _autoindex; }
 
 void	Server::setPort(int port) {
 	this->_port = port;

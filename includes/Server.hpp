@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 12:20:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 17:21:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,10 @@ class Server : public websocket {
 		std::vector<std::string>		*getUri();
     	std::map<int, std::string> 		getReturnUri() const;
 		std::vector<std::string>		getIndexes();
+		std::string getCgiBin() const;
+		std::vector<std::string> getCgiExtension() const;
+		std::string getUploadPath() const;
+		bool getAutoindex() const ;
 
 		void reset();
 		void addLocation(const std::string &uri, const Location &location);

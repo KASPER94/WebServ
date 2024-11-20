@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/20 12:19:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 18:15:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,7 +233,7 @@ std::vector<std::string> conf::_getIndex(std::vector<std::string> line) {
 	if (line.size() < 2)
 		throw std::runtime_error("Error: 'index' directive requires at least one argument.");
 	std::string indices_str;
-	unsigned long i = 0;
+	unsigned long i = 1;
 	while (line.size() > i) {
 		indices_str += line[i];
 		i++;

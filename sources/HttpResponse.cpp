@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 11:51:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 18:20:32 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,10 +103,10 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
-	std::string bestMatch = matchLocation(uri);
-    if (bestMatch.empty()) {
-        return handleError(404, "Not Found");
-    }
+	// std::string bestMatch = matchLocation(uri);
+    // if (bestMatch.empty()) {
+    //     return handleError(404, "Not Found");
+    // }
     // if (this->getRequest()->getMethod() == DELETE) {
     //     return handleDelete(uri);
     // }
@@ -115,9 +115,9 @@ void HttpResponse::sendResponse() {
     //     return handleDirectory(uri);
     // }
     
-    if (!hasAccess(bestMatch)) {
-        return handleError(403, "Forbidden");
-    }
+    // if (!hasAccess(bestMatch)) {
+    //     return handleError(403, "Forbidden");
+    // }
 
     // if (isCGIRequest(uri)) {
     //     if (!handleCGI(uri)) {
@@ -147,14 +147,14 @@ void HttpResponse::sendResponse() {
 }
 
 void	HttpResponse::setInfos() {
-	std::vector<std::string> *tmp = this->_client->getServer()->getUri();
-	std::vector<std::string>::iterator it = tmp->begin();
-	this->_uri = *it;
-
 	std::map<std::string, Location*> locs = this->getServer()->returnLoc();
 	if (!locs.empty()) {
 		this->_isLocation = true;
+		std::vector<std::string> *tmp = this->_client->getServer()->getUri();
+		std::vector<std::string>::iterator it = tmp->begin();
+		this->_uri = *it;
 	}
+	this->_uri = "";
 	this->_isLocation = false;
 	this->_root = this->getServer()->getRoot();
 	this->_maxBodySize = this->getServer()->getClientMaxBody();
@@ -163,24 +163,43 @@ void	HttpResponse::setInfos() {
 	this->_errorPage = this->getServer()->getErrorPage();
 	this->_returnURI = this->getServer()->getReturnUri();
 	// this->_uploadPath = this->getServer()->getUploadPath();
-	// this->_cgiBin = this->getServer()->getBinPath();
-	// this->_cgiExt = this->getServer()->getCgiExtension();
+	this->_cgiBin = this->getServer()->getCgiBin();
+	this->_cgiExt = this->getServer()->getCgiExtension();
 	this->_indexes = this->getServer()->getIndexes();
 }
 
 bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
     // struct stat	s;
-	std::string resolvePath = _root + uri;
+	std::string resolvePath;
+	std::string location;
+	bool follow = true;
 	isDir = false;
 	
-	// Location *loc = this->getServer()->getLocation(uri);
-	std::cout << "{{{ " << resolvePath << "###### "<< std::endl;
+	if (uri == "/" || uri == "") {
+		if (this->_indexes[0].c_str()[0] == '/')
+			resolvePath = _root + this->_indexes[0];
+		else 
+			resolvePath = _root + "/" + this->_indexes[0];
+	}
+	else if (_isLocation) {
+		location = matchLocation(uri);
+		if (!location.empty()) {
+			resolvePath = _root + location;
+		} else {
+			follow = false;
+			return (follow);
+		}
+	}
+	for (std::vector<std::string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
+	if (*it != "" && uri.find(*it + "/") != std::string::npos) {
+            std::cout << "CGI Request Detected: " << resolvePath << std::endl;
+            break;
+		}
+	}
 
-	// if (this->_isLocation) {
-
-	// }
-	
-	(void)uri;
+	if (!hasAccess(resolvePath)) {
+        return (false);
+    }
 	return (true);
 }
 
