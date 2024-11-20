@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 18:56:57 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/20 19:01:37 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,8 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	if (_isLocation) {
 		location = matchLocation(uri);
 		if (!location.empty()) {
-			resolvePath = _root + location;
+			// resolvePath = _root + location;
+			resolvePath = this->getServer()->getLocation(location)->getRoot() + location;
 		} else {
 			follow = false;
 			// return (follow);
@@ -199,7 +200,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 			follow = true;
             break;
 		}
-		else if (uri != "") {
+		else if (uri != "" && !_isLocation) {
 			follow = false;
 		}
 	}
