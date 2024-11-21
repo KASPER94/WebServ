@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Webserv</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap"
+		rel="stylesheet">
+</head>
+
+<body class="m-3 mt-5" style="background-color:#e5e5e5">
+	<div class="container p-3">
+		<div class="rounded-3 p-5" style="background-color:#fcfcfc; border:solid 1px #cdcdcd">
+			<center>
+				<h2>Webserv</h2>
+					<br />
+					<a href="/default_error" class="btn btn-success m-1">Default error page</a>
+					<a href="/custom_error" class="btn btn-success m-1">Custom error page</a>
+					<hr />
+					<a href="/GET" class="btn btn-primary m-1">GET allowed</a>
+					<a href="/POST" class="btn btn-primary m-1">POST allowed</a>
+					<a href="/DELETE" class="btn btn-primary m-1">DELETE allowed</a>
+					<hr />
+					<a href="/redir" class="btn btn-secondary m-1">Redirection</a>
+					<a href="/samePort" class="btn btn-secondary m-1">Same ports</a>
+					<hr />
+					<a href="http://127.0.0.1:8081/files/" class="btn btn-info m-1">Directory listing</a>
+					<a href="http://127.0.0.1:8081/" class="btn btn-info m-1">Delete</a>
+					<a href="http://127.0.0.1:8086/" class="btn btn-info m-1">Upload</a>
+					<hr />
+					<a href="http://127.0.0.1:8085/" class="btn btn-warning m-1">Static website</a>
+					<hr />
+					<a href="http://127.0.0.1:8082/" class="btn btn-dark m-1">PHP cgi</a>
+					<a href="http://127.0.0.1:8083/" class="btn btn-dark m-1">Python cgi</a>
+					<hr />
+					<a href="http://127.0.0.1:8084/" class="btn btn-danger m-1">Session</a>
+			</center>
+		</div>
+	</div>
+</body>
+
+</html>

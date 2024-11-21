@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 19:01:37 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/21 13:56:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,38 @@ void	HttpResponse::checkSend(int bytes) {
 	}
 }
 
-bool HttpResponse::hasAccess(const std::string &uri) {
+bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
+    struct stat	s;
+
 	std::cout << uri << std::endl;
+
+	if (stat(uri.c_str(), &s) == 0) {
+		std::cout << "uri" << std::endl;
+		if (s.st_mode & S_IFDIR) {
+			isDir = true;
+			if (uri[uri.length() - 1] != '/') {
+				this->movedPermanently(this->getRequest()->returnPATH() + "/");
+				return (false);
+			}
+		}
+		else
+			isDir = false;
+	}
+	if (isDir) {
+		for (std::vector<std::string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
+			if (*it == "")
+				continue;
+			if (access((uri + *it).c_str(), F_OK) != -1) {
+				if (access((uri + *it).c_str(), R_OK) == -1) {
+					this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
+					return (false);
+				}
+				uri += *it;
+				isDir = false;
+				break;
+			}
+		}
+	}
 	return (true);
     // return access(uri.c_str(), F_OK) != -1 && access(uri.c_str(), R_OK) != -1;
 }
@@ -170,7 +200,6 @@ void	HttpResponse::setInfos() {
 }
 
 bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
-    // struct stat	s;
 	std::string resolvePath;
 	std::string location;
 	bool follow = true;
@@ -187,7 +216,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		}
 	}
 	if (uri == "/" || uri == "") {
-		if (this->_indexes[0].c_str()[0] == '/')
+		if (this->_root.c_str()[_root.size() - 1] == '/')
 			resolvePath = _root + this->_indexes[0];
 		else 
 			resolvePath = _root + "/" + this->_indexes[0];
@@ -205,7 +234,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		}
 	}
 
-	if (!hasAccess(resolvePath)) {
+	if (!hasAccess(resolvePath, isDir)) {
         return (follow);
     }
 	return (follow);
@@ -229,7 +258,7 @@ std::string HttpResponse::matchLocation(std::string &requestUri) const {
 bool	HttpResponse::initializeResponse() {
 	this->setInfos();
 	if (!this->getRequest()->isGood()) {
-		this->handleError(400, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
+		this->handleError(400, "You do not have permission to access this resource.");
 		return (false);
 	}
 	std::string uri = this->_returnURI.begin()->second;
