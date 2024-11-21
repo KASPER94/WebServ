@@ -73,6 +73,7 @@ class HttpResponse {
 		std::string matchLocation(std::string &requestUri) const;
 		bool	methodAllowed(enum HttpMethod method);
 		void	tryDeleteFile(std::string &uri);
+		void	directoryListing(string path);
 };
 
 #endif

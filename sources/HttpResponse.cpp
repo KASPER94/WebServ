@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/21 16:38:54 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/21 17:42:30 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,14 @@ void	HttpResponse::tryDeleteFile(std::string &uri) {
 	}
 }
 
+void	HttpResponse::directoryListing(string path) {
+	this->_statusCode = 200;
+	// this->_mime = Mime::ext("html");
+	this->createHeader();
+	this->sendHeader();
+	this->sendDirectoryPage(path);
+}
+
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
@@ -151,6 +159,13 @@ void HttpResponse::sendResponse() {
     }
 	if (this->getRequest()->getMethod() == DELETE) {
 		tryDeleteFile(uri);
+		return ;
+	}
+	if (isDir) {
+		if (this->_directoryListing)
+			this->directoryListing(uri);
+		else
+			this->error(404);
 		return ;
 	}
 	
