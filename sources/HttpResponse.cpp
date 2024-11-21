@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/21 13:56:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/21 16:38:54 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,6 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
 	std::cout << uri << std::endl;
 
 	if (stat(uri.c_str(), &s) == 0) {
-		std::cout << "uri" << std::endl;
 		if (s.st_mode & S_IFDIR) {
 			isDir = true;
 			if (uri[uri.length() - 1] != '/') {
@@ -114,11 +113,28 @@ bool	HttpResponse::methodAllowed(enum HttpMethod method) {
 	return (false);
 }
 
-// void HttpResponse::handleError(string uri) {
-// 	string root;
+void	HttpResponse::tryDeleteFile(std::string &uri) {
+	std::string	root;
 
-// 	if (this->)
-// }
+	if (this->_isLocation) {
+		root = this->_root;
+	} else
+		root = this->getServer()->getRoot();
+	if (!childPath(getFullPath(root), getFullPath(uri)))
+		this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
+	else {
+		if (access(uri.c_str(), F_OK) != -1) {
+			if (access(uri.c_str(), R_OK) == -1) {
+				this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
+				return ;
+			}
+		}
+		if (remove(uri.c_str()) == 0)
+			this->handleError(200, "Le fichier a été supprimé avec succès.");
+		else
+			this->handleError(204, "Le fichier n'existait pas ou n'a pas pu être supprimé.");
+	}
+}
 
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
@@ -133,31 +149,11 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
-	// std::string bestMatch = matchLocation(uri);
-    // if (bestMatch.empty()) {
-    //     return handleError(404, "Not Found");
-    // }
-    // if (this->getRequest()->getMethod() == DELETE) {
-    //     return handleDelete(uri);
-    // }
-    
-    // if (isDir) {
-    //     return handleDirectory(uri);
-    // }
-    
-    // if (!hasAccess(bestMatch)) {
-    //     return handleError(403, "Forbidden");
-    // }
-
-    // if (isCGIRequest(uri)) {
-    //     if (!handleCGI(uri)) {
-    //         return handleError(500, "Internal Server Error");
-    //     }
-    // } else {
-    //     if (!handleFileResponse(uri)) {
-    //         return handleError(404, "Not Found");
-    //     }
-    // }
+	if (this->getRequest()->getMethod() == DELETE) {
+		tryDeleteFile(uri);
+		return ;
+	}
+	
     
     // finalizeResponse();
 	if (this->getRequest()->getMethod() == GET) {
@@ -215,13 +211,13 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 			// return (follow);
 		}
 	}
-	if (uri == "/" || uri == "") {
-		if (this->_root.c_str()[_root.size() - 1] == '/')
-			resolvePath = _root + this->_indexes[0];
-		else 
-			resolvePath = _root + "/" + this->_indexes[0];
-		follow = true;
-	}
+	// if (uri == "/" || uri == "") {
+	// 	if (this->_root.c_str()[_root.size() - 1] == '/')
+	// 		resolvePath = _root + this->_indexes[0];
+	// 	else 
+	// 		resolvePath = _root + "/" + this->_indexes[0];
+	// 	follow = true;
+	// }
 	for (std::vector<std::string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
 		if (*it != "" && (uri.find(*it) != std::string::npos || uri.find(*it) != std::string::npos)) {
 			resolvePath = _root + uri;
@@ -229,14 +225,15 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 			follow = true;
             break;
 		}
-		else if (uri != "" && !_isLocation) {
+		else if ((uri != "" && uri != "/") && !_isLocation) {
 			follow = false;
 		}
 	}
-
-	if (!hasAccess(resolvePath, isDir)) {
-        return (follow);
+	if (!hasAccess(uri, isDir)) {
+        follow = false;
     }
+	else
+		follow = true;
 	return (follow);
 }
 

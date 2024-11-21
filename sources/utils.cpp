@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/15 10:43:51 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/21 16:41:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,19 @@ std::vector<std::string> split_trim_conf(std::string str) {
     return (split);
 }
 
+std::vector<std::string> split_trim_path(std::string str) {
+    std::vector<std::string>    split;
+    std::istringstream	word(str);
+    std::string w;
+
+    while (word >> w) {
+		if (w == "/")
+			continue ;
+        split.push_back(w);
+    }
+    return (split);
+}
+
 unsigned long convertIpToUnsignedLong(const std::string &ip) {
 	in_addr_t ipAddress = inet_addr(ip.c_str());
 
@@ -135,4 +148,35 @@ int		setsocknonblock(int sock)
 		return (-1);
 	}
 	return (1);
+}
+std::string	getFullPath(std::string path) {
+	std::vector<std::string>	sub;
+	std::vector<std::string>	new_path;
+	std::string			full_path = "/";
+	bool			last = path[path.length() - 1] == '/';
+
+	sub = split_trim_path(path);
+	for (std::vector<std::string>::iterator it = sub.begin(); it != sub.end(); it++) {
+		if (*it == "..") {
+			if (new_path.size() > 0)
+				new_path.pop_back();
+		} else if (*it != ".")
+			new_path.push_back(*it);
+	}
+	for (std::vector<std::string>::iterator it = new_path.begin(); it != new_path.end(); it++) {
+		full_path += *it;
+		if ((it + 1) != new_path.end())
+			full_path += "/";
+	}
+	if (last)
+		full_path += "/";
+	return (full_path);
+}
+
+bool	childPath(std::string parent, std::string child) {
+	if (child.length() <= parent.length())
+		return (false);
+	if (child.find(parent) != 0)
+		return (false);
+	return (true);
 }

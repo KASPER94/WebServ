@@ -72,6 +72,7 @@ class HttpResponse {
 		bool hasAccess(std::string &uri, bool &isDir);
 		std::string matchLocation(std::string &requestUri) const;
 		bool	methodAllowed(enum HttpMethod method);
+		void	tryDeleteFile(std::string &uri);
 };
 
 #endif
