@@ -6,7 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/07 10:50:20 by yrigny            #+#    #+#             */
-/*   Updated: 2024/11/13 18:03:51 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/11/20 17:24:05 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,22 +35,22 @@ void	Epoller::InitEpoller()
 		close(_epollFd);
 		exit(1);
 	}
-	// if (!this->AddFd(STDIN_FILENO, EPOLLIN))
-	// {
-	// 	Log::LogMsg(ERROR, "AddFd() failed");
-	// 	close(_epollFd);
-	// 	exit(1);
-	// }
 	Log::LogMsg(INFO, "Start webserv...");
 	while (this->EpollWait(-1) != -1)
 		;
 	Log::LogMsg(INFO, "Stop webserv...");
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
-		this->DelFd(_servers[i].GetListenFd());
-		close(_servers[i].GetListenFd());
-		this->DelFd(_servers[i].GetConnFd());
-		close(_servers[i].GetConnFd());
+		if (_servers[i].GetListenFd() > 2)
+		{
+			this->DelFd(_servers[i].GetListenFd());
+			close(_servers[i].GetListenFd());
+		}
+		if (_servers[i].GetConnFd() > 2)
+		{
+			this->DelFd(_servers[i].GetConnFd());
+			close(_servers[i].GetConnFd());
+		}
 	}
 }
 
@@ -58,9 +58,12 @@ bool	Epoller::AddServerSockets()
 {
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
+		_servers[i].InitServer();
 		std::cout << _servers[i];
 		if (!AddFd(_servers[i].GetListenFd(), EPOLLIN | EPOLLET))
 			return false;
+		else
+			_servers[i].SetEpollFd(_epollFd);
 	}
 	return true;
 }
@@ -77,8 +80,7 @@ bool	Epoller::AddFd(int fd, uint32_t events)
 	{
 		Log::LogMsg(ERROR, "epoll_ctl() failed");
 		close(fd);
-		close(_epollFd);
-		exit(1);
+		return false;
 	}
 	return true;
 }
@@ -94,8 +96,7 @@ bool	Epoller::ModFd(int fd, uint32_t events)
 	{
 		Log::LogMsg(ERROR, "epoll_ctl() failed");
 		close(fd);
-		close(_epollFd);
-		exit(1);
+		return false;
 	}
 	return true;
 }
@@ -108,8 +109,7 @@ bool	Epoller::DelFd(int fd)
 	{
 		Log::LogMsg(ERROR, "epoll_ctl() failed");
 		close(fd);
-		close(_epollFd);
-		exit(1);
+		return false;
 	}
 	return true;
 }
@@ -161,7 +161,7 @@ int		Epoller::EpollWait(int timeoutMs)
 		else // existing connection
 		{
 			serverIdx = this->MatchClientFd(sockFd);
-			if (!this->RequestHandler(sockFd, serverIdx))
+			if (!this->RequestTransfer(sockFd, serverIdx))
 				return -1;
 		}
 	}
@@ -207,10 +207,14 @@ bool	Epoller::SetNonBlocking(int connFd)
 	return true;
 }
 
-bool	Epoller::RequestHandler(int connFd, int serverIdx)
+bool	Epoller::RequestTransfer(int connFd, int serverIdx)
 {
-	_servers[serverIdx].HandleRequest(connFd);
-	return false;
+	int	ret = 0;
+	ret = _servers[serverIdx].HandleRequest(connFd);
+	if (ret == -1)
+		return false; // stop the program for now
+	else
+		return true;
 }
 
 int		Epoller::GetEventFd(size_t i) const
