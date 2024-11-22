@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/22 16:28:04 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/22 23:57:09 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,23 +270,42 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	std::string location;
 	bool follow = true;
 	isDir = false;
+	saveLoc.inLoc = false;
 	
 	if (_isLocation) {
-		location = matchLocation(uri);
-		if (!location.empty()) {
-			// resolvePath = _root + location;
-			resolvePath = this->getServer()->getLocation(location)->getRoot() + location;
-			if (resolvePath[resolvePath.size() - 1] != '/')
+        location = matchLocation(uri);
+        if (!location.empty()) {
+			saveLoc.inLoc = true;
+            Location *loc = this->getServer()->getLocation(location);
+			saveLoc.loc = *loc;
+            resolvePath = loc->getRoot();
+            if (resolvePath[resolvePath.size() - 1] != '/')
                 resolvePath += '/';
-			resolvePath += uri.substr(location.size());
-		} else {
-			resolvePath = _root + uri;
-			follow = false;
-			// return (follow);
+            // resolvePath += uri.substr(location.size());
+            if (!loc->getIndex().empty()) {
+                std::string indexPath = resolvePath;
+                if (indexPath[indexPath.size() - 1] != '/')
+                    indexPath += '/';
+                indexPath += loc->getIndex();
+                if (access(indexPath.c_str(), F_OK) != -1) {
+                    uri = indexPath;
+                    isDir = false;
+                    return (true);
+                }
+            }
+        } else {
+			if (_root.c_str()[_root.size() - 1] == '/')
+				resolvePath = _root;
+			else
+            	resolvePath = _root + uri;
 		}
+    } 
+	else {
+		if (_root.c_str()[_root.size() - 1] == '/')
+			resolvePath = _root;
+		else
+			resolvePath = _root + uri;
 	}
-	else 
-		resolvePath = _root + uri;
 	if (!hasAccess(resolvePath, isDir)) {
         follow = false;
     }

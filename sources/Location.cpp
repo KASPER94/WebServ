@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/20 12:27:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/22 23:55:39 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,23 @@ Location::Location(const Location &cpy)
       _maxBodySize(cpy._maxBodySize) {}
 
 Location::~Location() {
+}
+
+Location &Location::operator=(const Location &rhs) {
+    if (this != &rhs) {
+        this->_root = rhs._root;
+        this->_index = rhs._index;
+        this->_cgi_bin = rhs._cgi_bin;
+        this->_cgi_extension = rhs._cgi_extension;
+        this->_cgiExtensions = rhs._cgiExtensions;
+        this->_upload_path = rhs._upload_path;
+        this->_return_uri = rhs._return_uri;
+        this->_autoindex = rhs._autoindex;
+        this->_allowed_methods = rhs._allowed_methods;
+        this->_error_pages = rhs._error_pages;
+        this->_maxBodySize = rhs._maxBodySize;
+    }
+    return *this;
 }
 
 // Getters

@@ -25,6 +25,13 @@
 class Client;
 class HttpRequest;
 class Mime;
+class Location;
+
+typedef struct s_loc
+{
+	Location	loc;
+	bool		inLoc;
+} t_loc;
 
 class HttpResponse {
 	private:
@@ -51,6 +58,7 @@ class HttpResponse {
 		std::string									_cgiBin;
 		std::vector<std::string>					_cgiExt;
 		bool								_isLocation;
+		t_loc								saveLoc;
 
 		void error(const std::string &message);
 	public:
