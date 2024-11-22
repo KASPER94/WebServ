@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/22 23:57:09 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/23 00:25:36 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,51 @@ void	HttpResponse::directoryListing(std::string path) {
 	this->sendDirectoryPage(path);
 }
 
+int	HttpResponse::sendData(const void *data, int len) {
+	const char	*ptr = static_cast<const char *>(data);
+	int			bytes;
+
+	// if (this->keepAlive() && !this->getClientError() && this->_cgiIndex == -1)
+	// 	this->sendChunkSize(len);
+	while (len > 0 && !this->_client->getError()) {
+		bytes = send(this->_client->getFd(), ptr, len, 0);
+		this->checkSend(bytes);
+		ptr += bytes;
+		len -= bytes;
+	}
+	// if (this->keepAlive() && !this->getClientError() && this->_cgiIndex == -1){
+	// 	this->sendChunkEnd();
+	// }
+	return (0);
+}
+
+void HttpResponse::serveStaticFile(const std::string &uri) {
+    std::ifstream file(uri.c_str(), std::ios::binary);
+
+    if (!file.is_open()) {
+        this->handleError(500, "Failed to Open File");
+        return;
+    }
+    file.seekg(0, std::ios::end);
+    size_t fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::string ext = uri.substr(uri.find_last_of(".") + 1);
+    this->_mime = Mime::getMimeType(ext);
+
+    this->_statusCode = 200;
+    this->_headers["Content-Type"] = this->_mime;
+    this->_headers["Content-Length"] = intToString(fileSize);
+    this->createHeader();
+    this->sendHeader();
+
+    char buffer[2048];
+    while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
+        this->sendData(buffer, file.gcount());
+    }
+    file.close();
+}
+
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
@@ -223,7 +268,10 @@ void HttpResponse::sendResponse() {
 		}
 		return ;
 	}
-	
+	if (!isDir) {
+		this->serveStaticFile(uri);
+		return;
+	}
     
     // finalizeResponse();
 	if (this->getRequest()->getMethod() == GET) {

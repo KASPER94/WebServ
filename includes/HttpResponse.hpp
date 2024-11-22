@@ -89,6 +89,8 @@ class HttpResponse {
 		void	directoryListing(std::string path);
 		void 	createHeader();
 		void 	sendDirectoryPage(std::string path);
+		void serveStaticFile(const std::string &uri);
+		int	sendData(const void *data, int len);
 };
 
 #endif
