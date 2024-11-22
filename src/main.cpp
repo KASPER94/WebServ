@@ -6,7 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 17:27:11 by yrigny            #+#    #+#             */
-/*   Updated: 2024/11/20 15:42:57 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/11/21 12:29:56 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Epoller.hpp"
+#include <stdexcept>
 using namespace std;
 
 int main(int ac, char **av)
@@ -26,18 +27,25 @@ int main(int ac, char **av)
 		cerr << "Usage: ./webserv [config_file]" << endl;
 		exit(1);
 	}
-	Conf	parsedConf(path);
-	vector<ServerInfo> serverInfos = parsedConf.GetServerInfos();
-	VecServer cluster(0);
-	Server server(serverInfos[0]);
-	cluster.push_back(server);
-	for (size_t i = 1; i < serverInfos.size(); i++)
+	try
 	{
-		server = Server(serverInfos[i]);
+		Conf	parsedConf(path);
+		vector<ServerInfo> serverInfos = parsedConf.GetServerInfos();
+		VecServer cluster(0);
+		Server server(serverInfos[0]);
 		cluster.push_back(server);
+		for (size_t i = 1; i < serverInfos.size(); i++)
+		{
+			server = Server(serverInfos[i]);
+			cluster.push_back(server);
+		}
+		Epoller	epoller(cluster);
+		epoller.InitEpoller();
 	}
-	Epoller	epoller(cluster);
-	epoller.InitEpoller();
-
+	catch (std::exception &e)
+	{
+		cerr << "Error: " << e.what() << endl;
+		exit(1);
+	}
 	return 0;
 }

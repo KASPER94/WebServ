@@ -6,7 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/18 13:36:33 by yrigny            #+#    #+#             */
-/*   Updated: 2024/11/18 19:43:21 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/11/21 12:32:01 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,18 +42,18 @@ bool	IsReadable(const string path)
 Conf::Conf(const string path) : _serverInfos(), _nbServers(0)
 {
 	if (path.empty())
-		throw std::invalid_argument("Path is empty");
+		throw std::invalid_argument("Config path is empty");
 	if (!FileExists(path))
-		throw std::invalid_argument("File does not exist");
+		throw std::invalid_argument("Config path does not exist");
 	if (IsDirectory(path))
-		throw std::invalid_argument("Path is a directory");
+		throw std::invalid_argument("Config path is a directory");
 	if (!IsConfFile(path))
-		throw std::invalid_argument("Path is not a .conf file");
+		throw std::invalid_argument("Config path is not a .conf file");
 	if (!IsReadable(path))
-		throw std::invalid_argument("File is not readable");
+		throw std::invalid_argument("Config file is not readable");
 	ifstream file(path.c_str());
 	if (!file.is_open())
-		throw std::invalid_argument("File could not be opened");
+		throw std::invalid_argument("Config file could not be opened");
 	this->_ParseServers(file);
 }
 
