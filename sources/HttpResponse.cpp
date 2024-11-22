@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/22 13:56:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/22 14:18:58 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,6 @@ void	HttpResponse::checkSend(int bytes) {
 bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
     struct stat	s;
 
-	std::cout << uri << std::endl;
 
 	if (stat(uri.c_str(), &s) == 0) {
 		if (s.st_mode & S_IFDIR) {
@@ -76,6 +75,7 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
 				this->movedPermanently(this->getRequest()->returnPATH() + "/");
 				return (false);
 			}
+			uri = _root;
 		}
 		else
 			isDir = false;
