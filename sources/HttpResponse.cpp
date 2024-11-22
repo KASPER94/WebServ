@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/22 14:18:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/22 16:28:04 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,6 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
 				this->movedPermanently(this->getRequest()->returnPATH() + "/");
 				return (false);
 			}
-			uri = _root;
 		}
 		else
 			isDir = false;
@@ -277,34 +276,34 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		if (!location.empty()) {
 			// resolvePath = _root + location;
 			resolvePath = this->getServer()->getLocation(location)->getRoot() + location;
+			if (resolvePath[resolvePath.size() - 1] != '/')
+                resolvePath += '/';
+			resolvePath += uri.substr(location.size());
 		} else {
+			resolvePath = _root + uri;
 			follow = false;
 			// return (follow);
 		}
 	}
-	// if (uri == "/" || uri == "") {
-	// 	if (this->_root.c_str()[_root.size() - 1] == '/')
-	// 		resolvePath = _root + this->_indexes[0];
-	// 	else 
-	// 		resolvePath = _root + "/" + this->_indexes[0];
-	// 	follow = true;
-	// }
-	for (std::vector<std::string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
-		if (*it != "" && (uri.find(*it) != std::string::npos || uri.find(*it) != std::string::npos)) {
-			resolvePath = _root + uri;
-            // std::cout << "CGI Request Detected: " << resolvePath << std::endl;
-			follow = true;
-            break;
-		}
-		else if ((uri != "" && uri != "/") && !_isLocation) {
-			follow = false;
-		}
-	}
-	if (!hasAccess(uri, isDir)) {
+	else 
+		resolvePath = _root + uri;
+	if (!hasAccess(resolvePath, isDir)) {
         follow = false;
     }
-	else
-		follow = true;
+	for (std::vector<std::string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
+			std::cout << resolvePath << " : " << *it << std::endl;
+		if (*it != "" && (resolvePath.find(*it) != std::string::npos || resolvePath.find(*it) != std::string::npos)) {
+			uri = resolvePath;
+            // std::cout << "CGI Request Detected: " << resolvePath << std::endl;
+			follow = true;
+            return (follow);
+		}
+		// else if ((uri != "" && uri != "/") && !_isLocation) {
+		// 	follow = false;
+		// }
+	}
+	// else
+	// 	follow = true;
 	return (follow);
 }
 
