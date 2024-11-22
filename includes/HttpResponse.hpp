@@ -18,10 +18,13 @@
 # include <sys/stat.h>
 # include <string>
 # include <unistd.h>
-# include	<map>
+# include <map>
+# include <dirent.h>
+# include "Mime.hpp"
 
 class Client;
 class HttpRequest;
+class Mime;
 
 class HttpResponse {
 	private:
@@ -32,6 +35,8 @@ class HttpResponse {
 		std::map<std::string, std::string>	_headers;
 		std::string 						_body;
 		bool								_readyToSend;
+		bool								_directoryListing;
+		std::string							_mime;
 		std::string							_root;
 		std::string							_uri;
 		std::string							_path;
@@ -73,7 +78,9 @@ class HttpResponse {
 		std::string matchLocation(std::string &requestUri) const;
 		bool	methodAllowed(enum HttpMethod method);
 		void	tryDeleteFile(std::string &uri);
-		void	directoryListing(string path);
+		void	directoryListing(std::string path);
+		void 	createHeader();
+		void 	sendDirectoryPage(std::string path);
 };
 
 #endif

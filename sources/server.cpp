@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 17:20:33 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/22 14:00:01 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ Server &Server::operator=(const Server &rhs) {
         this->_uploadPath = rhs._uploadPath;
         this->_binPath = rhs._binPath;
         this->_cgiExtensions = rhs._cgiExtensions;
+		this->_autoindex = rhs._autoindex;
+
 
         for (std::map<std::string, Location *>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
             delete it->second;

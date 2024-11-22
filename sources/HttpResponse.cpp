@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/21 17:42:30 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/22 13:56:32 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,9 +136,64 @@ void	HttpResponse::tryDeleteFile(std::string &uri) {
 	}
 }
 
-void	HttpResponse::directoryListing(string path) {
+void HttpResponse::createHeader() {
+    this->_headers["Server"] = "Webserv/1.0";
+	if (!this->_mime.empty()) {
+		this->_headers["Content-Type"] = this->_mime;
+	} else {
+		this->_headers["Content_Type"] = "text/html";
+	}
+	//changer avec keepalive !!!!!
+	this->_headers["Connection"] = "close";
+}
+
+void HttpResponse::sendDirectoryPage(std::string path) {
+    DIR *dir;
+    struct dirent *entry;
+
+    // Ouvrir le répertoire spécifié
+    if ((dir = opendir(path.c_str())) == NULL) {
+        this->handleError(500, "Impossible d'ouvrir le répertoire : " + path);
+        return;
+    }
+
+    // Début de la page HTML
+    std::string body = "<html><head><title>Index of " + path + "</title></head>";
+    body += "<body><h1>Index of " + path + "</h1><ul>";
+
+    // Parcourir les entrées du répertoire
+    while ((entry = readdir(dir)) != NULL) {
+        std::string name = entry->d_name;
+
+        // Ignorer les entrées spéciales "." et ".."
+        if (name == "." || name == "..") 
+			continue;
+
+        // Construire un lien pour chaque fichier ou répertoire
+        std::string link = path;
+        if (link.c_str()[link.size() - 1] != '/') 
+			link += "/";
+        link += name;
+
+        body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
+    }
+
+    // Fin de la page HTML
+    body += "</ul></body></html>";
+
+    // Fermer le répertoire
+    closedir(dir);
+
+    // Stocker le corps de la réponse et sa longueur
+    this->_body = body;
+    this->_headers["Content-Length"] = intToString(body.size());
+    this->_headers["Content-Type"] = "text/html";
+}
+
+
+void	HttpResponse::directoryListing(std::string path) {
 	this->_statusCode = 200;
-	// this->_mime = Mime::ext("html");
+	this->_mime = Mime::getMimeType("html");
 	this->createHeader();
 	this->sendHeader();
 	this->sendDirectoryPage(path);
@@ -164,8 +219,9 @@ void HttpResponse::sendResponse() {
 	if (isDir) {
 		if (this->_directoryListing)
 			this->directoryListing(uri);
-		else
-			this->error(404);
+		else {
+			handleError(404, "Not Found");
+		}
 		return ;
 	}
 	
@@ -201,7 +257,7 @@ void	HttpResponse::setInfos() {
 	this->_root = this->getServer()->getRoot();
 	this->_maxBodySize = this->getServer()->getClientMaxBody();
 	this->_allowedMethod = *(this->getServer()->getAllowedMethods());
-	// this->_directoryListing = this->getServer()->getDirectoryListing();
+	this->_directoryListing = this->getServer()->getAutoindex();
 	this->_errorPage = this->getServer()->getErrorPage();
 	this->_returnURI = this->getServer()->getReturnUri();
 	// this->_uploadPath = this->getServer()->getUploadPath();
