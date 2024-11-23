@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 13:27:35 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/22 13:53:07 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/23 15:19:57 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ Mime::Mime() {
 	mimeTypes["htm"] = "text/html";
 	mimeTypes["css"] = "text/css";
 	mimeTypes["js"] = "application/javascript";
+	mimeTypes["php"] = "application/x-httpd-php";
 	mimeTypes["json"] = "application/json";
 	mimeTypes["xml"] = "application/xml";
 	mimeTypes["jpg"] = "image/jpeg";
@@ -54,7 +55,8 @@ Mime &Mime::operator=(const Mime &rhs) {
 }
 
 std::string Mime::getMimeType(const std::string &extension) {
-	std::map<std::string, std::string>::const_iterator it = mimeTypes.find(extension);
+	Mime tmp;
+	std::map<std::string, std::string>::const_iterator it = tmp.mimeTypes.find(extension);
 	if (it != mimeTypes.end()) {
 		return it->second;
 	}

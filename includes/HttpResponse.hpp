@@ -44,6 +44,7 @@ class HttpResponse {
 		bool								_readyToSend;
 		bool								_directoryListing;
 		std::string							_mime;
+		std::string 						_cgiTmpFile;
 		std::string							_root;
 		std::string							_uri;
 		std::string							_path;
@@ -58,6 +59,7 @@ class HttpResponse {
 		std::string									_cgiBin;
 		std::vector<std::string>					_cgiExt;
 		bool								_isLocation;
+		bool								_isCGI;
 		t_loc								saveLoc;
 
 		void error(const std::string &message);
@@ -91,6 +93,8 @@ class HttpResponse {
 		void 	sendDirectoryPage(std::string path);
 		void serveStaticFile(const std::string &uri);
 		int	sendData(const void *data, int len);
+		void handleCGI(std::string uri);
+		bool executeCGI(const std::string &uri);
 };
 
 #endif

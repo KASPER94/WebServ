@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/23 00:25:36 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/23 15:42:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,6 +243,83 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.close();
 }
 
+bool HttpResponse::executeCGI(const std::string &uri) {
+    int pipe_fd[2];
+    if (pipe(pipe_fd) == -1) {
+        this->handleError(500, "CGI execution failed: pipe error");
+        return false;
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        this->handleError(500, "CGI execution failed: fork error");
+        return false;
+    } else if (pid == 0) {
+        // Enfant: Exécuter le CGI
+        dup2(pipe_fd[1], STDOUT_FILENO); // Redirige la sortie standard
+        close(pipe_fd[0]);              // Ferme la lecture
+        close(pipe_fd[1]);              // Ferme l'écriture
+        execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL);
+        exit(1); // Si exec échoue
+    } else {
+        // Parent: Lire la sortie du CGI
+        close(pipe_fd[1]);              // Ferme l'écriture
+        char buffer[4096];
+        ssize_t bytesRead;
+        std::string output;
+
+        while ((bytesRead = read(pipe_fd[0], buffer, sizeof(buffer) - 1)) > 0) {
+            buffer[bytesRead] = '\0';
+            output += buffer;
+        }
+        close(pipe_fd[0]);
+
+        if (output.empty()) {
+            this->handleError(500, "CGI execution failed: no output");
+            return false;
+        }
+
+        this->_body = output;           // Assigner la sortie du script au body
+        this->_headers["Content-Type"] = "text/html"; // Assurer un Content-Type correct
+        return true;
+    }
+}
+
+void HttpResponse::handleCGI(std::string uri) {
+    if (!executeCGI(uri)) {
+        this->handleError(500, "CGI Execution Failed");
+        return;
+    }
+    // Gérer le fichier temporaire produit par le CGI
+    std::ifstream cgiOutput(this->_cgiTmpFile.c_str(), std::ios::binary);
+    if (!cgiOutput.is_open()) {
+        this->handleError(500, "Failed to Open CGI Output");
+        return;
+    }
+
+    // Lire et analyser la sortie CGI
+    std::stringstream buffer;
+    buffer << cgiOutput.rdbuf();
+    std::string cgiResponse = buffer.str();
+
+    // Parse en-têtes CGI
+    size_t headerEnd = cgiResponse.find("\r\n\r\n");
+    if (headerEnd == std::string::npos) {
+        this->handleError(500, "Malformed CGI Response");
+        return;
+    }
+    this->_headers["Content-Type"] = parseContentType(cgiResponse.substr(0, headerEnd));
+    this->_body = cgiResponse.substr(headerEnd + 4);
+
+    // Créer l'en-tête HTTP
+    this->_statusCode = 200;
+    this->createHeader();
+    this->sendHeader();
+    this->sendData(this->_body.c_str(), this->_body.size());
+    cgiOutput.close();
+    return;
+}
+
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
@@ -272,7 +349,9 @@ void HttpResponse::sendResponse() {
 		this->serveStaticFile(uri);
 		return;
 	}
-    
+    if  (_isCGI) {
+		handleCGI(uri);
+	}
     // finalizeResponse();
 	if (this->getRequest()->getMethod() == GET) {
 		std::string body = "COUCOU WEBSERV !!!";
@@ -319,6 +398,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	bool follow = true;
 	isDir = false;
 	saveLoc.inLoc = false;
+	_isCGI = false;
 	
 	if (_isLocation) {
         location = matchLocation(uri);
@@ -363,6 +443,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 			uri = resolvePath;
             // std::cout << "CGI Request Detected: " << resolvePath << std::endl;
 			follow = true;
+			_isCGI = true;
             return (follow);
 		}
 		// else if ((uri != "" && uri != "/") && !_isLocation) {

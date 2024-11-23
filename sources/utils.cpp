@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/21 16:41:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/23 15:37:05 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,3 +180,21 @@ bool	childPath(std::string parent, std::string child) {
 		return (false);
 	return (true);
 }
+
+std::string parseContentType(const std::string &cgiHeaders) {
+    // Look for the "Content-Type" header in the CGI response
+    size_t start = cgiHeaders.find("Content-Type:");
+    if (start == std::string::npos) {
+        return "text/html";
+    }
+    start += 13;
+    while (start < cgiHeaders.size() && (cgiHeaders[start] == ' ' || cgiHeaders[start] == '\t')) {
+        ++start;
+    }
+    size_t end = cgiHeaders.find("\r\n", start);
+    if (end == std::string::npos) {
+        end = cgiHeaders.size();
+    }
+    return cgiHeaders.substr(start, end - start);
+}
+
