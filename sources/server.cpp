@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/22 14:00:01 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/23 16:45:58 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ Server &Server::operator=(const Server &rhs) {
         this->_uploadPath = rhs._uploadPath;
         this->_binPath = rhs._binPath;
         this->_cgiExtensions = rhs._cgiExtensions;
+        this->_cgiBin = rhs._cgiBin;
 		this->_autoindex = rhs._autoindex;
 
 
@@ -269,5 +270,6 @@ std::ostream	&operator<<(std::ostream &o, Server &server) {
         o << " - " << tmp << "\n";
     }
 	o << " (fd: " << server.getSock() << ")";
+	o << " ok -----> " << server.getCgiBin();
 	return(o);
 }

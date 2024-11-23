@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/23 15:42:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/23 16:53:01 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,46 +244,100 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
 }
 
 bool HttpResponse::executeCGI(const std::string &uri) {
-    int pipe_fd[2];
-    if (pipe(pipe_fd) == -1) {
-        this->handleError(500, "CGI execution failed: pipe error");
+    char tempFileName[] = "/tmp/cgi_output_XXXXXX";
+    int tempFd = mkstemp(tempFileName); // Create a secure temporary file
+    if (tempFd == -1) {
+        this->handleError(500, "CGI execution failed: unable to create temp file");
         return false;
     }
+
+    this->_cgiTmpFile = tempFileName;
 
     pid_t pid = fork();
     if (pid < 0) {
         this->handleError(500, "CGI execution failed: fork error");
+        close(tempFd);
+        unlink(tempFileName); // Clean up temporary file
         return false;
-    } else if (pid == 0) {
-        // Enfant: Exécuter le CGI
-        dup2(pipe_fd[1], STDOUT_FILENO); // Redirige la sortie standard
-        close(pipe_fd[0]);              // Ferme la lecture
-        close(pipe_fd[1]);              // Ferme l'écriture
-        execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL);
-        exit(1); // Si exec échoue
-    } else {
-        // Parent: Lire la sortie du CGI
-        close(pipe_fd[1]);              // Ferme l'écriture
-        char buffer[4096];
-        ssize_t bytesRead;
-        std::string output;
+    }
 
-        while ((bytesRead = read(pipe_fd[0], buffer, sizeof(buffer) - 1)) > 0) {
-            buffer[bytesRead] = '\0';
-            output += buffer;
+    if (pid == 0) {
+        dup2(tempFd, STDOUT_FILENO); // Redirect CGI output to the temp file
+        close(tempFd);               // Close the temp file descriptor in the child process
+
+        if (execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL) == -1) {
+            perror("exec failed");
+            exit(127); // Exit with a specific code indicating `execl` failure
         }
-        close(pipe_fd[0]);
+    } else {
+        // Parent process: Wait for the child and handle the output
+        close(tempFd); // Close the temp file descriptor in the parent process
 
-        if (output.empty()) {
-            this->handleError(500, "CGI execution failed: no output");
+        int status;
+        waitpid(pid, &status, 0); // Wait for the child process to finish
+
+        if (WIFEXITED(status)) {
+            int exitCode = WEXITSTATUS(status);
+            if (exitCode != 0) {
+                if (exitCode == 127) {
+                    this->handleError(500, "CGI binary not found or execution failed");
+                } else {
+                    this->handleError(500, "CGI execution failed with error code: " + intToString(exitCode));
+                }
+                unlink(tempFileName); // Clean up the temporary file
+                return false;
+            }
+        } else {
+            this->handleError(500, "CGI process terminated abnormally");
+            unlink(tempFileName); // Clean up the temporary file
             return false;
         }
-
-        this->_body = output;           // Assigner la sortie du script au body
-        this->_headers["Content-Type"] = "text/html"; // Assurer un Content-Type correct
-        return true;
     }
+
+    // Success: Output written to the temporary file
+    return true;
 }
+
+// bool HttpResponse::executeCGI(const std::string &uri) {
+//     int pipe_fd[2];
+//     if (pipe(pipe_fd) == -1) {
+//         this->handleError(500, "CGI execution failed: pipe error");
+//         return false;
+//     }
+//     pid_t pid = fork();
+//     if (pid < 0) {
+//         this->handleError(500, "CGI execution failed: fork error");
+//         return false;
+//     } else if (pid == 0) {
+//         dup2(pipe_fd[1], STDOUT_FILENO);
+//         close(pipe_fd[0]);              
+//         close(pipe_fd[1]);             
+//         execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL);
+// 	// std::cerr << "LOL" << uri << " and " << _cgiBin.c_str() <<std::endl;
+//         exit(1); // Si exec échoue ATTENTION A METTRE LE BON CODE ERREUR SI CGIBIN EXISTE PAS
+//     } else {
+//         // Parent: Lire la sortie du CGI
+//         close(pipe_fd[1]);              // Ferme l'écriture
+//         char buffer[4096];
+//         ssize_t bytesRead;
+//         std::string output;
+
+//         while ((bytesRead = read(pipe_fd[0], buffer, sizeof(buffer) - 1)) > 0) {
+//             buffer[bytesRead] = '\0';
+//             output += buffer;
+//         }
+//         close(pipe_fd[0]);
+
+//         if (output.empty()) {
+//             this->handleError(500, "CGI execution failed: no output");
+//             return false;
+//         }
+
+//         this->_body = output;           // Assigner la sortie du script au body
+//         this->_headers["Content-Type"] = "text/html"; // Assurer un Content-Type correct
+//         return true;
+//     }
+// }
 
 void HttpResponse::handleCGI(std::string uri) {
     if (!executeCGI(uri)) {
@@ -345,13 +399,14 @@ void HttpResponse::sendResponse() {
 		}
 		return ;
 	}
+	if  (_isCGI) {
+		handleCGI(uri);
+	}
 	if (!isDir) {
 		this->serveStaticFile(uri);
 		return;
 	}
-    if  (_isCGI) {
-		handleCGI(uri);
-	}
+
     // finalizeResponse();
 	if (this->getRequest()->getMethod() == GET) {
 		std::string body = "COUCOU WEBSERV !!!";
