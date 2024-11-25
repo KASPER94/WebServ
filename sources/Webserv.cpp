@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/20 11:36:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/25 16:26:15 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Webserv.hpp"
+
+extern bool	run;
 
 Webserv::Webserv() {}
 
@@ -237,7 +239,7 @@ void Webserv::initializeSockets() {
     }
 
     // Main loop to handle events
-    while (true) {
+    while (run == true) {
         struct epoll_event events[MAX_EVENTS];
         int eventCount = epoll_wait(_epollfd, events, MAX_EVENTS, EPOLL_TIMEOUT);
         if (eventCount == -1) {
