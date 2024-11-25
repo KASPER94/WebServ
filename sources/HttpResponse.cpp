@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/23 16:53:01 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/25 16:12:06 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,6 +228,7 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.seekg(0, std::ios::beg);
 
     std::string ext = uri.substr(uri.find_last_of(".") + 1);
+	std::cout << "### --> " << ext << std::endl; 
     this->_mime = Mime::getMimeType(ext);
 
     this->_statusCode = 200;
@@ -505,6 +506,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		// 	follow = false;
 		// }
 	}
+	uri = resolvePath;
 	// else
 	// 	follow = true;
 	return (follow);
