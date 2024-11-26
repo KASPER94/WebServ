@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/25 16:12:06 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/25 22:27:22 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,6 @@ void	HttpResponse::checkSend(int bytes) {
 
 bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
     struct stat	s;
-
 
 	if (stat(uri.c_str(), &s) == 0) {
 		if (s.st_mode & S_IFDIR) {
@@ -217,9 +216,19 @@ int	HttpResponse::sendData(const void *data, int len) {
 }
 
 void HttpResponse::serveStaticFile(const std::string &uri) {
+	std::cout << uri << std::endl;
     std::ifstream file(uri.c_str(), std::ios::binary);
 
     if (!file.is_open()) {
+		if (uri.find("favicon.ico") != std::string::npos) {
+            this->_statusCode = 404;
+            this->_mime = "image/x-icon";
+            this->_headers["Content-Type"] = this->_mime;
+            this->_headers["Content-Length"] = "0";
+            this->createHeader();
+            this->sendHeader();
+            return;
+        }
         this->handleError(500, "Failed to Open File");
         return;
     }
@@ -228,7 +237,7 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.seekg(0, std::ios::beg);
 
     std::string ext = uri.substr(uri.find_last_of(".") + 1);
-	std::cout << "### --> " << ext << std::endl; 
+	std::cout << "### --> " << uri << std::endl; 
     this->_mime = Mime::getMimeType(ext);
 
     this->_statusCode = 200;
@@ -506,8 +515,11 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		// 	follow = false;
 		// }
 	}
-	uri = resolvePath;
-	// else
+	if (uri == "/")
+		uri = resolvePath;
+	else
+		uri = _root + this->_client->getRequest()->returnPATH();
+	// std::cout << "444 --> " << this->_client->getRequest()->returnPATH() << std::endl; 
 	// 	follow = true;
 	return (follow);
 }
