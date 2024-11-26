@@ -6,13 +6,24 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/02 00:44:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/26 13:16:48 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "conf.hpp"
 #include "webserv.h"
 #include <iostream>
+#include <csignal>
+
+bool	run = true;
+
+void	signalHandler(int signum) {
+	if (signum == SIGINT) {
+		(void)signum;
+		std::cout << "\nReceived SIGINT" << std::endl;
+		run = false;
+	}
+}
 
 bool webserv(char *config_file) {
 	// std::vector<Server>::iterator	it;
@@ -44,6 +55,7 @@ bool webserv(char *config_file) {
 }
 
 int main(int ac, char **av) {
+	signal(SIGINT, signalHandler);
     if (ac == 1) {
         webserv((char *)"./config/default.conf");
     }
