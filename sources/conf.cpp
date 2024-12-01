@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 12:25:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 18:18:59 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void conf::_parseLocation(std::string line, Server &serv, std::ifstream &ConfigF
 		if (directive == "root") {
 			locationConfig.setRoot(this->_getRoot(tokens));
 		} else if (directive == "index") {
-		// 	locationConfig.setIndex(this->_getIndex(tokens));
+			locationConfig.setIndex(this->_getIndexLoc(tokens));
 		} else if (directive == "cgi_bin") {
 			locationConfig.setCgiBin(this->_getCgiBin(tokens));
 		} else if (directive == "cgi_extension") {

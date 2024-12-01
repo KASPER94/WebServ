@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/23 16:45:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 18:16:07 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ Server &Server::operator=(const Server &rhs) {
         _locations.clear();
         for (std::map<std::string, Location *>::const_iterator it = rhs._locations.begin(); it != rhs._locations.end(); ++it) {
             _locations[it->first] = new Location(*it->second);
+            std::cout << (_locations[it->first])->getRoot() << std::endl;
+            // std::cout << *(_locations[it->first])->getCgiExtension().begin() << std::endl;
         }
 
         if (rhs._uri) {
@@ -268,6 +270,21 @@ std::ostream	&operator<<(std::ostream &o, Server &server) {
     for (std::map<std::string, Location*>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
 		std::string tmp = (it->second)->getRoot();
         o << " - " << tmp << "\n";
+        const std::vector<std::string> &cgiExtensions = (it->second)->getCgiExtension();
+        if (!cgiExtensions.empty()) {
+            std::string tmp2 = cgiExtensions.front();
+            o << " - " << tmp2 << "\n";
+        } else {
+            o << " - No CGI Extensions\n";
+        }
+		std::string indexes = (it->second)->getIndex();
+        if (!indexes.empty()) {
+            o << " - Indexes: ";
+			o << indexes;
+            o << "\n";
+        } else {
+            o << " - No Indexes Defined\n";
+        }
     }
 	o << " (fd: " << server.getSock() << ")";
 	o << " ok -----> " << server.getCgiBin();

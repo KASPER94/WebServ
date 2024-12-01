@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 12:24:42 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 18:19:24 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class conf {
 		std::string _getHost(std::vector<std::string> line);
 		std::string  _getServerName(std::vector<std::string> line);
 		std::vector<std::string>		_getIndex(std::vector<std::string> line);
+		std::string _getIndexLoc(std::vector<std::string> line);
 		// void _getLocation(std::vector<std::string> line);
 		std::map<int, std::string> _getErrorPage(std::vector<std::string> line);
 		size_t _getClientMaxBodySize(std::vector<std::string> line);

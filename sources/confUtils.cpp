@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/23 16:43:17 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 18:19:25 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,6 +228,40 @@ bool conf::_getAutoindex( std::vector<std::string> &line) {
 	else
 		throw std::runtime_error("Error: invalid value for autoindex (must be 'on' or 'off')");
 }
+
+std::string conf::_getIndexLoc(std::vector<std::string> line) {
+    if (line.size() != 2) // Attente de exactement un argument + le mot-clé `index`
+        throw std::runtime_error("Error: 'index' directive requires exactly one argument.");
+
+    std::string index = line[1];
+
+    if (index[index.size() - 1] != ';') // Vérification du point-virgule final
+        throw std::runtime_error("Error: missing ';' at the end of 'index' directive.");
+
+    // Retirer le point-virgule final
+    index = index.substr(0, index.size() - 1);
+
+    // Vérification du contenu non vide après traitement
+    if (index.empty())
+        throw std::runtime_error("Error: missing index value in 'index' directive.");
+
+    // Nettoyage des espaces superflus
+    size_t start = 0;
+    while (start < index.size() && std::isspace(index[start]))
+        start++;
+    size_t end = index.size();
+    while (end > start && std::isspace(index[end - 1]))
+        end--;
+
+    index = index.substr(start, end - start);
+
+    // Vérification de validité après nettoyage
+    if (index.empty())
+        throw std::runtime_error("Error: invalid or empty index value in 'index' directive.");
+
+    return index;
+}
+
 
 std::vector<std::string> conf::_getIndex(std::vector<std::string> line) {
 	if (line.size() < 2)

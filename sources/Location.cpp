@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/22 23:55:39 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 17:21:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@
 Location::Location() : _autoindex(false) {}
 
 Location::Location(const Location &cpy)
-    : _root(cpy._root), _index(cpy._index), _cgi_bin(cpy._cgi_bin),
-      _cgi_extension(cpy._cgi_extension), _upload_path(cpy._upload_path),
+    : _root(cpy._root), _index(cpy._index), _cgi_bin(cpy._cgi_bin), _cgi_extension(cpy._cgi_extension),
+      _cgiExtensions(cpy._cgiExtensions), _upload_path(cpy._upload_path),
       _return_uri(cpy._return_uri), _autoindex(cpy._autoindex),
       _allowed_methods(cpy._allowed_methods), _error_pages(cpy._error_pages),
       _maxBodySize(cpy._maxBodySize) {}

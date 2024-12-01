@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/25 22:27:22 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 18:10:22 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,19 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
 				uri += *it;
 				isDir = false;
 				break;
+			}
+		}
+		if (saveLoc.inLoc) {
+			std::string index = saveLoc.loc.getIndex();
+				std::cout << "### " << index << std::endl;
+			if (!index.empty() && access((uri + index).c_str(), F_OK) != -1) {
+				if (access((uri + index).c_str(), R_OK) == -1) {
+					this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
+					return (false);
+				}
+				uri += index;
+				isDir = false;
+				return true;
 			}
 		}
 	}
@@ -350,6 +363,7 @@ bool HttpResponse::executeCGI(const std::string &uri) {
 // }
 
 void HttpResponse::handleCGI(std::string uri) {
+	std::cerr << "helloworld" << std::endl;
     if (!executeCGI(uri)) {
         this->handleError(500, "CGI Execution Failed");
         return;
@@ -451,7 +465,7 @@ void	HttpResponse::setInfos() {
 	this->_directoryListing = this->getServer()->getAutoindex();
 	this->_errorPage = this->getServer()->getErrorPage();
 	this->_returnURI = this->getServer()->getReturnUri();
-	// this->_uploadPath = this->getServer()->getUploadPath();
+	this->_uploadPath = this->getServer()->getUploadPath();
 	this->_cgiBin = this->getServer()->getCgiBin();
 	this->_cgiExt = this->getServer()->getCgiExtension();
 	this->_indexes = this->getServer()->getIndexes();
@@ -469,6 +483,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
         location = matchLocation(uri);
         if (!location.empty()) {
 			saveLoc.inLoc = true;
+			std::cout << "### " << saveLoc.inLoc << std::endl;
             Location *loc = this->getServer()->getLocation(location);
 			saveLoc.loc = *loc;
             resolvePath = loc->getRoot();
@@ -514,6 +529,25 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		// else if ((uri != "" && uri != "/") && !_isLocation) {
 		// 	follow = false;
 		// }
+	}
+	if (_isLocation) {
+		Location *loc = this->getServer()->getLocation(location);
+		
+		const std::vector<std::string> &cgiExtensions = loc->getCgiExtension();
+		if (!cgiExtensions.empty()) {
+			std::cout << *(cgiExtensions.begin()) << std::endl;
+			for (std::vector<std::string>::const_iterator it = cgiExtensions.begin(); it != cgiExtensions.end(); ++it) {
+				// std::cout << "uri : " << *it << std::endl;
+				if (!it->empty() && resolvePath.find(*it) != std::string::npos) {
+					uri = resolvePath;
+					follow = true;
+					_isCGI = true;
+					return follow;
+				}
+			}
+		} else {
+			std::cout << "No CGI Extensions available for this location." << std::endl;
+		}
 	}
 	if (uri == "/")
 		uri = resolvePath;

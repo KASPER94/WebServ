@@ -76,6 +76,7 @@
 		"utility": "cpp",
 		"numbers": "cpp",
 		"cinttypes": "cpp",
-		"cerrno": "cpp"
+		"cerrno": "cpp",
+		"csignal": "cpp"
 	}
 }
