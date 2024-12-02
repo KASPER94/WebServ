@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/01 18:10:22 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/02 10:39:39 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
 		}
 		if (saveLoc.inLoc) {
 			std::string index = saveLoc.loc.getIndex();
-				std::cout << "### " << index << std::endl;
+			std::cout << "### " << index << std::endl;
 			if (!index.empty() && access((uri + index).c_str(), F_OK) != -1) {
 				if (access((uri + index).c_str(), R_OK) == -1) {
 					this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
@@ -287,7 +287,6 @@ bool HttpResponse::executeCGI(const std::string &uri) {
     if (pid == 0) {
         dup2(tempFd, STDOUT_FILENO); // Redirect CGI output to the temp file
         close(tempFd);               // Close the temp file descriptor in the child process
-
         if (execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL) == -1) {
             perror("exec failed");
             exit(127); // Exit with a specific code indicating `execl` failure
@@ -363,7 +362,6 @@ bool HttpResponse::executeCGI(const std::string &uri) {
 // }
 
 void HttpResponse::handleCGI(std::string uri) {
-	std::cerr << "helloworld" << std::endl;
     if (!executeCGI(uri)) {
         this->handleError(500, "CGI Execution Failed");
         return;
@@ -411,10 +409,12 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
+	std::cerr << "1" << _isCGI << std::endl;
 	if (this->getRequest()->getMethod() == DELETE) {
 		tryDeleteFile(uri);
 		return ;
 	}
+	std::cerr << "2" << _isCGI << std::endl;
 	if (isDir) {
 		if (this->_directoryListing)
 			this->directoryListing(uri);
@@ -423,7 +423,9 @@ void HttpResponse::sendResponse() {
 		}
 		return ;
 	}
+	std::cerr << "3" << _isCGI << std::endl;
 	if  (_isCGI) {
+	std::cerr << "4"<< _isCGI << std::endl;
 		handleCGI(uri);
 	}
 	if (!isDir) {
@@ -483,7 +485,6 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
         location = matchLocation(uri);
         if (!location.empty()) {
 			saveLoc.inLoc = true;
-			std::cout << "### " << saveLoc.inLoc << std::endl;
             Location *loc = this->getServer()->getLocation(location);
 			saveLoc.loc = *loc;
             resolvePath = loc->getRoot();
@@ -498,7 +499,18 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
                 if (access(indexPath.c_str(), F_OK) != -1) {
                     uri = indexPath;
                     isDir = false;
-                    return (true);
+					const std::vector<std::string> &cgiExtensions = loc->getCgiExtension();
+					if (!cgiExtensions.empty()) {
+						for (std::vector<std::string>::const_iterator it = cgiExtensions.begin(); it != cgiExtensions.end(); ++it) {
+							if (!it->empty() && uri.find(*it) != std::string::npos) {
+								follow = true;
+								_isCGI = true;
+								this->_cgiBin = loc->getCgiBin();					
+								return follow;
+							}
+						}
+					} else 
+						return (true);
                 }
             }
         } else {
@@ -523,36 +535,18 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 			uri = resolvePath;
             // std::cout << "CGI Request Detected: " << resolvePath << std::endl;
 			follow = true;
-			_isCGI = true;
+			_isCGI = true;			
             return (follow);
 		}
 		// else if ((uri != "" && uri != "/") && !_isLocation) {
 		// 	follow = false;
 		// }
 	}
-	if (_isLocation) {
-		Location *loc = this->getServer()->getLocation(location);
-		
-		const std::vector<std::string> &cgiExtensions = loc->getCgiExtension();
-		if (!cgiExtensions.empty()) {
-			std::cout << *(cgiExtensions.begin()) << std::endl;
-			for (std::vector<std::string>::const_iterator it = cgiExtensions.begin(); it != cgiExtensions.end(); ++it) {
-				// std::cout << "uri : " << *it << std::endl;
-				if (!it->empty() && resolvePath.find(*it) != std::string::npos) {
-					uri = resolvePath;
-					follow = true;
-					_isCGI = true;
-					return follow;
-				}
-			}
-		} else {
-			std::cout << "No CGI Extensions available for this location." << std::endl;
-		}
-	}
 	if (uri == "/")
 		uri = resolvePath;
 	else
 		uri = _root + this->_client->getRequest()->returnPATH();
+
 	// std::cout << "444 --> " << this->_client->getRequest()->returnPATH() << std::endl; 
 	// 	follow = true;
 	return (follow);
