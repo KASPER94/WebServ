@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/02 10:39:39 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/03 13:30:03 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,7 +250,6 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.seekg(0, std::ios::beg);
 
     std::string ext = uri.substr(uri.find_last_of(".") + 1);
-	std::cout << "### --> " << uri << std::endl; 
     this->_mime = Mime::getMimeType(ext);
 
     this->_statusCode = 200;
@@ -409,12 +408,10 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
-	std::cerr << "1" << _isCGI << std::endl;
 	if (this->getRequest()->getMethod() == DELETE) {
 		tryDeleteFile(uri);
 		return ;
 	}
-	std::cerr << "2" << _isCGI << std::endl;
 	if (isDir) {
 		if (this->_directoryListing)
 			this->directoryListing(uri);
@@ -423,31 +420,29 @@ void HttpResponse::sendResponse() {
 		}
 		return ;
 	}
-	std::cerr << "3" << _isCGI << std::endl;
 	if  (_isCGI) {
-	std::cerr << "4"<< _isCGI << std::endl;
 		handleCGI(uri);
 	}
-	if (!isDir) {
+	if (!isDir && !_isCGI) {
 		this->serveStaticFile(uri);
 		return;
 	}
 
     // finalizeResponse();
-	if (this->getRequest()->getMethod() == GET) {
-		std::string body = "COUCOU WEBSERV !!!";
-		std::string headers = "HTTP/1.1 200 OK\r\n"
-							"Content-Type: text/plain\r\n"
-							"Content-Length: " + intToString(body.size()) + "\r\n"
-							"Connection: close\r\n"
-                  			"\r\n";
-		_response = headers + body;
-	} else {
-		_response = "HTTP/1.1 405 Method Not Allowed\r\n"
-					"Content-Length: 0\r\n"
-					"Connection: close\r\n"
-					"\r\n";
-	}
+	// if (this->getRequest()->getMethod() == GET) {
+	// 	std::string body = "COUCOU WEBSERV !!!";
+	// 	std::string headers = "HTTP/1.1 200 OK\r\n"
+	// 						"Content-Type: text/plain\r\n"
+	// 						"Content-Length: " + intToString(body.size()) + "\r\n"
+	// 						"Connection: close\r\n"
+    //               			"\r\n";
+	// 	_response = headers + body;
+	// } else {
+	// 	_response = "HTTP/1.1 405 Method Not Allowed\r\n"
+	// 				"Content-Length: 0\r\n"
+	// 				"Connection: close\r\n"
+	// 				"\r\n";
+	// }
 }
 
 void	HttpResponse::setInfos() {
@@ -505,7 +500,8 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 							if (!it->empty() && uri.find(*it) != std::string::npos) {
 								follow = true;
 								_isCGI = true;
-								this->_cgiBin = loc->getCgiBin();					
+								this->_cgiBin = loc->getCgiBin();
+								//allowed mthod				
 								return follow;
 							}
 						}
