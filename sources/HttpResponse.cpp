@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/03 13:30:03 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/03 18:13:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ void HttpResponse::createHeader() {
 	if (!this->_mime.empty()) {
 		this->_headers["Content-Type"] = this->_mime;
 	} else {
-		this->_headers["Content_Type"] = "text/html";
+		this->_headers["Content-Type"] = "text/html";
 	}
 	//changer avec keepalive !!!!!
 	this->_headers["Connection"] = "close";
@@ -400,13 +400,13 @@ void HttpResponse::sendResponse() {
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
 	if (!initializeResponse())
 		return handleError(400, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
-	if (!this->methodAllowed(this->getRequest()->getMethod())) {
-        return handleError(405, "Method Not Allowed");
-    }
     std::string uri = this->getRequest()->returnPATH();
     bool isDir;
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
+    }
+	if (!this->methodAllowed(this->getRequest()->getMethod())) {
+        return handleError(405, "Method Not Allowed");
     }
 	if (this->getRequest()->getMethod() == DELETE) {
 		tryDeleteFile(uri);
@@ -475,7 +475,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	isDir = false;
 	saveLoc.inLoc = false;
 	_isCGI = false;
-	
+
 	if (_isLocation) {
         location = matchLocation(uri);
         if (!location.empty()) {
@@ -501,6 +501,9 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 								follow = true;
 								_isCGI = true;
 								this->_cgiBin = loc->getCgiBin();
+								if (!loc->getAllowedMethods().empty()){
+									this->_allowedMethod = loc->getAllowedMethods();
+								}
 								//allowed mthod				
 								return follow;
 							}
@@ -569,9 +572,9 @@ bool	HttpResponse::initializeResponse() {
 		this->handleError(400, "You do not have permission to access this resource.");
 		return (false);
 	}
+
 	std::string uri = this->_returnURI.begin()->second;
 	if (!uri.empty()) {
-		std::cout << uri << std::endl;
         std::map<int, std::string>::iterator redirect = this->_returnURI.begin();
         if (redirect->first == 301) {
             this->movedPermanently(redirect->second);
