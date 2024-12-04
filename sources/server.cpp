@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 16:13:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 16:39:03 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,47 +62,48 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 int Server::connectToNetwork() {
-    setSock();  // Set the socket address structure
+	setSock();  // Set the socket address structure
 
-    // const int max_retries = 5;  // Maximum retries for binding
-    // int retry_count = 0;
+	// const int max_retries = 5;  // Maximum retries for binding
+	// int retry_count = 0;
 
-    // Create the socket
-    this->_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (this->_sock == -1) {
-        std::cerr << "Erreur: Échec de la création du socket" << std::endl;
-        return -1;
-    }
+	// Create the socket
+	this->_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (this->_sock == -1) {
+		std::cerr << "[DEBUG] Failed to create socket: " << strerror(errno) << std::endl;
+		return -1;
+	}
+	// Set the socket options to reuse the address
+	int yes = 1;
+	if (setsockopt(this->_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
+		std::cerr << "[DEBUG] Failed to set socket options: " << strerror(errno) << std::endl;
+		close(this->_sock);
+		return -1;
+	}
 
-    // Set the socket options to reuse the address
-    int yes = 1;
-    if (setsockopt(this->_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
-        perror("Erreur: setsockopt()");
-        close(this->_sock);
-        return -1;
-    }
+	// Attempt to bind the socket with retry logic
+	if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
+		if (errno == EADDRINUSE) {
+			std::cerr << "[DEBUG] Port " << this->_port
+						<< " is already in use. Binding failed." << std::endl;
+		} else {
+			std::cerr << "[DEBUG] Failed to bind socket on port "
+						<< this->_port << ": " << strerror(errno) << std::endl;
+		}
+		close(this->_sock);
+		return -1;
+	}
 
-    // Attempt to bind the socket with retry logic
-    if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
-        // if (++retry_count > max_retries) {
-        //     std::cerr << "Erreur: Échec de la liaison après " << max_retries << " tentatives." << std::endl;
-        //     close(this->_sock);
-        //     return -1;
-        // }
-        std::cerr << "Port " << this->_port << " en cours d'utilisation, tentative avec le port " << (this->_port + 1) << std::endl;
-        // this->_port++;  // Increment the port
-        // setSock();  // Update the socket address with the new port
-    }
+	// Listen on the socket for incoming connections
+	if (listen(this->_sock, 10) < 0) {
+		std::cerr << "[DEBUG] Failed to listen on port "
+					<< this->_port << ": " << strerror(errno) << std::endl;
+		close(this->_sock);
+		return -1;
+	}
 
-    // Listen on the socket for incoming connections
-    if (listen(this->_sock, 10) < 0) {
-        std::cerr << "Erreur: Échec de l'écoute" << std::endl;
-        close(this->_sock);
-        return -1;
-    }
-
-    std::cout << "Serveur en écoute sur le port: " << this->_port << std::endl;
-    return 0;
+	std::cout << "[DEBUG] Server is successfully listening on port: " << this->_port << std::endl;
+	return 0;
 }
 
 void Server::setCgiBin(const std::string &cgiBin) { _cgiBin = cgiBin; }
