@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/26 13:24:22 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 16:04:15 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,26 +26,30 @@ void	signalHandler(int signum) {
 }
 
 bool webserv(char *config_file) {
-	// std::vector<Server>::iterator	it;
-	// std::vector<std::string>::iterator	it2;
-	// std::vector<std::string> *methods;
 
     try {
         conf config(config_file);
-		env()->webserv->initializeSockets();
-		// it = (env()->webserv->getAllServer()).begin();
-		// for (; it != (env()->webserv->getAllServer()).end(); it++){
-		// 	methods = it->getAllowedMethods();
-		// 	it2 = methods->begin();
-		// 	for (; it2 != methods->end(); it2++){
-		// 		std::cout << *it2 << std::endl;
-		// 	}
-			// std::map<int, std::string> errorPages = it->getErrorPage();
+		std::vector<Server> &servers = env()->webserv->getAllServer();
 
-			// // Utiliser l'itérateur pour parcourir les erreurs
-			// for (std::map<int, std::string>::iterator it2 = errorPages.begin(); it2 != errorPages.end(); ++it2) {
-			// 	std::cout << it2->first << std::endl;
-			// }
+		// Vérification des conflits de ports
+		std::map<int, int> portCounts;
+		for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); ++it) {
+			int port = it->getPort();
+			if (portCounts.find(port) == portCounts.end()) {
+				portCounts[port] = 1;
+			} else {
+				portCounts[port]++;
+			}
+		}
+		for (std::map<int, int>::iterator it = portCounts.begin(); it != portCounts.end(); ++it) {
+			if (it->second > 1) {
+				std::cerr << "[DEBUG] Conflict detected: "
+							<< it->second << " servers are configured to listen on port "
+							<< it->first << "." << std::endl;
+				throw std::runtime_error("Port conflict error. Check your server configuration.");
+			}
+		}
+		env()->webserv->initializeSockets();
 	}
     catch (std::exception &e)
 	{

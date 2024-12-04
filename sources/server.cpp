@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/01 18:16:07 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 16:13:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ Server &Server::operator=(const Server &rhs) {
         _locations.clear();
         for (std::map<std::string, Location *>::const_iterator it = rhs._locations.begin(); it != rhs._locations.end(); ++it) {
             _locations[it->first] = new Location(*it->second);
-            std::cout << (_locations[it->first])->getRoot() << std::endl;
+            // std::cout << (_locations[it->first])->getRoot() << std::endl;
             // std::cout << *(_locations[it->first])->getCgiExtension().begin() << std::endl;
         }
 
@@ -196,11 +196,6 @@ void Server::setUri(std::string uri) {
 		_uri = new std::vector<std::string>;
 	}
 	_uri->push_back(uri);
-	std::cout << "URIs actuels : ";
-    for (size_t i = 0; i < _uri->size(); ++i) {
-        std::cout << _uri->at(i) << " ";
-    }
-    std::cout << std::endl;
 }
 
 std::vector<std::string> *Server::getUri() {
