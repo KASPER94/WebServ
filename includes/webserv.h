@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/10/25 16:16:25 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/23 16:51:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,14 @@
 
 # include <fstream>
 # include <sstream>
+# include <fcntl.h>
+# include <cstring>
+# include <sys/wait.h>
+
+# define MAX_EVENTS 10
+# define BUFFER_SIZE 4096
+# define EPOLL_TIMEOUT 5000
+# define CLIENT_TIMEOUT 5
 
 enum Directive {
 	SERVER,
@@ -33,6 +41,7 @@ enum Directive {
 	CGI_EXTENSION,
 	CGI_PATH,
 	CLOSE_BRACKET,
+	RETURN_URI,
 	UNKNOWN
 };
 
@@ -57,5 +66,12 @@ std::vector<std::string> split_trim_conf(std::string str);
 Directive getDirective(const std::string &directive);
 unsigned long convertIpToUnsignedLong(const std::string &ip);
 void convertAllowMethods(const std::vector<HttpMethod>& methods) ;
+int		setsocknonblock(int sock);
+void	rtrim(std::string &str);
+void	ltrim(std::string &str);
+std::string intToString(int number);
+bool	childPath(std::string parent, std::string child);
+std::string	getFullPath(std::string path);
+std::string parseContentType(const std::string &cgiHeaders);
 
 #endif

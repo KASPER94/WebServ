@@ -1,0 +1,123 @@
+### connect -- initiate a connection on a socket
+```c++
+int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+```
+Connects the socket `sockfd` to the address specified by `addr`.
+
+### inet_addr -- IPv4 address manipulation
+
+```c++
+#include <arpa/inet.h>
+
+in_addr_t inet_addr(const char *cp);
+```
+converts the string `cp` to an integer value suitable for use as an Internet address.
+
+### setsockopt -- set the socket 
+
+```c++
+int setsockopt(int sockfd, int level, int option_name, const void *option_value, socklen_t option_len);
+```
+sets the option `option_name` argument, at the protocol level specified by the `level` argument, to the value `option_value` for the socket `sockfd`.
+
+### fcnt -- manipulate file descriptor
+
+```c++
+#include <fcntl.h>
+
+int fcntl(int fd, int cmd, ... /* arg */ );
+```
+performs one of the operation `cmd` on the open file descriptor `fd`.
+
+-----------------
+## HTTP requests methods
+
+HTTP defines a set of request methods(or *verbs*) to indicate the desired action to be performed for a given resource.
+
+The HTTP/1.0 specification defined the GET, HEAD, and POST methods, and the HTTP/1.1 specification added five new methods: PUT, DELETE, CONNECT, OPTIONS, and TRACE.
+
+- `GET` = requests that the target resource transfer a representation of its state (**HTTP status codes**). Requests using GET should only retrieve data without making changes.
+- `HEAD` = asks for a response identical to a GET request, but without the response body (only the header). 
+- `POST` = submits an entity to the specified resource, often causing a change in state or side effects on the server.
+- `PUT` = requests that the target resource create or update its state with the state defined by the submitted request. A distinction from POST is that the client specifies the target location on the server.
+- `DELETE` = deletes the specified resource.
+- `CONNECT` =  establishes a tunnel to the server identified by the target resource.(?)
+- `OPTIONS` =  requests that the target resource transfer the HTTP methods that it supports. This can be used to check the functionality of a web server by requesting '*' instead of a specific resource.
+- `TRACE` =  requests that the target resource transfer the received request in the response body. That way a client can see what (if any) changes or additions have been made by intermediaries.
+- `PATCH` = applies partial modifications to a resource.
+```
+GET / HTTP/1.1
+Host: www.example.com
+User-Agent: Mozilla/5.0
+Accept: *
+Accept-Language: en-GB,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+```
+
+## HTTP/1.1 response
+A response message is sent by a server to a client as a reply to its former request message. They define how information sent/received, the session verification and identification of the client (cookies, IP, user-agent) or their anonymity (VPN or proxy), how the server should handle data (Do-Not-Track)... 
+```
+HTTP/1.1 200 OK
+Date: Mon, 23 May 2005 22:38:34 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 155
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
+Server: BestServ (Unix) (Red-Hat/Linux)
+ETag: "3f80f-1b6-3e1cb03b"
+Accept-Ranges: bytes
+Connection: close
+
+<html>
+<head>
+    <title>An Example Page</title>
+</head>
+<body>
+    <p>Exemple of a server response.</p>
+</body>
+</html>
+```
+---------------
+
+
+EXEMPLE DE REQUETTE A PARSER : ➜  WebServ git:(simon) ✗ ./RPN ./config/all.conf
+8000
+127.0.0.1
+Serveur en écoute sur le port:8000
+8081
+127.0.0.1
+Erreur: Échec de la liaison
+Échec de la connexion pour le serveur 1
+8082
+127.0.0.1
+Serveur en écoute sur le port:8082
+8083
+127.0.0.1
+Serveur en écoute sur le port:8083
+8084
+127.0.0.1
+Serveur en écoute sur le port:8084
+8085
+127.0.0.1
+Serveur en écoute sur le port:8085
+8086
+127.0.0.1
+Serveur en écoute sur le port:8086
+Nouvelle connexion acceptée sur le socket 43
+Requête reçue sur le socket 43: GET / HTTP/1.1
+Host: skapersk.42.fr:8086
+Connection: keep-alive
+Cache-Control: max-age=0
+DNT: 1
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.9,fr;q=0.8
+Cookie: _ga=GA1.1.1076777069.1720866757; _fbp=fb.1.1724245589713.863225963959914988; _ga_ZPJQSRHJCC=GS1.1.1724245589.1.1.1724246289.0.0.0; _ga_BJ34XNRJCV=GS1.1.1730497053.61.0.1730497053.0.0.0
+
+
+Nouvelle connexion acceptée sur le socket 44
+^C
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b

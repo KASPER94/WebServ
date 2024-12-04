@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/30 11:52:01 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 18:18:59 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,70 @@ bool   conf::_findServerBlock(std::string &line) {
     return (false);
 }
 
-void conf::_parseLocation(std::string block) {
-    // std::cout << block << std::endl;
-	(void)block;
+void conf::_parseLocation(std::string line, Server &serv, std::ifstream &ConfigFile) {
+	std::istringstream word(line);
+	std::string location_keyword;
+	std::string modifier_or_uri;
+	std::string uri;
+
+	// Lire "location" et l'URI ou le modificateur
+	word >> location_keyword >> modifier_or_uri;
+	if (modifier_or_uri == "~" || modifier_or_uri == "~*" || modifier_or_uri == "^~") {
+		// Si un modificateur est détecté, l’URI est le mot suivant
+		word >> uri;
+		// Stocker le modificateur dans la configuration de location (si nécessaire)
+		// ATTETNION PENSER A : locationConfig.setModifier(modifier_or_uri);
+	} else {
+		uri = modifier_or_uri;
+	}
+
+	Location locationConfig;
+	int brace_count = 1;  // '{' trouvé dans "location"
+
+	while (brace_count > 0 && std::getline(ConfigFile, line)) {
+		ltrim(line);
+		rtrim(line);
+		if (line.empty() || line[0] == '#' || line[0] == ';')
+			continue;
+
+		if (line.find("{") != std::string::npos)
+			brace_count++;
+		if (line.find("}") != std::string::npos)
+			brace_count--;
+
+		if (brace_count == 0) 
+			break;
+
+		std::vector<std::string> tokens = split_trim_conf(line);
+		if (tokens.empty())
+			continue;
+
+		std::string directive = tokens[0];
+		if (directive == "root") {
+			locationConfig.setRoot(this->_getRoot(tokens));
+		} else if (directive == "index") {
+			locationConfig.setIndex(this->_getIndexLoc(tokens));
+		} else if (directive == "cgi_bin") {
+			locationConfig.setCgiBin(this->_getCgiBin(tokens));
+		} else if (directive == "cgi_extension") {
+			locationConfig.setCgiExtension(this->_getCgiExtensions(tokens));
+		} else if (directive == "allowedMethods") {
+			locationConfig.setAllowedMethods(*this->_getAllowedMethods(tokens));
+		} else if (directive == "upload_path") {
+			locationConfig.setUploadPath(this->_getUploadPath(tokens));
+		} else if (directive == "return") {
+			locationConfig.setReturnUri(this->_getRedirection(tokens));
+		} else if (directive == "autoindex") {
+			locationConfig.setAutoindex(this->_getAutoindex(tokens));
+		} else if (directive == "error_page") {
+			locationConfig.setErrorPages(this->_getErrorPage(tokens));
+		} else if (directive == "client_max_body_size") {
+			locationConfig.setClientMaxBody(this->_getClientMaxBodySize(tokens));
+		} else {
+			throw std::runtime_error("Unknown directive in location block: " + directive);
+		}
+	}
+	serv.addLocation(uri, locationConfig);
 }
 
 void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &allServ) {
@@ -66,6 +127,9 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
     word >> w;
 	if (!this->_blockLevel && w.compare("{") != 0) {
 		throw std::runtime_error("Error: Invalid server block");
+    }
+	else if ( w.compare("#") == 0) {
+		return ;
     }
     else
         this->_blockLevel = 1;
@@ -84,7 +148,7 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setHostname(this->_getHost(line_trim));
 			break;
 		case INDEX:
-			// this->_getIndex(line_trim);
+			serv.setIndexes(this->_getIndex(line_trim));
 			break;
 		case ERROR_PAGE:
 			serv.setErrorPage(this->_getErrorPage(line_trim));
@@ -95,29 +159,33 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 		case ALLOWED_METHODS:
 			serv.setAllowedMethods(this->_getAllowedMethods(line_trim));
 			break;
+		case RETURN_URI:
+			serv.setReturnUri(this->_getRedirection(line_trim));
+			break;
 		case CGI_BIN:
-			// this->_getCgiBin(line_trim);
+			serv.setCgiBin(this->_getCgiBin(line_trim));
 			break;
 		case AUTOINDEX:
-			// this->_getAutoindex(line_trim);
+			serv.setAutoindex(this->_getAutoindex(line_trim));
 			break;
 		case UPLOAD_PATH:
-			// this->_getUploadPath(line_trim);
+			serv.setUploadPath(this->_getUploadPath(line_trim));
 			break;
 		case ROOT:
-			// this->_getRoot(line_trim);
+			serv.setRoot(this->_getRoot(line_trim));
 			break;
 		case RETURN:
 			// this->_getRedirection(line_trim);
 			break;
 		case CGI_EXTENSION:
-			// this->_getCgiExtension(line_trim);
+			serv.setCgiExtension(this->_getCgiExtensions(line_trim));
 			break;
 		case CGI_PATH:
 			// this->_getCgiPath(line_trim);
 			break;
 		case CLOSE_BRACKET:
 			allServ.push_back(serv);
+			serv.reset();
 			this->_found = false;
 			return;
 		case UNKNOWN:
@@ -126,45 +194,94 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 	}
 }
 
+// std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
+//     std::string line;
+// 	std::vector<Server> allServ;
+// 	Server	serv;
+//     this->_found = false;
+//     int brace_count = 0;
+//     this->_nbServer = 0;
+
+//     while (std::getline(ConfigFile, line)) {
+//         if (line.empty() || line[0] == '#' || line[0] == ';')
+//             continue;
+//         if (!this->_found) {
+//             this->_findServerBlock(line);
+//         } else if (this->_found && line.find("location") != std::string::npos) {
+//             if (line.find("{") != std::string::npos)
+//                 brace_count++;
+//             // this->_parseLocation(line, serv, ConfigFile);
+//             if (line.find("}") != std::string::npos) {
+//                 brace_count--;
+//                 if (brace_count == 0)
+//                     continue;
+//             }
+//         } else if (this->_found && brace_count > 0) {
+//             // this->_parseLocation(line, serv, ConfigFile);
+//             if (line.find("}") != std::string::npos) {
+//                 brace_count--;
+//                 if (brace_count == 0)
+//                     continue;
+//             }
+//         } else if (this->_found) {
+//             this->_parseLine(line, serv, allServ);
+//         }
+//     }
+//     if (brace_count != 0)
+//         throw std::runtime_error("Unclosed bracket");
+//     if (!this->_found && !this->_nbServer){
+//         throw std::runtime_error("File is not containing a server block.");
+// 	}
+//     return allServ;
+// }
+
 std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
     std::string line;
-	std::vector<Server> allServ;
 	Server	serv;
+	std::vector<Server> allServ;
     this->_found = false;
     int brace_count = 0;
     this->_nbServer = 0;
 
     while (std::getline(ConfigFile, line)) {
+		// Server	serv;
         if (line.empty() || line[0] == '#' || line[0] == ';')
-            continue;
+            continue ;
         if (!this->_found) {
             this->_findServerBlock(line);
-        } else if (this->_found && line.find("location") != std::string::npos) {
+        } else if (this->_found && brace_count > 0) {
             if (line.find("{") != std::string::npos)
                 brace_count++;
-            this->_parseLocation(line);
+            // this->_parseLocation(line, serv, ConfigFile);
             if (line.find("}") != std::string::npos) {
                 brace_count--;
                 if (brace_count == 0)
                     continue;
             }
-        } else if (this->_found && brace_count > 0) {
-            this->_parseLocation(line);
-            if (line.find("}") != std::string::npos) {
-                brace_count--;
-                if (brace_count == 0)
-                    continue;
-            }
+        // } else if (this->_found && brace_count > 0) {
+        //     if (line.find("}") != std::string::npos) {
+        //         brace_count--;
+        //         if (brace_count == 0)
+        //             continue;
+        //     }
         } else if (this->_found) {
-            this->_parseLine(line, serv, allServ);
+			if (line.find("location") != std::string::npos) {
+            	this->_parseLocation(line, serv, ConfigFile);
+			}
+			else
+        	   	this->_parseLine(line, serv, allServ);
         }
+		
     }
     if (brace_count != 0)
         throw std::runtime_error("Unclosed bracket");
     if (!this->_found && !this->_nbServer){
         throw std::runtime_error("File is not containing a server block.");
+
 	}
-    return allServ;
+	for (std::vector<Server>::iterator it = allServ.begin(); it != allServ.end(); it++)
+				std::cout << *it << std::endl;
+    return allServ;	
 }
 
 conf::conf(const std::string &str) {

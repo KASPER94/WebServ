@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:52 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/25 16:38:31 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/01 18:19:24 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ class conf {
 		int _blockLevel;
 		std::vector<Server> _getRawConfig(std::ifstream &ConfigFile);
 		void _parseLine(std::string &line, Server &serv, std::vector<Server> &allServ);
-		void _parseLocation(std::string block);
+		void _parseLocation(std::string line, Server &serv, std::ifstream &ConfigFile);
 		bool _findServerBlock(std::string &line);
 		void _checkDuplicateServDecl(std::string &line);
 
@@ -41,19 +41,22 @@ class conf {
 		int _getListen(std::vector<std::string> line);
 		std::string _getHost(std::vector<std::string> line);
 		std::string  _getServerName(std::vector<std::string> line);
-		void _getIndex(std::vector<std::string> line);
+		std::vector<std::string>		_getIndex(std::vector<std::string> line);
+		std::string _getIndexLoc(std::vector<std::string> line);
 		// void _getLocation(std::vector<std::string> line);
 		std::map<int, std::string> _getErrorPage(std::vector<std::string> line);
 		size_t _getClientMaxBodySize(std::vector<std::string> line);
 		std::vector<std::string> *_getAllowedMethods(std::vector<std::string> line);
+		std::string _getRoot(const std::vector<std::string> &line);
 
-		void _getAutoindex(std::vector<std::string> line);
-		void _getUploadPath(std::vector<std::string> line);
-		void _getRoot(std::vector<std::string> line);
-		void _getRedirection(std::vector<std::string> line);
-		void _getCgiExtension(std::vector<std::string> line);
-		void _getCgiPath(std::vector<std::string> line);
-		void _getCgiBin(std::vector<std::string> line);
+		bool _getAutoindex(std::vector<std::string> &line);
+		std::string _getUploadPath(std::vector<std::string> line);
+		// void _getRoot(std::vector<std::string> line);
+		std::map<int,std::string> _getRedirection(std::vector<std::string> line);
+		// std::vector<std::string> _getCgiExtension(std::vector<std::string> line);
+		std::vector<std::string> _getCgiExtensions(std::vector<std::string> line);
+		std::string _getCgiPath(std::vector<std::string> line);
+		std::string _getCgiBin(std::vector<std::string> line);
 
 	public:
 		conf(const std::string &str);

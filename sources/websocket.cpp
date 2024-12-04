@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:44:47 by skapersk          #+#    #+#             */
-/*   Updated: 2024/10/30 16:01:31 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/11/04 15:50:54 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@ websocket::websocket(int domain, int service, int protocol, int port, unsigned l
 	this->_address.sin_addr.s_addr = interface;
 	this->_address.sin_port = htons(port);
 	this->_sock = socket(domain, service, protocol);
-	// this->_connection = connectToNetwork(this->_sock, this->_address);
 }
 
 websocket::~websocket() {
@@ -31,7 +30,6 @@ websocket::websocket(const websocket &cpy) {
 websocket &websocket::operator=(const websocket &rhs) {
     if (this != &rhs) {
         this->_sock = rhs._sock;
-        this->_connection = rhs._connection;
         this->_address = rhs._address;
     }
     return *this;
@@ -44,35 +42,7 @@ void websocket::testConnection(int item) {
 	}
 }
 
-int	websocket::getSock() {
+int	websocket::getSock() const {
 	return this->_sock;
 }
-
-int	websocket::getConnect() {
-	return this->_connection;
-}
-
-// int websocket::connectToNetwork() {
-//     // Implémentation par défaut (peut être redéfinie dans les classes dérivées)
-//     if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
-//         std::cerr << "Erreur: Échec de la liaison" << std::endl;
-//         return -1;
-//     }
-//     return 0;
-// }
-
-
-// void websocket::initializeConnection() {
-// 	std::vector<pollfd>	pollFds;
-// 	// pollFds.reserve(300);
-// 	std::vector<Server>::iterator it = (env()->webserv->getAllServer()).begin();
-// 	for (; it != (env()->webserv->getAllServer()).end()) {
-// 		std::cout << it-
-// 	}
-//     connectToNetwork();
-// 	while (1) {
-// 		int nfds = poll()
-// 	}
-// }
-
 
