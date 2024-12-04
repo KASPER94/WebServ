@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/03 18:13:08 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 17:00:20 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,6 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
 		}
 		if (saveLoc.inLoc) {
 			std::string index = saveLoc.loc.getIndex();
-			std::cout << "### " << index << std::endl;
 			if (!index.empty() && access((uri + index).c_str(), F_OK) != -1) {
 				if (access((uri + index).c_str(), R_OK) == -1) {
 					this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
@@ -117,7 +116,6 @@ bool	HttpResponse::methodAllowed(enum HttpMethod method) {
 		if (*it == this->getRequest()->HttpMethodTostring())
 			return (true);
 	for (; it != this->_allowedMethod.end(); it++) {
-		std::cout << *it << std::endl;
 		if (*it == this->getRequest()->HttpMethodTostring())
 			return (true);
 	}
@@ -177,12 +175,12 @@ void HttpResponse::sendDirectoryPage(std::string path) {
         std::string name = entry->d_name;
 
         // Ignorer les entrées spéciales "." et ".."
-        if (name == "." || name == "..") 
+        if (name == "." || name == "..")
 			continue;
 
         // Construire un lien pour chaque fichier ou répertoire
         std::string link = path;
-        if (link.c_str()[link.size() - 1] != '/') 
+        if (link.c_str()[link.size() - 1] != '/')
 			link += "/";
         link += name;
 
@@ -229,7 +227,6 @@ int	HttpResponse::sendData(const void *data, int len) {
 }
 
 void HttpResponse::serveStaticFile(const std::string &uri) {
-	std::cout << uri << std::endl;
     std::ifstream file(uri.c_str(), std::ios::binary);
 
     if (!file.is_open()) {
@@ -331,8 +328,8 @@ bool HttpResponse::executeCGI(const std::string &uri) {
 //         return false;
 //     } else if (pid == 0) {
 //         dup2(pipe_fd[1], STDOUT_FILENO);
-//         close(pipe_fd[0]);              
-//         close(pipe_fd[1]);             
+//         close(pipe_fd[0]);
+//         close(pipe_fd[1]);
 //         execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL);
 // 	// std::cerr << "LOL" << uri << " and " << _cgiBin.c_str() <<std::endl;
 //         exit(1); // Si exec échoue ATTENTION A METTRE LE BON CODE ERREUR SI CGIBIN EXISTE PAS
@@ -504,11 +501,11 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 								if (!loc->getAllowedMethods().empty()){
 									this->_allowedMethod = loc->getAllowedMethods();
 								}
-								//allowed mthod				
+								//allowed mthod
 								return follow;
 							}
 						}
-					} else 
+					} else
 						return (true);
                 }
             }
@@ -518,7 +515,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 			else
             	resolvePath = _root + uri;
 		}
-    } 
+    }
 	else {
 		if (_root.c_str()[_root.size() - 1] == '/')
 			resolvePath = _root;
@@ -529,12 +526,11 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
         follow = false;
     }
 	for (std::vector<std::string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
-			std::cout << resolvePath << " : " << *it << std::endl;
 		if (*it != "" && (resolvePath.find(*it) != std::string::npos || resolvePath.find(*it) != std::string::npos)) {
 			uri = resolvePath;
             // std::cout << "CGI Request Detected: " << resolvePath << std::endl;
 			follow = true;
-			_isCGI = true;			
+			_isCGI = true;
             return (follow);
 		}
 		// else if ((uri != "" && uri != "/") && !_isLocation) {
@@ -546,7 +542,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	else
 		uri = _root + this->_client->getRequest()->returnPATH();
 
-	// std::cout << "444 --> " << this->_client->getRequest()->returnPATH() << std::endl; 
+	// std::cout << "444 --> " << this->_client->getRequest()->returnPATH() << std::endl;
 	// 	follow = true;
 	return (follow);
 }
@@ -573,12 +569,11 @@ bool	HttpResponse::initializeResponse() {
 		return (false);
 	}
 
-	std::string uri = this->_returnURI.begin()->second;
-	if (!uri.empty()) {
+	if (!_returnURI.empty()) {
         std::map<int, std::string>::iterator redirect = this->_returnURI.begin();
         if (redirect->first == 301) {
             this->movedPermanently(redirect->second);
-        } else if (redirect->first >= 300 && redirect->first < 400) { 
+        } else if (redirect->first >= 300 && redirect->first < 400) {
             this->handleRedirect(redirect->first, redirect->second);
 		} else {
             this->handleError(500, "Unexpected redirection code in configuration.");
@@ -602,7 +597,7 @@ void HttpResponse::handleRedirect(int code, const std::string &uri) {
     this->_headers["Content-Type"] = "text/html";
 
     // Log the redirect for debugging
-    std::cerr << "Redirecting to " << uri << " with status code " << code << std::endl;
+    std::cerr << "[DEBUG] Redirecting to " << uri << " with status code " << code << std::endl;
 }
 
 void HttpResponse::movedPermanently(const std::string &url) {

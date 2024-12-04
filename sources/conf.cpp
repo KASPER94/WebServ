@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/01 18:18:59 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 16:07:12 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ void conf::_parseLocation(std::string line, Server &serv, std::ifstream &ConfigF
 		if (line.find("}") != std::string::npos)
 			brace_count--;
 
-		if (brace_count == 0) 
+		if (brace_count == 0)
 			break;
 
 		std::vector<std::string> tokens = split_trim_conf(line);
@@ -271,17 +271,16 @@ std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
 			else
         	   	this->_parseLine(line, serv, allServ);
         }
-		
+
     }
     if (brace_count != 0)
         throw std::runtime_error("Unclosed bracket");
     if (!this->_found && !this->_nbServer){
         throw std::runtime_error("File is not containing a server block.");
-
 	}
-	for (std::vector<Server>::iterator it = allServ.begin(); it != allServ.end(); it++)
-				std::cout << *it << std::endl;
-    return allServ;	
+	// for (std::vector<Server>::iterator it = allServ.begin(); it != allServ.end(); it++)
+	// 			std::cout << *it << std::endl;
+    return allServ;
 }
 
 conf::conf(const std::string &str) {
