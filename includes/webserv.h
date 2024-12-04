@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/12/04 22:31:02 by skapersk         ###   ########.fr       */
+=======
+/*   Updated: 2024/12/04 16:46:56 by yrigny           ###   ########.fr       */
+>>>>>>> 1827865 (adding logMsg() function)
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +19,7 @@
 
 # include <fstream>
 # include <sstream>
+<<<<<<< HEAD
 # include <fcntl.h>
 # include <cstring>
 # include <sys/wait.h>
@@ -25,6 +30,10 @@
 # define BUFFER_SIZE 4096
 # define EPOLL_TIMEOUT 5000
 # define CLIENT_TIMEOUT 5
+=======
+# include <string>
+# include <map>
+>>>>>>> 1827865 (adding logMsg() function)
 
 enum Directive {
 	SERVER,
@@ -54,6 +63,24 @@ enum HttpMethod {
 	OTHER = 3
 };
 
+enum LogLevel
+{
+	DEBUG,
+	INFO,
+	ERROR,
+};
+
+std::string	getCurrTime();
+void		logMsg(LogLevel level, std::string msg);
+
+template <typename T>
+static std::string toString(T value)
+{
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
+
 # include "Server.hpp"
 # include "Webserv.hpp"
 class Webserv;
@@ -75,5 +102,6 @@ std::string intToString(int number);
 bool	childPath(std::string parent, std::string child);
 std::string	getFullPath(std::string path);
 std::string parseContentType(const std::string &cgiHeaders);
+
 
 #endif

@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/12/05 11:36:23 by skapersk         ###   ########.fr       */
+=======
+/*   Updated: 2024/12/04 16:45:40 by yrigny           ###   ########.fr       */
+>>>>>>> 1827865 (adding logMsg() function)
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +136,7 @@ unsigned long convertIpToUnsignedLong(const std::string &ip) {
 	return htonl(ipAddress);
 }
 
+<<<<<<< HEAD
 int		setsocknonblock(int sock)
 {
 	int flag;
@@ -198,3 +203,21 @@ std::string parseContentType(const std::string &cgiHeaders) {
     return cgiHeaders.substr(start, end - start);
 }
 
+=======
+std::string	getCurrTime()
+{
+	tzset();
+	char		dt[64];
+	time_t		now = time(0);
+	struct tm*	localTime = localtime(&now);
+	strftime(dt, sizeof(dt), "%Y-%m-%d %H:%M:%S", localTime);
+	return dt;
+}
+
+void	logMsg(LogLevel level, std::string msg)
+{
+	const std::string levelStr[3] = {"[DEBUG]", "[INFO] ", "[ERROR]"};
+	std::string	currTime = getCurrTime();
+	std::cout << currTime << " " << levelStr[level] << " " << msg << std::endl;
+}
+>>>>>>> 1827865 (adding logMsg() function)

@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/12/05 13:33:14 by skapersk         ###   ########.fr       */
+=======
+/*   Updated: 2024/12/04 16:59:15 by yrigny           ###   ########.fr       */
+>>>>>>> 1827865 (adding logMsg() function)
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +48,17 @@ void Webserv::deleteClient(int fd) {
     }
 }
 
+<<<<<<< HEAD
 void Webserv::getRequest(int clientSock) {
     char buffer[BUFFER_SIZE + 1];  // +1 pour l'ajout de '\0' à la fin
     int bytesRead;
+=======
+	for (size_t i = 0; i < servers.size(); i++) {
+		if (servers[i].connectToNetwork() < 0) {
+			std::cerr << "Échec de la connexion pour le serveur " << i << std::endl;
+			continue ;
+		}
+>>>>>>> 1827865 (adding logMsg() function)
 
     // Vérifier que le client existe dans le map _clients
     if (_clients.find(clientSock) == _clients.end()) {

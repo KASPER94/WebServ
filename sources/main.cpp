@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/12/04 16:04:15 by skapersk         ###   ########.fr       */
+=======
+/*   Updated: 2024/12/04 16:52:16 by yrigny           ###   ########.fr       */
+>>>>>>> 1827865 (adding logMsg() function)
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +33,20 @@ bool webserv(char *config_file) {
 
     try {
         conf config(config_file);
+<<<<<<< HEAD
 		std::vector<Server> &servers = env()->webserv->getAllServer();
+=======
+		env()->webserv->initializeSockets();
+		// std::cout << "test" << std::endl;
+		// it = (env()->webserv->getAllServer()).begin();
+		// for (; it != (env()->webserv->getAllServer()).end(); it++){
+		// 	methods = it->getAllowedMethods();
+		// 	it2 = methods->begin();
+		// 	for (; it2 != methods->end(); it2++){
+		// 		std::cout << *it2 << std::endl;
+		// 	}
+			// std::map<int, std::string> errorPages = it->getErrorPage();
+>>>>>>> 1827865 (adding logMsg() function)
 
 		// Vérification des conflits de ports
 		std::map<int, int> portCounts;
@@ -53,7 +70,8 @@ bool webserv(char *config_file) {
 	}
     catch (std::exception &e)
 	{
-		std::cerr << e.what() << std::endl;
+		// std::cerr << e.what() << std::endl;
+		logMsg(ERROR, e.what());
 	}
     return (true);
 }
@@ -67,7 +85,7 @@ int main(int ac, char **av) {
         webserv(av[1]);
     }
     else {
-        std::cerr << "\033[31m" << "to use Webserv : ./webserv [configuration file]" << "\033[0m" << std::endl;
+        std::cout << "\033[31m" << "Usage: ./webserv [configuration file]" << "\033[0m" << std::endl;
         return (1);
     }
     return (0);
