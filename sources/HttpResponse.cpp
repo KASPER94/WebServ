@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 16:10:33 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 17:00:20 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -569,8 +569,7 @@ bool	HttpResponse::initializeResponse() {
 		return (false);
 	}
 
-	std::string uri = this->_returnURI.begin()->second;
-	if (!uri.empty()) {
+	if (!_returnURI.empty()) {
         std::map<int, std::string>::iterator redirect = this->_returnURI.begin();
         if (redirect->first == 301) {
             this->movedPermanently(redirect->second);
