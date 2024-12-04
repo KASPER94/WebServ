@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 18:12:14 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 22:34:51 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,8 +392,29 @@ void HttpResponse::handleCGI(std::string uri) {
     return;
 }
 
+bool createDirectoriesRecursively(const std::string &path) {
+    size_t pos = 0;
+
+    while (pos != std::string::npos) {
+        pos = path.find('/', pos + 1);
+        std::string subPath = path.substr(0, pos);
+
+        struct stat info;
+        if (stat(subPath.c_str(), &info) != 0) {
+            if (mkdir(subPath.c_str(), 0755) != 0 && errno != EEXIST) {
+                std::cerr << "[DEBUG] Failed to create directory: " << subPath 
+                          << " with error: " << strerror(errno) << std::endl;
+                return false;
+            }
+        } else if (!S_ISDIR(info.st_mode)) {
+            std::cerr << "[DEBUG] Path exists but is not a directory: " << subPath << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
 bool HttpResponse::handleUpload() {
-	// Vérifiez si upload_path est défini
 	std::string uploadPath = this->_client->getServer()->getUploadPath();
 	if (uploadPath.empty()) {
 		std::cerr << "[DEBUG] No upload path defined in configuration." << std::endl;
@@ -401,20 +422,19 @@ bool HttpResponse::handleUpload() {
 		return false;
 	}
 
-	// Vérifiez si le dossier d'upload existe, sinon créez-le
-	struct stat info;
-	if (stat(uploadPath.c_str(), &info) != 0) {
-		if (mkdir(uploadPath.c_str(), 0755) != 0) {
-			std::cerr << "[DEBUG] Failed to create upload directory: " << uploadPath << std::endl;
-			this->handleError(500, "Cannot create upload directory.");
-			return false;
-		}
-	}
+	std::string Path = _root + uploadPath;
+    if (!createDirectoriesRecursively(Path)) {
+        this->handleError(500, "Cannot create upload directory.");
+        return false;
+    }
 
-	// Sauvegarde des fichiers téléchargés
 	const std::map<std::string, std::string> &files = this->_client->getRequest()->getFileData();
 	for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
-		std::string filePath = uploadPath + "/" + it->first;
+		std::string filePath;
+		if (uploadPath.c_str()[uploadPath.size() - 1] == '/')
+			filePath = uploadPath + it->first;
+		else
+			filePath = uploadPath + "/" + it->first;
 		std::ofstream file(filePath.c_str(), std::ios::binary);
 		if (!file.is_open()) {
 			std::cerr << "[DEBUG] Failed to save uploaded file: " << filePath << std::endl;
@@ -424,7 +444,6 @@ bool HttpResponse::handleUpload() {
 		file << it->second;
 		file.close();
 	}
-
 	std::cout << "[DEBUG] Files uploaded successfully to " << uploadPath << std::endl;
 	return true;
 }
