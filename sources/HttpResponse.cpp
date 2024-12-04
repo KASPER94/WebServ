@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 17:00:20 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 18:12:14 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,6 +392,43 @@ void HttpResponse::handleCGI(std::string uri) {
     return;
 }
 
+bool HttpResponse::handleUpload() {
+	// Vérifiez si upload_path est défini
+	std::string uploadPath = this->_client->getServer()->getUploadPath();
+	if (uploadPath.empty()) {
+		std::cerr << "[DEBUG] No upload path defined in configuration." << std::endl;
+		this->handleError(500, "Upload path not configured.");
+		return false;
+	}
+
+	// Vérifiez si le dossier d'upload existe, sinon créez-le
+	struct stat info;
+	if (stat(uploadPath.c_str(), &info) != 0) {
+		if (mkdir(uploadPath.c_str(), 0755) != 0) {
+			std::cerr << "[DEBUG] Failed to create upload directory: " << uploadPath << std::endl;
+			this->handleError(500, "Cannot create upload directory.");
+			return false;
+		}
+	}
+
+	// Sauvegarde des fichiers téléchargés
+	const std::map<std::string, std::string> &files = this->_client->getRequest()->getFileData();
+	for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
+		std::string filePath = uploadPath + "/" + it->first;
+		std::ofstream file(filePath.c_str(), std::ios::binary);
+		if (!file.is_open()) {
+			std::cerr << "[DEBUG] Failed to save uploaded file: " << filePath << std::endl;
+			this->handleError(500, "Failed to save uploaded file.");
+			return false;
+		}
+		file << it->second;
+		file.close();
+	}
+
+	std::cout << "[DEBUG] Files uploaded successfully to " << uploadPath << std::endl;
+	return true;
+}
+
 void HttpResponse::sendResponse() {
 	if (this->getRequest()->tooLarge())
 		return handleError(413, "Le contenu de la requête dépasse la taille maximale autorisée par le serveur.");
@@ -408,6 +445,11 @@ void HttpResponse::sendResponse() {
 	if (this->getRequest()->getMethod() == DELETE) {
 		tryDeleteFile(uri);
 		return ;
+	}
+	if (this->getRequest()->getMethod() == POST && !this->getRequest()->getFileData().empty()) {
+		if (!this->handleUpload()) {
+			return ;
+		}
 	}
 	if (isDir) {
 		if (this->_directoryListing)

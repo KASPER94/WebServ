@@ -95,6 +95,7 @@ class HttpResponse {
 		int	sendData(const void *data, int len);
 		void handleCGI(std::string uri);
 		bool executeCGI(const std::string &uri);
+		bool handleUpload();
 };
 
 #endif
