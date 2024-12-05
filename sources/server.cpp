@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 16:39:03 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 13:31:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,6 +240,15 @@ void Server::reset() {
     this->_returnURI.clear();
     this->_root.clear();
     // Réinitialise d'autres champs si nécessaire
+}
+
+void Server::cleanUp() {
+	if (_sock != -1) {
+		close(_sock);
+		_sock = -1;
+	}
+	std::cout << "[INFO] Resources for server on port " << _port
+				<< " have been cleaned up." << std::endl;
 }
 
 Location *Server::getLocation(const std::string &uri) const {

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:20 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/20 17:21:08 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 13:32:28 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ class Server : public websocket {
     	Location *getLocation(const std::string &uri) const;
     	std::map<std::string, Location*> getLocs() const;
 		std::map<std::string, Location*> returnLoc();
+		void cleanUp();
 };
 
 std::ostream &operator<<(std::ostream &o, Server &server);

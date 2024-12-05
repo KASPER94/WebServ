@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/26 13:24:33 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 13:33:14 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -223,7 +223,10 @@ void Webserv::initializeSockets() {
     for (size_t i = 0; i < servers.size(); i++) {
         if (servers[i].connectToNetwork() < 0) {
             std::cerr << "Échec de la connexion pour le serveur " << i << std::endl;
-            continue;
+    		for (size_t i = 0; i < servers.size(); i++)
+				servers[i].cleanUp();
+   			 close(_epollfd);
+			return ;
         }
         serverSock = servers[i].getSock();
         _serverSockets[serverSock] = &servers[i];
@@ -272,7 +275,7 @@ void Webserv::initializeSockets() {
 				if (Server) {
 					Client *new_client = new Client(clientSock, Server);
 					_clients[clientSock] = new_client;
-					
+
 					struct epoll_event clientEvent;
 					clientEvent.data.fd = clientSock;
 					clientEvent.events = EPOLLIN | EPOLLET; // Lecture en mode non-bloquant
