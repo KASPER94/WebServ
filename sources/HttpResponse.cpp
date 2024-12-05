@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 13:32:02 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 13:42:04 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,7 +392,7 @@ void HttpResponse::handleCGI(std::string uri) {
     return;
 }
 
-bool createDirectoriesRecursively(const std::string &path) {
+bool DirectoriesRecursively(const std::string &path) {
     size_t pos = 0;
 
     while (pos != std::string::npos) {
@@ -401,11 +401,9 @@ bool createDirectoriesRecursively(const std::string &path) {
 
         struct stat info;
         if (stat(subPath.c_str(), &info) != 0) {
-            if (mkdir(subPath.c_str(), 0777) != 0 && errno != EEXIST) {
-                std::cerr << "[DEBUG] Failed to create directory: " << subPath
-                          << " with error: " << strerror(errno) << std::endl;
-                return false;
-            }
+			std::cerr << "[DEBUG] Failed directory : " << subPath
+						<< " with error: " << strerror(errno) << std::endl;
+			return false;
         } else if (!S_ISDIR(info.st_mode)) {
             std::cerr << "[DEBUG] Path exists but is not a directory: " << subPath << std::endl;
             return false;
@@ -423,10 +421,10 @@ bool HttpResponse::handleUpload() {
 	}
 
 	std::string Path = _root + uploadPath;
-    // if (!createDirectoriesRecursively(Path)) {
-    //     this->handleError(500, "Cannot create upload directory.");
-    //     return false;
-    // }
+    if (!DirectoriesRecursively(Path)) {
+        this->handleError(500, "Cannot create upload directory.");
+        return false;
+    }
 
 	const std::map<std::string, std::string> &files = this->_client->getRequest()->getFileData();
 	for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
@@ -435,8 +433,6 @@ bool HttpResponse::handleUpload() {
 			filePath += uploadPath + it->first;
 		else
 			filePath += uploadPath + "/" + it->first;
-		// std::cerr << it->first << " ###" << std::endl;
-		// std::ofstream file(filePath.c_str(), std::ios::binary);
        	std::ofstream file(filePath.c_str(), std::ios::binary | std::ios::trunc);
         if (!file.is_open()) {
 			std::cerr << filePath << std::endl;
