@@ -6,7 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/05 18:21:35 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/05 18:28:35 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,7 @@ void Webserv::sendResponse(int clientSock) {
 		}
         totalBytesSent += bytesSent;
     }
-
+	logMsg(DEBUG, "Response (" + toString(totalBytesSent) + " bytes) successfully sent to client");
 	if (client->getRequest()->keepAlive()) {
         // Réinitialiser pour la prochaine requête
         client->resetForNextRequest();
@@ -186,8 +186,6 @@ void Webserv::sendResponse(int clientSock) {
         this->deleteClient(clientSock);
 		return ;
     }
-
-	logMsg(DEBUG, "Response (" + toString(totalBytesSent) + " bytes) successfully sent to client");
 
     // Fermer le socket après avoir envoyé la réponse
 
