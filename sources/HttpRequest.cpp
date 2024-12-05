@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 18:11:49 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 14:04:30 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,7 +189,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 	// }
 
 	size_t confBodySize = maxBody ;
-	std::cout << "ClientMaxBody après conversion en bytes (confBodySize): " << confBodySize << std::endl;
+	// std::cout << "ClientMaxBody après conversion en bytes (confBodySize): " << confBodySize << std::endl;
 
     _requestData.append(data, length);  // Accumule les données reçues dans une std::string
     // Vérifiez si la requête est complète
@@ -221,7 +221,7 @@ bool HttpRequest::hasCompleteBody() {
     // Si les en-têtes sont présents mais pas encore analysés
     if (!_headersParsed) {
         parseHeaders();  // Une méthode qui extrait les en-têtes de _requestData
-        _headersParsed = true;  // Indiquer que les en-têtes ont été traités
+		_headersParsed = true;  // Indiquer que les en-têtes ont été traités
     }
 
 	if (!_completed) {
@@ -362,6 +362,9 @@ void HttpRequest::decodeFormData() {
 
 			// Vérifier si c'est un fichier
 			if (part.find("filename=\"") != std::string::npos) {
+				namePos = part.find("filename=\"") + 10;
+				size_t endNamePos = part.find("\"", namePos);
+				std::string name = part.substr(namePos, endNamePos - namePos);
 				_fileData[name] = content;
 			} else {
 				_formData[name] = content;
