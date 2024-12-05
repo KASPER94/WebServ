@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 22:34:51 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 12:15:09 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,8 +401,8 @@ bool createDirectoriesRecursively(const std::string &path) {
 
         struct stat info;
         if (stat(subPath.c_str(), &info) != 0) {
-            if (mkdir(subPath.c_str(), 0755) != 0 && errno != EEXIST) {
-                std::cerr << "[DEBUG] Failed to create directory: " << subPath 
+            if (mkdir(subPath.c_str(), 0777) != 0 && errno != EEXIST) {
+                std::cerr << "[DEBUG] Failed to create directory: " << subPath
                           << " with error: " << strerror(errno) << std::endl;
                 return false;
             }
@@ -423,24 +423,28 @@ bool HttpResponse::handleUpload() {
 	}
 
 	std::string Path = _root + uploadPath;
-    if (!createDirectoriesRecursively(Path)) {
-        this->handleError(500, "Cannot create upload directory.");
-        return false;
-    }
+    // if (!createDirectoriesRecursively(Path)) {
+    //     this->handleError(500, "Cannot create upload directory.");
+    //     return false;
+    // }
 
 	const std::map<std::string, std::string> &files = this->_client->getRequest()->getFileData();
 	for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
-		std::string filePath;
+		std::string filePath = _root;
 		if (uploadPath.c_str()[uploadPath.size() - 1] == '/')
-			filePath = uploadPath + it->first;
+			filePath += uploadPath + it->first;
 		else
-			filePath = uploadPath + "/" + it->first;
-		std::ofstream file(filePath.c_str(), std::ios::binary);
-		if (!file.is_open()) {
-			std::cerr << "[DEBUG] Failed to save uploaded file: " << filePath << std::endl;
-			this->handleError(500, "Failed to save uploaded file.");
-			return false;
-		}
+			filePath += uploadPath + "/" + it->first;
+		// std::cerr << it->first << " ###" << std::endl;
+		// std::ofstream file(filePath.c_str(), std::ios::binary);
+       	std::ofstream file(filePath.c_str(), std::ios::binary | std::ios::trunc);
+        if (!file.is_open()) {
+			std::cerr << filePath << std::endl;
+            std::cerr << "[DEBUG] Failed to create file: " << filePath
+                      << " with error: " << strerror(errno) << std::endl;
+            this->handleError(500, "Failed to create uploaded file.");
+            return false;
+        }
 		file << it->second;
 		file.close();
 	}
