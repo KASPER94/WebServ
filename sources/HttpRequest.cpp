@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 14:04:30 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 16:47:28 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client): _client(client) {
-    std::cout << "HttpRequest created at " << this << std::endl;
+	logMsg(DEBUG, "HttpRequest created at " + toString(this));
 }
 
 HttpRequest::~HttpRequest() {
-	 std::cout << "HttpRequest destroyed at " << this << std::endl;
+	logMsg(DEBUG, "HttpRequest created at " + toString(this));
 }
 
 enum HttpMethod HttpRequest::getMethod() const {
@@ -200,7 +200,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
             return (_endRequested);
         }
 		if (confBodySize && _receivedBodySize >= confBodySize) {
-			std::cerr << "Erreur : La taille du corps de la requête dépasse la limite maximale autorisée." << std::endl;
+			logMsg(ERROR, "Request exceeds the client_max_body_size");
 			_tooLarge = true;
             return (_tooLarge);
 		}
@@ -336,7 +336,7 @@ void HttpRequest::decodeFormData() {
 	std::string tmp = _requestData.substr(pos);
 
 	if (tmp.find(_boundary) == std::string::npos) {
-		std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
+		logMsg(ERROR, "Broken request: delimiter not found");
 		return;
 	}
 

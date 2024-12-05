@@ -6,11 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2024/12/05 13:31:38 by skapersk         ###   ########.fr       */
-=======
-/*   Updated: 2024/12/04 16:59:59 by yrigny           ###   ########.fr       */
->>>>>>> 1827865 (adding logMsg() function)
+/*   Updated: 2024/12/05 17:15:29 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,18 +63,7 @@ Server &Server::operator=(const Server &rhs) {
 }
 
 int Server::connectToNetwork() {
-<<<<<<< HEAD
 	setSock();  // Set the socket address structure
-=======
-	this->_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (this->_sock < 0) {
-		logMsg(ERROR, "socket() failed");
-		return -1;
-	}
-	this->_address.sin_family = AF_INET;
-	this->_address.sin_port = htons(this->_port);
-	this->_address.sin_addr.s_addr = inet_addr(this->_host.c_str());
->>>>>>> 1827865 (adding logMsg() function)
 
 	// const int max_retries = 5;  // Maximum retries for binding
 	// int retry_count = 0;
@@ -86,52 +71,38 @@ int Server::connectToNetwork() {
 	// Create the socket
 	this->_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_sock == -1) {
-		std::cerr << "[DEBUG] Failed to create socket: " << strerror(errno) << std::endl;
+		logMsg(ERROR, "Failed to create socket: " + std::string(strerror(errno)));
 		return -1;
 	}
 	// Set the socket options to reuse the address
 	int yes = 1;
 	if (setsockopt(this->_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
-		std::cerr << "[DEBUG] Failed to set socket options: " << strerror(errno) << std::endl;
+		logMsg(ERROR, "Failed to set socket options: " + std::string(strerror(errno)));
+		return -1;
 		close(this->_sock);
 		return -1;
 	}
 
 	// Attempt to bind the socket with retry logic
 	if (bind(this->_sock, (struct sockaddr *)&this->_address, sizeof(this->_address)) < 0) {
-<<<<<<< HEAD
 		if (errno == EADDRINUSE) {
-			std::cerr << "[DEBUG] Port " << this->_port
-						<< " is already in use. Binding failed." << std::endl;
+			logMsg(ERROR, "Failed to bind socket to port " + toString(this->_port) + ": port already in use");
 		} else {
-			std::cerr << "[DEBUG] Failed to bind socket on port "
-						<< this->_port << ": " << strerror(errno) << std::endl;
+			logMsg(ERROR, "Failed to bind socket to port" + toString(this->_port) + ": " + std::string(strerror(errno)));
 		}
 		close(this->_sock);
-=======
-		logMsg(ERROR, "bind() failed");
->>>>>>> 1827865 (adding logMsg() function)
 		return -1;
 	}
 
 	// Listen on the socket for incoming connections
 	if (listen(this->_sock, 10) < 0) {
-<<<<<<< HEAD
-		std::cerr << "[DEBUG] Failed to listen on port "
-					<< this->_port << ": " << strerror(errno) << std::endl;
+		logMsg(ERROR, "Failed to listen on port " + toString(this->_port) + ": " + std::string(strerror(errno)));
 		close(this->_sock);
 		return -1;
 	}
 
-	std::cout << "[DEBUG] Server is successfully listening on port: " << this->_port << std::endl;
+	logMsg(INFO, "Server is successfully listening on port " + toString(this->_port));
 	return 0;
-=======
-		logMsg(ERROR, "listen() failed");
-		return -1;
-	}
-	logMsg(INFO, "New server listening to port " + toString(this->_port));
-	return (0);
->>>>>>> 1827865 (adding logMsg() function)
 }
 
 void Server::setCgiBin(const std::string &cgiBin) { _cgiBin = cgiBin; }
@@ -275,8 +246,7 @@ void Server::cleanUp() {
 		close(_sock);
 		_sock = -1;
 	}
-	std::cout << "[INFO] Resources for server on port " << _port
-				<< " have been cleaned up." << std::endl;
+	logMsg(INFO, "Resources for server on port " + toString(_port) + " have been cleaned up");
 }
 
 Location *Server::getLocation(const std::string &uri) const {

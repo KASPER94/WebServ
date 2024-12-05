@@ -3,17 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-<<<<<<< HEAD
-#    By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/11/22 13:43:17 by skapersk         ###   ########.fr        #
-=======
 #    By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/12/04 16:18:09 by yrigny           ###   ########.fr        #
->>>>>>> 1827865 (adding logMsg() function)
+#    Updated: 2024/12/05 15:56:33 by yrigny           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 

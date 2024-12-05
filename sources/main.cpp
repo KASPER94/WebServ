@@ -6,11 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2024/12/04 16:04:15 by skapersk         ###   ########.fr       */
-=======
-/*   Updated: 2024/12/04 16:52:16 by yrigny           ###   ########.fr       */
->>>>>>> 1827865 (adding logMsg() function)
+/*   Updated: 2024/12/05 16:34:57 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +20,9 @@ bool	run = true;
 void	signalHandler(int signum) {
 	if (signum == SIGINT) {
 		(void)signum;
-		std::cout << "\nReceived SIGINT" << std::endl;
+		// std::cout << "\nReceived SIGINT" << std::endl;
+		std::cout << std::endl;
+		logMsg(INFO, "Received SIGINT");
 		run = false;
 	}
 }
@@ -33,20 +31,7 @@ bool webserv(char *config_file) {
 
     try {
         conf config(config_file);
-<<<<<<< HEAD
 		std::vector<Server> &servers = env()->webserv->getAllServer();
-=======
-		env()->webserv->initializeSockets();
-		// std::cout << "test" << std::endl;
-		// it = (env()->webserv->getAllServer()).begin();
-		// for (; it != (env()->webserv->getAllServer()).end(); it++){
-		// 	methods = it->getAllowedMethods();
-		// 	it2 = methods->begin();
-		// 	for (; it2 != methods->end(); it2++){
-		// 		std::cout << *it2 << std::endl;
-		// 	}
-			// std::map<int, std::string> errorPages = it->getErrorPage();
->>>>>>> 1827865 (adding logMsg() function)
 
 		// Vérification des conflits de ports
 		std::map<int, int> portCounts;
@@ -60,9 +45,8 @@ bool webserv(char *config_file) {
 		}
 		for (std::map<int, int>::iterator it = portCounts.begin(); it != portCounts.end(); ++it) {
 			if (it->second > 1) {
-				std::cerr << "[DEBUG] Conflict detected: "
-							<< it->second << " servers are configured to listen on port "
-							<< it->first << "." << std::endl;
+				std::string msg = "Conflict detected: " + toString(it->second) + " servers are configured to listen on port " + toString(it->first) + ".";
+				logMsg(DEBUG, msg);
 				throw std::runtime_error("Port conflict error. Check your server configuration.");
 			}
 		}
@@ -70,7 +54,6 @@ bool webserv(char *config_file) {
 	}
     catch (std::exception &e)
 	{
-		// std::cerr << e.what() << std::endl;
 		logMsg(ERROR, e.what());
 	}
     return (true);

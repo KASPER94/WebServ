@@ -6,11 +6,7 @@
 /*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2024/12/04 22:31:02 by skapersk         ###   ########.fr       */
-=======
-/*   Updated: 2024/12/04 16:46:56 by yrigny           ###   ########.fr       */
->>>>>>> 1827865 (adding logMsg() function)
+/*   Updated: 2024/12/05 16:13:41 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +15,6 @@
 
 # include <fstream>
 # include <sstream>
-<<<<<<< HEAD
 # include <fcntl.h>
 # include <cstring>
 # include <sys/wait.h>
@@ -30,10 +25,6 @@
 # define BUFFER_SIZE 4096
 # define EPOLL_TIMEOUT 5000
 # define CLIENT_TIMEOUT 5
-=======
-# include <string>
-# include <map>
->>>>>>> 1827865 (adding logMsg() function)
 
 enum Directive {
 	SERVER,
@@ -74,7 +65,7 @@ std::string	getCurrTime();
 void		logMsg(LogLevel level, std::string msg);
 
 template <typename T>
-static std::string toString(T value)
+std::string toString(T value)
 {
 	std::stringstream ss;
 	ss << value;
