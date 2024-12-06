@@ -6,7 +6,7 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/06 22:31:43 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/06 22:32:43 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -442,8 +442,6 @@ void HttpRequest::decodeFormData() {
 	// }
     size_t pos = _requestData.find("\r\n\r\n") + 4;
     std::string tmp = _requestData.substr(pos);
-	size_t pos = _requestData.find("\r\n\r\n") + 4;
-	std::string tmp = _requestData.substr(pos);
 
 	if (tmp.find(_boundary) == std::string::npos) {
 		logMsg(ERROR, "Broken request: delimiter not found");
