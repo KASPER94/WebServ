@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 23:25:38 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/06 01:18:28 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -393,13 +393,8 @@ void HttpRequest::decodeFormData() {
         boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
         size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
         if (nextBoundaryPos == std::string::npos) {
-            nextBoundaryPos = tmp.find(_boundary + "--");
-			if (nextBoundaryPos == std::string::npos) {
-				_endRequested = false;
-            	return ;
-			}
-			_endRequested = true;
-			return ;
+            nextBoundaryPos = tmp.find(_boundary + "--", boundaryPos);
+		
         }
 
         std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
@@ -413,12 +408,20 @@ void HttpRequest::decodeFormData() {
 
             size_t contentPos = part.find("\r\n\r\n") + 4;
             std::string content = part.substr(contentPos);
+			std::string boundaryMarker = _boundary + "--";
+			std::size_t pos = 0;
+			while ((pos = content.find(boundaryMarker, pos)) != std::string::npos) {
+				content.erase(pos, boundaryMarker.length());
+			}
+			
+			std::string tmp2 = content.substr(0, content.find("\n"));
+			// std::cerr << "AQUE COUOCUC " << tmp2 << std::endl;
 
             if (part.find("filename=\"") != std::string::npos) {
                 namePos = part.find("filename=\"") + 10;
                 size_t endNamePos = part.find("\"", namePos);
                 std::string fileName = part.substr(namePos, endNamePos - namePos);
-                _fileData[fileName] = content;
+                _fileData[fileName] = tmp2;
             } else {
                 _formData[name] = content;
             }
@@ -427,8 +430,6 @@ void HttpRequest::decodeFormData() {
         boundaryPos = nextBoundaryPos;
     }
 }
-
-
 
 void HttpRequest::parseHeaders() {
     std::istringstream stream(_requestData);

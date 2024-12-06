@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/05 11:36:23 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/06 00:59:34 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,3 +198,50 @@ std::string parseContentType(const std::string &cgiHeaders) {
     return cgiHeaders.substr(start, end - start);
 }
 
+std::string	strFromCharVec(size_t len, std::vector<char> &vec) {
+	std::string	str = "";
+	for (size_t i = 0; i < vec.size() && i < len; i++)
+		str += vec[i];
+	return (str);
+}
+
+std::vector<std::string> split_trim(std::string str, std::string needle) {
+	std::vector<std::string>	split;
+	std::string			subs;
+	size_t			end;
+
+	end = str.find(needle);
+	while (end != std::string::npos) {
+		subs = str.substr(0, end);
+		ltrim(subs);
+		rtrim(subs);
+		split.push_back(subs);
+		str.erase(str.begin(), str.begin() + end + needle.length());
+		end = str.find(needle);
+	}
+	ltrim(str);
+	rtrim(str);
+	split.push_back(str);
+	return (split);
+}
+
+size_t	findInCharVec(std::string str, std::vector<char> &vec) {
+	bool	finded = false;
+	size_t	pos = 0;
+
+	if (str.length() > vec.size())
+		return (std::string::npos);
+	for (std::vector<char>::iterator it = vec.begin(); it != vec.end() - str.length(); it++) {
+		finded = true;
+		for (size_t i = 0; i < str.length(); i++) {
+			if (str[i] != *(it + i)) {
+				finded = false;
+				break;
+			}
+		}
+		if (finded)
+			return (pos);
+		pos++;
+	}
+	return (std::string::npos);
+}
