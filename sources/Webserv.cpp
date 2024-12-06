@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 22:31:04 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/07 00:24:24 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,12 @@ void Webserv::getRequest(int clientSock) {
     }
 
     buffer[bytesRead] = '\0';  // Terminer la chaîne de caractères
-	logMsg(DEBUG, "Fragment of request received on socket " + toString(clientSock));
-    std::cout << buffer << std::endl;
+	// logMsg(DEBUG, "Fragment of request received on socket " + toString(clientSock));
+    // std::cout << buffer << std::endl;
 	bool isRequestComplete = client->appendRequest(buffer, bytesRead);
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {
-		logMsg(DEBUG, "Waiting for more fragments of request on socket " + toString(clientSock));
+		// logMsg(DEBUG, "Waiting for more fragments of request on socket " + toString(clientSock));
         struct epoll_event clientEvent;
         clientEvent.data.fd = clientSock;
         clientEvent.events = EPOLLIN | EPOLLET;
@@ -151,7 +151,7 @@ void Webserv::sendResponse(int clientSock) {
 	size_t totalBytesSent = 0;
     size_t responseSize = response.size();
 	logMsg(DEBUG, "Response to be sent to client socket " + toString(clientSock));
-	std::cout << response << std::endl;
+	// std::cout << response << std::endl;
 
 	if (client->getError()) {
 		while (totalBytesSent < responseSize)

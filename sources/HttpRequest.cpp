@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/06 23:16:22 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 00:18:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -436,33 +436,27 @@ bool	HttpRequest::isGood() const {
 // }
 
 void HttpRequest::decodeFormData() {
-	// if (!_rawRequest.empty()) {
-    // 	_requestData.erase();
-    // 	_requestData = _rawRequest.substr(0);
-	// }
     size_t pos = _requestData.find("\r\n\r\n") + 4;
     std::string tmp = _requestData.substr(pos);
 
-	if (tmp.find(_boundary) == std::string::npos) {
-		logMsg(ERROR, "Broken request: delimiter not found");
-		return;
-	}
+    if (tmp.find(_boundary) == std::string::npos) {
+        logMsg(ERROR, "Broken request: delimiter not found");
+        return;
+    }
 
     size_t boundaryPos = tmp.find(_boundary);
     while (boundaryPos != std::string::npos) {
-        boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
+        boundaryPos += _boundary.size() + 2; // Sauter le boundary et "\r\n"
         size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
         if (nextBoundaryPos == std::string::npos) {
             nextBoundaryPos = tmp.find(_boundary + "--", boundaryPos);
         }
 
-        // Nettoyer les espaces ou lignes supplémentaires autour du boundary
         while (boundaryPos < tmp.size() && (tmp[boundaryPos] == '\r' || tmp[boundaryPos] == '\n' || tmp[boundaryPos] == ' ')) {
             ++boundaryPos;
         }
         std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
 
-        // Traitez chaque partie
         size_t namePos = part.find("name=\"");
         if (namePos != std::string::npos) {
             namePos += 6;
@@ -472,25 +466,32 @@ void HttpRequest::decodeFormData() {
             size_t contentPos = part.find("\r\n\r\n") + 4;
             std::string content = part.substr(contentPos);
 
-            // Supprimez les délimiteurs indésirables
+            size_t contentBackS = content.find("\n");
+            if (contentBackS != std::string::npos) {
+                std::string tmp3 = _boundary + "--";
+                if (content.find(tmp3) == std::string::npos) { 
+                    content = content.substr(0, content.size() - _boundary.size() - 4);
+                }
+            }
+
             size_t contentEnd = content.rfind("\r\n--" + _boundary);
             if (contentEnd != std::string::npos) {
                 content = content.substr(0, contentEnd);
             }
 
             if (part.find("filename=\"") != std::string::npos) {
-                namePos = part.find("filename=\"") + 10;
-                size_t endNamePos = part.find("\"", namePos);
-                std::string fileName = part.substr(namePos, endNamePos - namePos);
+                size_t filenamePos = part.find("filename=\"") + 10;
+                size_t endFilenamePos = part.find("\"", filenamePos);
+                std::string fileName = part.substr(filenamePos, endFilenamePos - filenamePos);
                 _fileData[fileName] = content;
             } else {
                 _formData[name] = content;
             }
         }
-
         boundaryPos = nextBoundaryPos;
     }
 }
+
 
 void HttpRequest::parseHeaders() {
     std::istringstream stream(_requestData);

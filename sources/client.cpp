@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 17:39:53 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/07 00:29:36 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ bool	Client::appendRequest(const char *data, int bytes) {
 }
 
 Server	*Client::getServer() const {
-	std::cout << this->_servers << std::endl;
+	// std::cout << this->_servers << std::endl;
 	return (this->_servers);
 }
 
