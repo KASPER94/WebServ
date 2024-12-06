@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/05 13:33:14 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/06 16:45:57 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,15 @@ void Webserv::getRequest(int clientSock) {
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {
         std::cout << "Attente de fragments supplémentaires pour le client " << clientSock << std::endl;
+
+        // Réarmer EPOLLIN pour continuer à recevoir des fragments
+        struct epoll_event clientEvent;
+        clientEvent.data.fd = clientSock;
+        clientEvent.events = EPOLLIN | EPOLLET;
+        if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent) == -1) {
+            std::cerr << "Erreur lors de la modification du socket " << clientSock << " dans epoll : "
+                      << strerror(errno) << std::endl;
+        }
         return;
     }
     // Accumuler le fragment dans la requête du client
