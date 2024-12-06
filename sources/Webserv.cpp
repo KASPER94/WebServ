@@ -6,7 +6,7 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 22:29:48 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/06 22:31:04 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,8 +75,7 @@ void Webserv::getRequest(int clientSock) {
         clientEvent.data.fd = clientSock;
         clientEvent.events = EPOLLIN | EPOLLET;
         if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent) == -1) {
-            std::cerr << "Erreur lors de la modification du socket " << clientSock << " dans epoll : "
-                      << strerror(errno) << std::endl;
+			logMsg(ERROR, "Failed to modify socket " + toString(clientSock) + " in epoll: " + std::string(strerror(errno)));
         }
         return;
     }
