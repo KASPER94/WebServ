@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/06 16:55:09 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/06 23:04:15 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 	_isGood = true;
 	_receivedBodySize += length;
 
-	size_t maxBody = this->_client->getServer()->getClientMaxBody();
+	// size_t maxBody = this->_client->getServer()->getClientMaxBody();
 	// std::cout << "ClientMaxBody (avant conversion): " << maxBody << std::endl;
 
 	// Vérifiez si maxBody est raisonnable et différent de zéro
@@ -188,7 +188,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 	// 	return false;
 	// }
 
-	size_t confBodySize = maxBody ;
+	// size_t confBodySize = maxBody ;
 	// std::cout << "ClientMaxBody après conversion en bytes (confBodySize): " << confBodySize << std::endl;
 
     _requestData.append(data, length);  // Accumule les données reçues dans une std::string
@@ -200,11 +200,11 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 			_endRequested = true;
             return (_endRequested);
         }
-		if (confBodySize && _receivedBodySize >= confBodySize) {
-			std::cerr << "Erreur : La taille du corps de la requête dépasse la limite maximale autorisée." << std::endl;
-			_tooLarge = true;
-            return (_tooLarge);
-		}
+		// if (confBodySize && _receivedBodySize >= confBodySize) {
+		// 	std::cerr << "Erreur : La taille du corps de la requête dépasse la limite maximale autorisée." << std::endl;
+		// 	_tooLarge = true;
+        //     return (_tooLarge);
+		// }
     }
     return (_endRequested);  // Retourne false si la requête n'est pas encore complète
 }
