@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/05 18:28:35 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/06 22:29:48 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,13 @@ void Webserv::getRequest(int clientSock) {
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {
 		logMsg(DEBUG, "Waiting for more fragments of request on socket " + toString(clientSock));
+        struct epoll_event clientEvent;
+        clientEvent.data.fd = clientSock;
+        clientEvent.events = EPOLLIN | EPOLLET;
+        if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent) == -1) {
+            std::cerr << "Erreur lors de la modification du socket " << clientSock << " dans epoll : "
+                      << strerror(errno) << std::endl;
+        }
         return;
     }
     // Accumuler le fragment dans la requête du client

@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/05 16:13:41 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/06 22:31:29 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef WEBSERV_H
 # define WEBSERV_H
@@ -93,6 +94,9 @@ std::string intToString(int number);
 bool	childPath(std::string parent, std::string child);
 std::string	getFullPath(std::string path);
 std::string parseContentType(const std::string &cgiHeaders);
+std::string	strFromCharVec(size_t len, std::vector<char> &vec);
+std::vector<std::string> split_trim(std::string str, std::string needle);
+size_t	findInCharVec(std::string str, std::vector<char> &vec);
 
 
 #endif

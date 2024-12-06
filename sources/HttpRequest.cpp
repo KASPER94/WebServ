@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 16:47:28 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/06 22:31:43 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
     if (_requestData.find("\r\n\r\n") != std::string::npos) {  // Fin de l'entête
         // Logique pour vérifier si le corps est complet si Content-Length est spécifié
 		if (hasCompleteBody()) {
+			this->processMultipartData();
 			_endRequested = true;
             return (_endRequested);
         }
@@ -224,29 +225,35 @@ bool HttpRequest::hasCompleteBody() {
 		_headersParsed = true;  // Indiquer que les en-têtes ont été traités
     }
 
-	if (!_completed) {
-		// if (_requestData.find(_boundary + "--")) {
-		// 	std::cout << "OK    ++++ " << std::endl;
-		// }
-		this->processMultipartData();
-		return (true);
-	}
+	// if (!_completed) {
+	// 	// if (_requestData.find(_boundary + "--")) {
+	// 	// 	std::cout << "OK    ++++ " << std::endl;
+	// 	// }
+	// 	this->processMultipartData();
+	// 	return (true);
+	// }
 
 	// Cas 1 : Vérifier Content-Length
     if (_headers.count("Content-Length") > 0) {
 		size_t contentLength = std::strtol(_headers["Content-Length"].c_str(), 0, 10);
-
         size_t headerEndPos = _requestData.find("\r\n\r\n") + 4;
         size_t bodyLength = _requestData.size() - headerEndPos;
-		if (bodyLength >= contentLength)
-        	return (true);
+      	if (bodyLength >= contentLength) {
+            return true; // Body is complete
+        }
+        return false;
+    }
+	if (_contentType == "multipart/form-data" && !_boundary.empty()) {
+        size_t boundaryEnd = _requestData.rfind(_boundary + "--");
+        if (boundaryEnd != std::string::npos && boundaryEnd + (_boundary.size() + 4) <= _requestData.size()) {
+            return true; // Final boundary found
+        }
+        return false; // Boundary not found yet
     }
     // Cas 2 : Vérifier Transfer-Encoding: chunked
     if (_headers.count("Transfer-Encoding") > 0 && _headers["Transfer-Encoding"] == "chunked") {
         return isChunkedBodyComplete();
-    }
-
-    // Si aucune taille de corps spécifiée, considérer comme complète
+    }    // Si aucune taille de corps spécifiée, considérer comme complète
     return (true);
 }
 
@@ -331,7 +338,110 @@ bool	HttpRequest::isGood() const {
 // 	}
 // }
 
+// void HttpRequest::decodeFormData() {
+// 	size_t pos = _requestData.find("\r\n\r\n") + 4;
+// 	std::string tmp = _requestData.substr(pos);
+
+// 	if (tmp.find(_boundary) == std::string::npos) {
+// 		std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
+// 		return;
+// 	}
+
+// 	size_t boundaryPos = tmp.find(_boundary);
+// 	while (boundaryPos != std::string::npos) {
+// 		boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
+// 		size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
+// 		if (nextBoundaryPos == std::string::npos) {
+// 			nextBoundaryPos = tmp.find(_boundary + "--");
+// 		}
+
+// 		std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
+
+// 		// Vérifiez si c'est une image ou du texte
+// 		size_t namePos = part.find("name=\"");
+// 		if (namePos != std::string::npos) {
+// 			namePos += 6; // Aller au début du nom après 'name="'
+// 			size_t endNamePos = part.find("\"", namePos);
+// 			std::string name = part.substr(namePos, endNamePos - namePos);
+
+// 			size_t contentPos = part.find("\r\n\r\n") + 4;
+// 			std::string content = part.substr(contentPos);
+
+// 			// Vérifier si c'est un fichier
+// 			if (part.find("filename=\"") != std::string::npos) {
+// 				namePos = part.find("filename=\"") + 10;
+// 				size_t endNamePos = part.find("\"", namePos);
+// 				std::string name = part.substr(namePos, endNamePos - namePos);
+// 				_fileData[name] = content;
+// 			} else {
+// 				_formData[name] = content;
+// 			}
+// 		}
+
+// 		boundaryPos = nextBoundaryPos;
+// 	}
+// }
+
+// void HttpRequest::decodeFormData() {
+//     size_t pos = _requestData.find("\r\n\r\n") + 4;
+//     std::string tmp = _requestData.substr(pos);
+
+//     // if (tmp.find(_boundary) == std::string::npos) {
+//     //     std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
+//     //     std::cerr << "Données reçues jusqu'à présent : " << tmp << std::endl;
+//     //     return;
+//     // }
+
+//     size_t boundaryPos = tmp.find(_boundary);
+//     while (boundaryPos != std::string::npos) {
+//         boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
+//         size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
+//         if (nextBoundaryPos == std::string::npos) {
+//             nextBoundaryPos = tmp.find(_boundary + "--", boundaryPos);
+
+//         }
+
+//         std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
+
+//         // Traitez chaque partie ici...
+//         size_t namePos = part.find("name=\"");
+//         if (namePos != std::string::npos) {
+//             namePos += 6;
+//             size_t endNamePos = part.find("\"", namePos);
+//             std::string name = part.substr(namePos, endNamePos - namePos);
+
+//             size_t contentPos = part.find("\r\n\r\n") + 4;
+//             std::string content = part.substr(contentPos);
+// 			std::string boundaryMarker = _boundary + "--";
+// 			std::size_t pos = 0;
+// 			while ((pos = content.find(boundaryMarker, pos)) != std::string::npos) {
+// 				content.erase(pos, boundaryMarker.length());
+// 			}
+
+// 			std::string tmp2 = content.substr(0, content.find("\n"));
+// 			// std::cerr << "AQUE COUOCUC " << tmp2 << std::endl;
+
+//             if (part.find("filename=\"") != std::string::npos) {
+//                 namePos = part.find("filename=\"") + 10;
+//                 size_t endNamePos = part.find("\"", namePos);
+//                 std::string fileName = part.substr(namePos, endNamePos - namePos);
+//                 _fileData[fileName] = tmp2;
+//             } else {
+//                 _formData[name] = content;
+//             }
+//         }
+
+//         boundaryPos = nextBoundaryPos;
+//     }
+// }
+
 void HttpRequest::decodeFormData() {
+	// if (!_rawRequest.empty()) {
+    // 	_requestData.erase();
+    // 	_requestData = _rawRequest.substr(0);
+	// }
+    size_t pos = _requestData.find("\r\n\r\n") + 4;
+    std::string tmp = _requestData.substr(pos);
 	size_t pos = _requestData.find("\r\n\r\n") + 4;
 	std::string tmp = _requestData.substr(pos);
 
@@ -340,41 +450,49 @@ void HttpRequest::decodeFormData() {
 		return;
 	}
 
-	size_t boundaryPos = tmp.find(_boundary);
-	while (boundaryPos != std::string::npos) {
-		boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
-		size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
-		if (nextBoundaryPos == std::string::npos) {
-			nextBoundaryPos = tmp.find(_boundary + "--");
-		}
+    size_t boundaryPos = tmp.find(_boundary);
+    while (boundaryPos != std::string::npos) {
+        boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
+        size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
+        if (nextBoundaryPos == std::string::npos) {
+            nextBoundaryPos = tmp.find(_boundary + "--", boundaryPos);
+        }
 
-		std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
+        // Nettoyer les espaces ou lignes supplémentaires autour du boundary
+        while (boundaryPos < tmp.size() && (tmp[boundaryPos] == '\r' || tmp[boundaryPos] == '\n' || tmp[boundaryPos] == ' ')) {
+            ++boundaryPos;
+        }
+        std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
 
-		// Vérifiez si c'est une image ou du texte
-		size_t namePos = part.find("name=\"");
-		if (namePos != std::string::npos) {
-			namePos += 6; // Aller au début du nom après 'name="'
-			size_t endNamePos = part.find("\"", namePos);
-			std::string name = part.substr(namePos, endNamePos - namePos);
+        // Traitez chaque partie
+        size_t namePos = part.find("name=\"");
+        if (namePos != std::string::npos) {
+            namePos += 6;
+            size_t endNamePos = part.find("\"", namePos);
+            std::string name = part.substr(namePos, endNamePos - namePos);
 
-			size_t contentPos = part.find("\r\n\r\n") + 4;
-			std::string content = part.substr(contentPos);
+            size_t contentPos = part.find("\r\n\r\n") + 4;
+            std::string content = part.substr(contentPos);
 
-			// Vérifier si c'est un fichier
-			if (part.find("filename=\"") != std::string::npos) {
-				namePos = part.find("filename=\"") + 10;
-				size_t endNamePos = part.find("\"", namePos);
-				std::string name = part.substr(namePos, endNamePos - namePos);
-				_fileData[name] = content;
-			} else {
-				_formData[name] = content;
-			}
-		}
+            // Supprimez les délimiteurs indésirables
+            size_t contentEnd = content.rfind("\r\n--" + _boundary);
+            if (contentEnd != std::string::npos) {
+                content = content.substr(0, contentEnd);
+            }
 
-		boundaryPos = nextBoundaryPos;
-	}
+            if (part.find("filename=\"") != std::string::npos) {
+                namePos = part.find("filename=\"") + 10;
+                size_t endNamePos = part.find("\"", namePos);
+                std::string fileName = part.substr(namePos, endNamePos - namePos);
+                _fileData[fileName] = content;
+            } else {
+                _formData[name] = content;
+            }
+        }
+
+        boundaryPos = nextBoundaryPos;
+    }
 }
-
 
 void HttpRequest::parseHeaders() {
     std::istringstream stream(_requestData);
@@ -395,39 +513,70 @@ void HttpRequest::parseHeaders() {
 	parseHttpRequest();
 }
 
+// bool HttpRequest::isChunkedBodyComplete() {
+// 	_completed = false;
+// 	size_t pos = _requestData.find("\r\n\r\n") + 4; // Position du début du corps
+// 	// std::string combinedBody;
+
+// 	while (pos < _requestData.size()) {
+// 		size_t nextPos = _requestData.find("\r\n", pos);
+// 		if (nextPos == std::string::npos) {
+// 			return false; // Chunk incomplet
+// 		}
+
+// 		std::string chunkSizeStr = _requestData.substr(pos, nextPos - pos);
+// 		int chunkSize = std::strtol(chunkSizeStr.c_str(), NULL, 16);
+
+// 		// Chunk terminé
+// 		if (chunkSize == 0) {
+// 			_completed = true;
+// 			break;
+// 		}
+
+// 		pos = nextPos + 2; // Skip \r\n après la taille
+// 		_rawRequest.append(_requestData, pos, chunkSize);
+// 		pos += chunkSize + 2; // Skip le contenu du chunk et le \r\n suivant
+// 	}
+
+// 	// _requestData = combinedBody;
+// 	return _completed;
+// }
+
+
 bool HttpRequest::isChunkedBodyComplete() {
-	_completed = false;
-    size_t pos = _requestData.find("\r\n\r\n") + 4;  // Position du début du corps
+    size_t pos = _requestData.find("\r\n\r\n");
+    if (pos == std::string::npos) {
+        return false; // Headers are incomplete
+    }
+
+    pos += 4; // Start of the body
+
     while (pos < _requestData.size()) {
-        // Trouver la taille du chunk
         size_t nextPos = _requestData.find("\r\n", pos);
         if (nextPos == std::string::npos) {
-			_completed = false;
-			return false;
-		}
+            return false; // Incomplete chunk size line
+        }
 
-        // Lire la taille en hexadécimal
         std::string chunkSizeStr = _requestData.substr(pos, nextPos - pos);
-        int chunkSize = std::strtol(chunkSizeStr.c_str(), 0, 16);
+        int chunkSize = std::strtol(chunkSizeStr.c_str(), NULL, 16);
 
-        // Si la taille est zéro, le corps est terminé
         if (chunkSize == 0) {
-			_completed = true;
-			return true;
-		}
+            size_t finalBoundaryPos = nextPos + 2; // After "0\r\n"
+            if (_requestData.substr(finalBoundaryPos, 2) == "\r\n") {
+                _completed = true;
+                return true; // End of chunks
+            }
+            return false; // Incomplete final chunk ending
+        }
 
-        // Positionner au début du contenu du chunk
-        pos = nextPos + 2 + chunkSize;  // Skip \r\n après la taille et avancer de chunkSize
-
-        // Vérifier la fin du chunk
-        if (_requestData.substr(pos, 2) != "\r\n"){
-			_completed = false;
-			return false;
-		}
-
-        pos += 2;  // Skip the \r\n after the chunk content
+        pos = nextPos + 2; // Skip "\r\n"
+        if (pos + chunkSize > _requestData.size()) {
+            return false; // Incomplete chunk data
+        }
+        pos += chunkSize + 2; // Skip chunk data and trailing "\r\n"
     }
-    return _completed;  // Corps incomplet si on sort de la boucle sans retour
+
+    return false; // Still waiting for more chunks
 }
 
 Client	*HttpRequest::getClient() const {
