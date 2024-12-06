@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 16:45:57 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/06 22:31:04 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,15 @@ std::vector<Server> &Webserv::getAllServer() {
 
 void Webserv::deleteClient(int fd) {
     if (_clients.find(fd) != _clients.end()) {
-        std::cout << "[DEBUG] Fermeture du socket " << fd << std::endl;
-         if (epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, fd, NULL) == -1) {
-            std::cerr << "[DEBUG] Erreur lors de la suppression du socket " << fd
-                      << " de epoll : " << strerror(errno) << std::endl;
+        if (epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+			logMsg(DEBUG, "Failed to delete socket " + toString(fd) + " from epoll: " + std::string(strerror(errno)));
         } else {
-            std::cout << "[DEBUG] Socket " << fd << " supprimé de epoll avec succès." << std::endl;
+			logMsg(DEBUG, "Socket " + toString(fd) + " successfully deleted from epoll");
         }
         close(fd);
         delete _clients[fd];
         _clients.erase(fd);
-        std::cout << "[DEBUG] Client supprimé pour socket " << fd << std::endl;
+		logMsg(DEBUG, "Client using socket " + toString(fd) + " successfully destroyed");
     }
 }
 
@@ -50,7 +48,7 @@ void Webserv::getRequest(int clientSock) {
 
     // Vérifier que le client existe dans le map _clients
     if (_clients.find(clientSock) == _clients.end()) {
-        std::cerr << "Client introuvable pour le socket " << clientSock << std::endl;
+		logMsg(ERROR, "Client using socket " + toString(clientSock) + " not found");
         return;
     }
     Client *client = this->_clients[clientSock];
@@ -58,35 +56,33 @@ void Webserv::getRequest(int clientSock) {
     bytesRead = recv(clientSock, buffer, BUFFER_SIZE, 0);
     if (bytesRead <= 0) {
         if (bytesRead == 0) {
-            std::cout << "Le client " << clientSock << " a fermé la connexion." << std::endl;
+			logMsg(INFO, "Client using sock " + toString(clientSock) + " closed the connection");
         } else {
-            std::cerr << "Erreur lors de la lecture des données du socket " << clientSock << std::endl;
+			logMsg(ERROR, "Failed to read data from socket " + toString(clientSock));
         }
         this->deleteClient(clientSock);
         return;
     }
 
     buffer[bytesRead] = '\0';  // Terminer la chaîne de caractères
-    std::cout << "Fragment de requête reçu sur le socket " << clientSock << ": " << buffer << std::endl;
+	logMsg(DEBUG, "Fragment of request received on socket " + toString(clientSock));
+    std::cout << buffer << std::endl;
 	bool isRequestComplete = client->appendRequest(buffer, bytesRead);
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {
-        std::cout << "Attente de fragments supplémentaires pour le client " << clientSock << std::endl;
-
-        // Réarmer EPOLLIN pour continuer à recevoir des fragments
+		logMsg(DEBUG, "Waiting for more fragments of request on socket " + toString(clientSock));
         struct epoll_event clientEvent;
         clientEvent.data.fd = clientSock;
         clientEvent.events = EPOLLIN | EPOLLET;
         if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent) == -1) {
-            std::cerr << "Erreur lors de la modification du socket " << clientSock << " dans epoll : "
-                      << strerror(errno) << std::endl;
+			logMsg(ERROR, "Failed to modify socket " + toString(clientSock) + " in epoll: " + std::string(strerror(errno)));
         }
         return;
     }
     // Accumuler le fragment dans la requête du client
     if (client->getRequest()->getEnd()) {
 		// client.getRequest().parseHttpRequest();
-        std::cout << "Requête stockée et prête pour le traitement pour le client " << clientSock << std::endl;
+        logMsg(DEBUG, "Request received from socket " + toString(clientSock) + " is ready to be proceeded");
 
         // Préparer le client pour l'envoi de la réponse
         struct epoll_event clientEvent;
@@ -95,7 +91,7 @@ void Webserv::getRequest(int clientSock) {
         epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent);
     } else if (client->getError()) {
         // Supprimer le client en cas d'erreur de réception ou de parsing
-        std::cerr << "Erreur de requête détectée pour le client " << clientSock << std::endl;
+		logMsg(DEBUG, "Request received from socket " + toString(clientSock) + " is invalid");
         this->deleteClient(clientSock);
     }
 }
@@ -141,20 +137,21 @@ void Webserv::getRequest(int clientSock) {
 
 void Webserv::sendResponse(int clientSock) {
 	if (_clients.find(clientSock) == _clients.end()) {
-		std::cerr << "Client introuvable pour le socket " << clientSock << std::endl;
+		logMsg(ERROR, "Client using socket " + toString(clientSock) + " not found");
 		return;
 	}
 
 	Client *client = _clients[clientSock];
 	if (!client->getRequestPtr()) {
-		std::cerr << "Aucune requête pour le client " << clientSock << std::endl;
+		logMsg(ERROR, "Client using socket " + toString(clientSock) + " has no request ready to be proceeded");
 		return;
 	}
 	client->sendResponse();
 	std::string response = client->getResponsestr();
 	size_t totalBytesSent = 0;
     size_t responseSize = response.size();
-	std::cerr << "Response sent: " << response << std::endl;
+	logMsg(DEBUG, "Response to be sent to client socket " + toString(clientSock));
+	std::cout << response << std::endl;
 
 	if (client->getError()) {
 		while (totalBytesSent < responseSize)
@@ -170,17 +167,17 @@ void Webserv::sendResponse(int clientSock) {
 		if (bytesSent < 0) {
 			if (errno == EAGAIN) {
 				// Attendre que le socket soit à nouveau prêt pour l'écriture
-				std::cerr << "[DEBUG] EAGAIN: Le socket " << clientSock << " est temporairement non bloquant." << std::endl;
+				logMsg(DEBUG, "EAGAIN: Client socket " + toString(clientSock) + " is temporarily not ready for sending data");
 				break;
 			} else {
-				std::cerr << "[DEBUG] Erreur lors de l'envoi de la réponse : " << strerror(errno) << std::endl;
+				logMsg(DEBUG, "Failed to send response: " + std::string(strerror(errno)));
 				deleteClient(clientSock);
 				return;
 			}
 		}
         totalBytesSent += bytesSent;
     }
-
+	logMsg(DEBUG, "Response (" + toString(totalBytesSent) + " bytes) successfully sent to client");
 	if (client->getRequest()->keepAlive()) {
         // Réinitialiser pour la prochaine requête
         client->resetForNextRequest();
@@ -195,8 +192,6 @@ void Webserv::sendResponse(int clientSock) {
         this->deleteClient(clientSock);
 		return ;
     }
-
-    std::cout << "Réponse envoyée au client (" << totalBytesSent << " bytes)." << std::endl;
 
     // Fermer le socket après avoir envoyé la réponse
 
@@ -224,17 +219,17 @@ void Webserv::initializeSockets() {
     std::vector<Server> &servers = this->getAllServer();
     _epollfd = epoll_create1(0);
     if (_epollfd == -1) {
-        std::cerr << "Erreur lors de la création de l'instance epoll" << std::endl;
+		logMsg(ERROR, "epoll_create() failed to create epoll instance");
         return;
     }
 
     // Register each server's socket with epoll
     for (size_t i = 0; i < servers.size(); i++) {
         if (servers[i].connectToNetwork() < 0) {
-            std::cerr << "Échec de la connexion pour le serveur " << i << std::endl;
+			logMsg(ERROR, "Failed to connect server " + toString(i) + " to network");
     		for (size_t i = 0; i < servers.size(); i++)
 				servers[i].cleanUp();
-   			 close(_epollfd);
+   			close(_epollfd);
 			return ;
         }
         serverSock = servers[i].getSock();
@@ -244,7 +239,7 @@ void Webserv::initializeSockets() {
         event.data.fd = serverSock;
         event.events = EPOLLIN;  // Register for incoming connections
         if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, serverSock, &event) == -1) {
-            std::cerr << "Erreur lors de l'ajout du socket serveur à epoll" << std::endl;
+			logMsg(ERROR, "epoll_ctl() failed to add server socket to epoll");
             close(serverSock);
             continue;
         }
@@ -254,8 +249,8 @@ void Webserv::initializeSockets() {
     while (run == true) {
         struct epoll_event events[MAX_EVENTS];
         int eventCount = epoll_wait(_epollfd, events, MAX_EVENTS, EPOLL_TIMEOUT);
-        if (eventCount == -1) {
-            std::cerr << "Erreur lors de l'appel à epoll_wait" << std::endl;
+        if (eventCount == -1 && errno != EINTR) {
+            logMsg(ERROR, "epoll_wait() failed to fetch events");
             break;
         }
 
@@ -267,14 +262,13 @@ void Webserv::initializeSockets() {
 				int clientSock = accept(sock, NULL, NULL);
 				if (clientSock == -1) {
 					if (errno == EAGAIN || errno == EWOULDBLOCK) {
-						std::cerr << "[DEBUG] Aucun client en attente sur le socket " << sock << std::endl;
+						logMsg(DEBUG, "No pending client request on server socket " + toString(sock));
 					} else {
-						std::cerr << "[DEBUG] Erreur dans accept : " << strerror(errno) << std::endl;
+						logMsg(DEBUG, "accept() failed: " + std::string(strerror(errno)));
 					}
 					continue;
 				}
-				std::cout << "[DEBUG] Nouvelle connexion acceptée avec socket " << clientSock << std::endl;
-
+				logMsg(INFO, "New client connection using socket " + toString(clientSock));
 
 				// Set non-blocking mode for the client socket
                 setsocknonblock(clientSock);
@@ -289,13 +283,13 @@ void Webserv::initializeSockets() {
 					clientEvent.data.fd = clientSock;
 					clientEvent.events = EPOLLIN | EPOLLET; // Lecture en mode non-bloquant
 					if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, clientSock, &clientEvent) == -1) {
-						std::cerr << "Erreur lors de l'ajout du socket client à epoll" << std::endl;
+						logMsg(ERROR, "epoll_ctl() failed to add client socket to epoll");
 						close(clientSock);
 						_clients.erase(clientSock);
 					}
 				} else {
 					// Handle the case where the server pointer is null
-					std::cerr << "Server not found for socket " << sock << std::endl;
+					logMsg(ERROR, "Server socket " + toString(sock) + " not found");
 					close(clientSock);
 				}
 				// Server *Server =_serverSockets[sock];

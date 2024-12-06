@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/18 10:18:39 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 17:39:53 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,7 @@ Client::Client(int fd, Server *servers):
 	 _fd(fd),
 	 _error(false),
 	 _servers(servers) {
-		    std::cout << "[DEBUG] Client created for socket " << fd
-              << " on server listening on port " << _servers->getPort() << "\n";
-
+	logMsg(DEBUG, "Client socket " + toString(fd) + " created for communication with port " + toString(servers->getPort()));
 }
 
 Client::Client(const Client &cpy) {
@@ -43,7 +41,7 @@ Client::~Client() {
 		delete this->_request;
 	if (this->_response)
 		delete this->_response;
-	 std::cout << "[DEBUG] Client destroyed for socket " << _fd << "\n";
+	logMsg(DEBUG, "Client socket " + toString(_fd) + " destroyed");
 }
 
 Client	&Client::operator=(const Client &rhs) {
@@ -105,7 +103,7 @@ void	Client::setError() {
 }
 
 void Client::resetForNextRequest() {
-	std::cout << "[DEBUG] Réinitialisation du client pour socket " << _fd << std::endl;
+	logMsg(DEBUG, "Client using fd " + toString(_fd) + " reset for next request");
     if (_request) {
         delete _request;  // Libère la mémoire allouée à la requête précédente
         _request = NULL;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 00:59:34 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/06 22:28:11 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,4 +244,21 @@ size_t	findInCharVec(std::string str, std::vector<char> &vec) {
 		pos++;
 	}
 	return (std::string::npos);
+}
+
+std::string	getCurrTime()
+{
+	tzset();
+	char		dt[64];
+	time_t		now = time(0);
+	struct tm*	localTime = localtime(&now);
+	strftime(dt, sizeof(dt), "%Y-%m-%d %H:%M:%S", localTime);
+	return dt;
+}
+
+void	logMsg(LogLevel level, std::string msg)
+{
+	const std::string	levelStr[3] = {"[DEBUG]", "[INFO] ", "[ERROR]"};
+	std::string	currTime = getCurrTime();
+	std::cout << currTime << " " << levelStr[level] << " " << msg << std::endl;
 }

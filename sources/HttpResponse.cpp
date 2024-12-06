@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 13:42:04 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 18:21:05 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -401,11 +401,10 @@ bool DirectoriesRecursively(const std::string &path) {
 
         struct stat info;
         if (stat(subPath.c_str(), &info) != 0) {
-			std::cerr << "[DEBUG] Failed directory : " << subPath
-						<< " with error: " << strerror(errno) << std::endl;
+			logMsg(DEBUG, "Failed access to requested path: " + std::string(strerror(errno)));
 			return false;
         } else if (!S_ISDIR(info.st_mode)) {
-            std::cerr << "[DEBUG] Path exists but is not a directory: " << subPath << std::endl;
+			logMsg(DEBUG, "Requested path exists but is not a directory");
             return false;
         }
     }
@@ -415,7 +414,7 @@ bool DirectoriesRecursively(const std::string &path) {
 bool HttpResponse::handleUpload() {
 	std::string uploadPath = this->_client->getServer()->getUploadPath();
 	if (uploadPath.empty()) {
-		std::cerr << "[DEBUG] No upload path defined in configuration." << std::endl;
+		logMsg(DEBUG, "No upload path defined in configuration");
 		this->handleError(500, "Upload path not configured.");
 		return false;
 	}
@@ -435,16 +434,14 @@ bool HttpResponse::handleUpload() {
 			filePath += uploadPath + "/" + it->first;
        	std::ofstream file(filePath.c_str(), std::ios::binary | std::ios::trunc);
         if (!file.is_open()) {
-			std::cerr << filePath << std::endl;
-            std::cerr << "[DEBUG] Failed to create file: " << filePath
-                      << " with error: " << strerror(errno) << std::endl;
+			logMsg(DEBUG, "Failed to create uploaded file " + filePath + ": " + std::string(strerror(errno)));
             this->handleError(500, "Failed to create uploaded file.");
             return false;
         }
 		file << it->second;
 		file.close();
 	}
-	std::cout << "[DEBUG] Files uploaded successfully to " << uploadPath << std::endl;
+	logMsg(DEBUG, "Files uploaded successfully to " + uploadPath);
 	return true;
 }
 
@@ -658,7 +655,7 @@ void HttpResponse::handleRedirect(int code, const std::string &uri) {
     this->_headers["Content-Type"] = "text/html";
 
     // Log the redirect for debugging
-    std::cerr << "[DEBUG] Redirecting to " << uri << " with status code " << code << std::endl;
+	logMsg(DEBUG, "Redirecting to " + uri + " with status code " + toString(code));
 }
 
 void HttpResponse::movedPermanently(const std::string &url) {

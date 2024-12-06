@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/04 16:04:15 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/05 16:34:57 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ bool	run = true;
 void	signalHandler(int signum) {
 	if (signum == SIGINT) {
 		(void)signum;
-		std::cout << "\nReceived SIGINT" << std::endl;
+		// std::cout << "\nReceived SIGINT" << std::endl;
+		std::cout << std::endl;
+		logMsg(INFO, "Received SIGINT");
 		run = false;
 	}
 }
@@ -43,9 +45,8 @@ bool webserv(char *config_file) {
 		}
 		for (std::map<int, int>::iterator it = portCounts.begin(); it != portCounts.end(); ++it) {
 			if (it->second > 1) {
-				std::cerr << "[DEBUG] Conflict detected: "
-							<< it->second << " servers are configured to listen on port "
-							<< it->first << "." << std::endl;
+				std::string msg = "Conflict detected: " + toString(it->second) + " servers are configured to listen on port " + toString(it->first) + ".";
+				logMsg(DEBUG, msg);
 				throw std::runtime_error("Port conflict error. Check your server configuration.");
 			}
 		}
@@ -53,7 +54,7 @@ bool webserv(char *config_file) {
 	}
     catch (std::exception &e)
 	{
-		std::cerr << e.what() << std::endl;
+		logMsg(ERROR, e.what());
 	}
     return (true);
 }
@@ -67,7 +68,7 @@ int main(int ac, char **av) {
         webserv(av[1]);
     }
     else {
-        std::cerr << "\033[31m" << "to use Webserv : ./webserv [configuration file]" << "\033[0m" << std::endl;
+        std::cout << "\033[31m" << "Usage: ./webserv [configuration file]" << "\033[0m" << std::endl;
         return (1);
     }
     return (0);

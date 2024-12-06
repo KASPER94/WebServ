@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/12/06 23:04:15 by skapersk         ###   ########.fr       */
+=======
+/*   Updated: 2024/12/06 22:32:43 by ael-mank         ###   ########.fr       */
+>>>>>>> main
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +19,11 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client): _client(client) {
-    std::cout << "HttpRequest created at " << this << std::endl;
+	logMsg(DEBUG, "HttpRequest created at " + toString(this));
 }
 
 HttpRequest::~HttpRequest() {
-	 std::cout << "HttpRequest destroyed at " << this << std::endl;
+	logMsg(DEBUG, "HttpRequest created at " + toString(this));
 }
 
 enum HttpMethod HttpRequest::getMethod() const {
@@ -442,6 +446,11 @@ void HttpRequest::decodeFormData() {
 	// }
     size_t pos = _requestData.find("\r\n\r\n") + 4;
     std::string tmp = _requestData.substr(pos);
+
+	if (tmp.find(_boundary) == std::string::npos) {
+		logMsg(ERROR, "Broken request: delimiter not found");
+		return;
+	}
 
     size_t boundaryPos = tmp.find(_boundary);
     while (boundaryPos != std::string::npos) {

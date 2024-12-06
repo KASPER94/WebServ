@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 00:58:19 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/06 22:31:29 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef WEBSERV_H
 # define WEBSERV_H
@@ -54,6 +55,24 @@ enum HttpMethod {
 	OTHER = 3
 };
 
+enum LogLevel
+{
+	DEBUG,
+	INFO,
+	ERROR,
+};
+
+std::string	getCurrTime();
+void		logMsg(LogLevel level, std::string msg);
+
+template <typename T>
+std::string toString(T value)
+{
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
+
 # include "Server.hpp"
 # include "Webserv.hpp"
 class Webserv;
@@ -78,5 +97,6 @@ std::string parseContentType(const std::string &cgiHeaders);
 std::string	strFromCharVec(size_t len, std::vector<char> &vec);
 std::vector<std::string> split_trim(std::string str, std::string needle);
 size_t	findInCharVec(std::string str, std::vector<char> &vec);
+
 
 #endif
