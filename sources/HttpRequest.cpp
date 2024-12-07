@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 21:00:49 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 21:55:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,10 @@ void HttpRequest::parseUserAgent(std::string &line) {
     _userAgent = line;
 }
 
+void HttpRequest::parseContentLen(std::string &line) {
+    _contentLen = atoi(line.c_str());
+}
+
 void HttpRequest::parseContentType(std::string &line) {
     _contentType = line.substr();
     if (line.find("multipart/form-data") != std::string::npos) {
@@ -153,6 +157,7 @@ void HttpRequest::initializeHeaderParsers() {
 	parseConnection(_headers["Connection"]);
 	parseUserAgent(_headers["User-Agent"]);
 	parseContentType(_headers["Content-Type"]);
+	parseContentLen(_headers["Content-Length"]);
 	parseHost(_headers["Host"]);
 	parseCookie(_headers["cookie"]);
 }
@@ -607,6 +612,10 @@ bool HttpRequest::keepAlive() const {
 	return (_keepAliveConnection);
 }
 
+size_t HttpRequest::getContentLen() const {
+	return (_contentLen);
+}
+
 std::string	HttpRequest::returnURI() {
 	return (_uri);
 }
@@ -621,4 +630,12 @@ std::map<std::string, std::string> &HttpRequest::getFileData() {
 
 std::map<std::string, std::string> &HttpRequest::getFormData() {
 	return this->_formData;
+}
+
+std::map<std::string, std::string> 	HttpRequest::getHeaders() {
+	return this->_headers;
+}
+
+s_query HttpRequest::getQueryString() {
+    return _query;
 }

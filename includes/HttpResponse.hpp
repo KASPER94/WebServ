@@ -97,6 +97,7 @@ class HttpResponse {
 		bool executeCGI(const std::string &uri);
 		bool handleUpload();
 		void handlePostRequest();
+		void prepareCGIEnvironment(std::vector<std::string> &env);
 };
 
 #endif

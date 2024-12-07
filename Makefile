@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+         #
+#    By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/12/05 15:56:33 by yrigny           ###   ########.fr        #
+#    Updated: 2024/12/07 23:57:00 by skapersk         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = RPN
+NAME = Webserv
 
 CC = c++
 
