@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/07 00:24:24 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 00:45:25 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,6 +214,21 @@ void Webserv::sendResponse(int clientSock) {
 	// }
 }
 
+void Webserv::checkClientTimeouts() {
+    std::map<int, Client *>::iterator it = _clients.begin();
+    while (it != _clients.end()) {
+        Client *client = it->second;
+        if (client->isTimeout()) {
+            logMsg(INFO, "Client using socket " + toString(client->getFd()) + " timed out due to inactivity");
+            int clientFd = client->getFd();
+            deleteClient(clientFd);
+            it = _clients.begin(); // Recommencer l'itération car le map a été modifié
+        } else {
+            ++it;
+        }
+    }
+}
+
 void Webserv::initializeSockets() {
 	int serverSock;
     std::vector<Server> &servers = this->getAllServer();
@@ -321,6 +336,7 @@ void Webserv::initializeSockets() {
 				//     std::cerr << "Socket " << sock << " introuvable ou événement inattendu" << std::endl;
             }
         }
+		checkClientTimeouts();
     }
     close(_epollfd);
 }

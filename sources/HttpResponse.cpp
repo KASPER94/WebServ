@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 18:21:05 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/07 01:03:22 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,7 +153,13 @@ void HttpResponse::createHeader() {
 		this->_headers["Content-Type"] = "text/html";
 	}
 	//changer avec keepalive !!!!!
-	this->_headers["Connection"] = "close";
+	if (this->getRequest()->keepAlive()) {
+        this->_headers["Connection"] = "keep-alive";
+        this->_headers["Keep-Alive"] = "timeout=" + intToString(this->_client->getTimeout());
+    } else {
+        this->_headers["Connection"] = "close";
+    }
+	// this->_headers["Connection"] = "close";
 }
 
 void HttpResponse::sendDirectoryPage(std::string path) {

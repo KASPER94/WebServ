@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 00:18:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 01:03:03 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,12 @@ void HttpRequest::parseAcceptedMimes(std::string &line) {
 }
 
 void HttpRequest::parseConnection(std::string &line) {
-    _keepAliveConnection = (line == "keep-alive");
+	std::string tmp = line.substr(0, 10);
+    if (tmp == "keep-alive" || tmp == "Keep-Alive" || tmp == "keep-alive") {
+        _keepAliveConnection = true;
+	}
+    else
+        _keepAliveConnection = false;
 }
 
 void HttpRequest::parseUserAgent(std::string &line) {

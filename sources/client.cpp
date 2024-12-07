@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 00:29:36 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 00:48:51 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ Client::Client(int fd, Server *servers):
 	 _fd(fd),
 	 _error(false),
 	 _servers(servers) {
+	_lastActivityTime = time(NULL) ;
 	logMsg(DEBUG, "Client socket " + toString(fd) + " created for communication with port " + toString(servers->getPort()));
 }
 
@@ -78,6 +79,7 @@ bool	Client::getError() const {
 }
 
 bool	Client::appendRequest(const char *data, int bytes) {
+    _lastActivityTime = time(NULL); 
 	if (!this->_request)
 		this->_request = new HttpRequest(this);
 	// this->_creationDate = time(0);
@@ -90,6 +92,7 @@ Server	*Client::getServer() const {
 }
 
 void	Client::sendResponse() {
+    _lastActivityTime = time(NULL);
 	this->_response = new HttpResponse(this);
 	this->_response->sendResponse();
 }
@@ -118,6 +121,19 @@ void Client::resetForNextRequest() {
     _response = new HttpResponse(this);  // Crée une nouvelle réponse
 
     // Réinitialise les erreurs et autres indicateurs
+	_lastActivityTime = time(NULL); 
     _error = false;
+}
+
+bool Client::isTimeout() {
+    return difftime(time(NULL), _lastActivityTime) > _timeout;
+}
+
+time_t Client::getLastActivityTime() const {
+    return _lastActivityTime;
+}
+
+int Client::getTimeout() const {
+    return _timeout;
 }
 
