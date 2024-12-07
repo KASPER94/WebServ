@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 01:03:22 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 16:48:41 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ void HttpResponse::sendHeader() {
     std::string statusDescription;
     switch (this->_statusCode) {
         case 200: statusDescription = "OK"; break;
+        case 204: statusDescription = "No Content"; break;
         case 301: statusDescription = "Moved Permanently"; break;
         case 400: statusDescription = "Bad Request"; break;
         case 403: statusDescription = "Forbidden"; break;
@@ -237,7 +238,7 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
 
     if (!file.is_open()) {
 		if (uri.find("favicon.ico") != std::string::npos) {
-            this->_statusCode = 404;
+            this->_statusCode = 204;
             this->_mime = "image/x-icon";
             this->_headers["Content-Type"] = this->_mime;
             this->_headers["Content-Length"] = "0";
