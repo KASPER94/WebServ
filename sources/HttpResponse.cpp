@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 16:48:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 21:08:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ void HttpResponse::sendHeader() {
     std::string statusDescription;
     switch (this->_statusCode) {
         case 200: statusDescription = "OK"; break;
+        case 201: statusDescription = "Created"; break;
         case 204: statusDescription = "No Content"; break;
         case 301: statusDescription = "Moved Permanently"; break;
         case 400: statusDescription = "Bad Request"; break;
@@ -148,10 +149,12 @@ void	HttpResponse::tryDeleteFile(std::string &uri) {
 
 void HttpResponse::createHeader() {
     this->_headers["Server"] = "Webserv/1.0";
-	if (!this->_mime.empty()) {
-		this->_headers["Content-Type"] = this->_mime;
-	} else {
-		this->_headers["Content-Type"] = "text/html";
+	if (this->_headers["Content-Type"].empty()) {
+		if (!this->_mime.empty()) {
+			this->_headers["Content-Type"] = this->_mime;
+		} else {
+			this->_headers["Content-Type"] = "text/html";
+		}
 	}
 	//changer avec keepalive !!!!!
 	if (this->getRequest()->keepAlive()) {
@@ -160,7 +163,6 @@ void HttpResponse::createHeader() {
     } else {
         this->_headers["Connection"] = "close";
     }
-	// this->_headers["Connection"] = "close";
 }
 
 void HttpResponse::sendDirectoryPage(std::string path) {
@@ -447,9 +449,71 @@ bool HttpResponse::handleUpload() {
         }
 		file << it->second;
 		file.close();
+		_statusCode = 201;
 	}
 	logMsg(DEBUG, "Files uploaded successfully to " + uploadPath);
 	return true;
+}
+
+void HttpResponse::handlePostRequest() {
+    // Check for file uploads
+    const std::map<std::string, std::string>& files = this->getRequest()->getFileData();
+    const std::map<std::string, std::string>& formData = this->getRequest()->getFormData();
+
+    if (!files.empty()) {
+        if (handleUpload()) {
+            // Respond with a JSON success message for uploads
+            this->_statusCode = 201; // Created
+            std::string jsonResponse = "{\n  \"status\": \"success\",\n  \"message\": \"Files uploaded successfully\",\n  \"files\": [\n";
+
+            for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
+                jsonResponse += "    \"" + it->first + "\"";
+                std::map<std::string, std::string>::const_iterator nextIt = it;
+                ++nextIt; // Manual iterator increment to check the next element
+                if (nextIt != files.end()) {
+                    jsonResponse += ",";
+                }
+                jsonResponse += "\n";
+            }
+
+            jsonResponse += "  ]\n}";
+            this->_headers["Content-Type"] = "application/json";
+            this->_headers["Content-Length"] = intToString(jsonResponse.size());
+            this->createHeader();
+            this->sendHeader();
+            this->sendData(jsonResponse.c_str(), jsonResponse.size());
+        } else {
+            handleError(500, "Failed to upload files.");
+        }
+        return;
+    }
+
+    // Handle form data only
+    if (!formData.empty()) {
+        this->_statusCode = 200; // OK
+        std::string jsonResponse = "{\n  \"status\": \"success\",\n  \"message\": \"Form data received successfully\",\n  \"data\": {\n";
+
+        for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
+            jsonResponse += "    \"" + it->first + "\": \"" + it->second + "\"";
+            std::map<std::string, std::string>::const_iterator nextIt = it;
+            ++nextIt; // Manual iterator increment to check the next element
+            if (nextIt != formData.end()) {
+                jsonResponse += ",";
+            }
+            jsonResponse += "\n";
+        }
+
+        jsonResponse += "  }\n}";
+        this->_headers["Content-Type"] = "application/json";
+        this->_headers["Content-Length"] = intToString(jsonResponse.size());
+        this->createHeader();
+        this->sendHeader();
+        this->sendData(jsonResponse.c_str(), jsonResponse.size());
+        return;
+    }
+
+    // If no form data or files were found
+    handleError(400, "No valid data provided in the POST request.");
 }
 
 void HttpResponse::sendResponse() {
@@ -469,11 +533,20 @@ void HttpResponse::sendResponse() {
 		tryDeleteFile(uri);
 		return ;
 	}
-	if (this->getRequest()->getMethod() == POST && !this->getRequest()->getFileData().empty()) {
-		if (!this->handleUpload()) {
-			return ;
-		}
-	}
+	if (this->getRequest()->getMethod() == POST) {
+        handlePostRequest();
+        return;
+    }
+	// if (this->getRequest()->getMethod() == POST && !this->getRequest()->getFileData().empty()) {
+	// 	if (!this->handleUpload()) {
+	// 		_statusCode = 404;
+	// 	}
+	// 	else 
+	// 	this->createHeader();
+	// 	this->sendHeader();
+	// 	this->sendData(this->_body.c_str(), this->_body.size());
+	// 	return ;
+	// }
 	if (isDir) {
 		if (this->_directoryListing)
 			this->directoryListing(uri);

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 00:50:42 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 21:00:50 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,7 @@ class HttpRequest {
 		std::string	returnURI();
 		std::string	returnPATH();
 		std::map<std::string, std::string> &getFileData();
+		std::map<std::string, std::string> &getFormData();
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);

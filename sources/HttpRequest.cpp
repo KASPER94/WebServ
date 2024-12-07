@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 01:03:03 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 21:00:49 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -617,4 +617,8 @@ std::string	HttpRequest::returnPATH() {
 
 std::map<std::string, std::string> &HttpRequest::getFileData() {
 	return this->_fileData;
+}
+
+std::map<std::string, std::string> &HttpRequest::getFormData() {
+	return this->_formData;
 }
