@@ -101,7 +101,7 @@ void conf::_parseLocation(std::string line, Server &serv, std::ifstream &ConfigF
 		} else if (directive == "cgi_extension") {
 			locationConfig.setCgiExtension(this->_getCgiExtensions(tokens));
 		} else if (directive == "allowedMethods") {
-			locationConfig.setAllowedMethods(*this->_getAllowedMethods(tokens));
+			locationConfig.setAllowedMethods(this->_getAllowedMethods(tokens));
 		} else if (directive == "upload_path") {
 			locationConfig.setUploadPath(this->_getUploadPath(tokens));
 		} else if (directive == "return") {
@@ -157,8 +157,11 @@ void    conf::_parseLine(std::string &line, Server	&serv, std::vector<Server> &a
 			serv.setClientMaxBody(this->_getClientMaxBodySize(line_trim));
 			break;
 		case ALLOWED_METHODS:
-			serv.setAllowedMethods(this->_getAllowedMethods(line_trim));
-			break;
+		{
+            std::vector<std::string> other_vec = this->_getAllowedMethods(line_trim);
+            serv.setAllowedMethods(other_vec);
+            break;
+		}
 		case RETURN_URI:
 			serv.setReturnUri(this->_getRedirection(line_trim));
 			break;

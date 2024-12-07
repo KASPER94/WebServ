@@ -138,8 +138,8 @@ size_t    conf::_getClientMaxBodySize(std::vector<std::string> line) {
 	return (clientMaxBodysize);
 }
 
-std::vector<std::string>    *conf::_getAllowedMethods(std::vector<std::string> line) {
-	std::vector<std::string> *methods = new std::vector<std::string>;
+std::vector<std::string>    conf::_getAllowedMethods(std::vector<std::string> line) {
+	std::vector<std::string> methods;
 	std::string method;
 
 	if (line.size() < 2)
@@ -153,11 +153,11 @@ std::vector<std::string>    *conf::_getAllowedMethods(std::vector<std::string> l
 		method.erase(method.find_last_not_of(" \n\r\t;") + 1);
 		method.erase(0, method.find_first_not_of(" \n\r\t"));
 		if (method == "GET") {
-			methods->push_back("GET");
+			methods.push_back("GET");
 		} else if (method == "POST") {
-			methods->push_back("POST");
+			methods.push_back("POST");
 		} else if (method == "DELETE") {
-			methods->push_back("DELETE");
+			methods.push_back("DELETE");
 		} else {
 			throw std::runtime_error("Error: unsupported method in allowedMethods directive");
 		}

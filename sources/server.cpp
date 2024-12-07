@@ -18,7 +18,7 @@ Server::Server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(80
 }
 
 Server::~Server() {
-	// delete _uri;
+	delete _uri;
 }
 
 Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port, inet_addr(cpy._host.c_str())) {
@@ -46,12 +46,12 @@ Server &Server::operator=(const Server &rhs) {
         for (std::map<std::string, Location *>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
             delete it->second;
         }
-        _locations.clear();
         for (std::map<std::string, Location *>::const_iterator it = rhs._locations.begin(); it != rhs._locations.end(); ++it) {
             _locations[it->first] = new Location(*it->second);
             // std::cout << (_locations[it->first])->getRoot() << std::endl;
             // std::cout << *(_locations[it->first])->getCgiExtension().begin() << std::endl;
         }
+        _locations.clear();
 
         if (rhs._uri) {
             this->_uri = new std::vector<std::string>(*rhs._uri);
@@ -175,13 +175,13 @@ size_t	Server::getClientMaxBody() {
 	return (this->_maxBodySize);
 }
 
-void Server::setAllowedMethods(std::vector<std::string> *methods) {
+void Server::setAllowedMethods(std::vector<std::string> &methods) {
     // this->_allowedMethod.clear();
     // this->_allowedMethod.insert(_allowedMethod.end(), methods.begin(), methods.end());
 	this->_allowedMethod = methods;
 }
 
-std::vector<std::string> *Server::getAllowedMethods() {
+std::vector<std::string> &Server::getAllowedMethods() {
     return _allowedMethod;
 }
 

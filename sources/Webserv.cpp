@@ -6,7 +6,7 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 22:31:04 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/06 22:46:41 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,26 +154,15 @@ void Webserv::sendResponse(int clientSock) {
 	std::cout << response << std::endl;
 
 	if (client->getError()) {
-		while (totalBytesSent < responseSize)
-			totalBytesSent += send(clientSock, response.c_str(), response.size(), 0);
-		epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, clientSock, NULL);
-		close(clientSock);
-		_clients.erase(clientSock);
-		return ;
+		deleteClient(clientSock);
+		return;
 	}
 
     while (totalBytesSent < responseSize) {
         int bytesSent = send(clientSock, response.c_str() + totalBytesSent, responseSize - totalBytesSent, 0);
-		if (bytesSent < 0) {
-			if (errno == EAGAIN) {
-				// Attendre que le socket soit à nouveau prêt pour l'écriture
-				logMsg(DEBUG, "EAGAIN: Client socket " + toString(clientSock) + " is temporarily not ready for sending data");
-				break;
-			} else {
-				logMsg(DEBUG, "Failed to send response: " + std::string(strerror(errno)));
-				deleteClient(clientSock);
-				return;
-			}
+		if (bytesSent <= 0) {
+			deleteClient(clientSock);
+			return;
 		}
         totalBytesSent += bytesSent;
     }
@@ -271,8 +260,10 @@ void Webserv::initializeSockets() {
 				logMsg(INFO, "New client connection using socket " + toString(clientSock));
 
 				// Set non-blocking mode for the client socket
-                setsocknonblock(clientSock);
-
+				if (setsocknonblock(clientSock) < 0) {
+   					 close(clientSock);
+   					 continue;
+				}
                 // Create a new Client instance and add to _clients
 				Server *Server =_serverSockets[sock];
 				if (Server) {
@@ -323,6 +314,7 @@ void Webserv::initializeSockets() {
         }
     }
     close(_epollfd);
+    delete env()->webserv;
 }
 
 
@@ -334,6 +326,3 @@ bool Webserv::isServerSocket(int sock) const {
 	}
 	return false;
 }
-
-
-

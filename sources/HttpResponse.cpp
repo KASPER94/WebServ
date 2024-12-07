@@ -513,7 +513,7 @@ void	HttpResponse::setInfos() {
 	this->_uri = "";
 	this->_root = this->getServer()->getRoot();
 	this->_maxBodySize = this->getServer()->getClientMaxBody();
-	this->_allowedMethod = *(this->getServer()->getAllowedMethods());
+	this->_allowedMethod = this->getServer()->getAllowedMethods();
 	this->_directoryListing = this->getServer()->getAutoindex();
 	this->_errorPage = this->getServer()->getErrorPage();
 	this->_returnURI = this->getServer()->getReturnUri();

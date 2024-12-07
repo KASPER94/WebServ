@@ -33,7 +33,7 @@ class Server : public websocket {
 		std::vector<std::string>		_indexes;
 		std::string						_index;
 		size_t							_maxBodySize;
-		std::vector<std::string>		*_allowedMethod;
+		std::vector<std::string>		_allowedMethod;
 		std::vector<std::string>		_locationBlock;
 
 		std::map<int, std::string>		_errorPages ;
@@ -61,7 +61,7 @@ class Server : public websocket {
 		void	setServerName(std::string name);
 		void	setErrorPage(std::map<int, std::string>);
 		void	setClientMaxBody(size_t body);
-		void 	setAllowedMethods(std::vector<std::string> *methods);
+		void 	setAllowedMethods(std::vector<std::string> &methods);
 		void	setSock();
 		void	setUri(std::string uri);
 		void	setReturnUri(std::map<int, std::string> returnUri);
@@ -79,7 +79,7 @@ class Server : public websocket {
 		std::string						getServerName();
 		std::map<int, std::string>		getErrorPage();
 		size_t 							getClientMaxBody();
-		std::vector<std::string> 		*getAllowedMethods() ;
+		std::vector<std::string> 		&getAllowedMethods() ;
 		std::vector<std::string>		*getUri();
     	std::map<int, std::string> 		getReturnUri() const;
 		std::vector<std::string>		getIndexes();

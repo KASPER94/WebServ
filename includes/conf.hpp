@@ -46,7 +46,7 @@ class conf {
 		// void _getLocation(std::vector<std::string> line);
 		std::map<int, std::string> _getErrorPage(std::vector<std::string> line);
 		size_t _getClientMaxBodySize(std::vector<std::string> line);
-		std::vector<std::string> *_getAllowedMethods(std::vector<std::string> line);
+		std::vector<std::string> _getAllowedMethods(std::vector<std::string> line);
 		std::string _getRoot(const std::vector<std::string> &line);
 
 		bool _getAutoindex(std::vector<std::string> &line);
