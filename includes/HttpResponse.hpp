@@ -91,6 +91,7 @@ class HttpResponse {
 		void	directoryListing(std::string path);
 		void 	createHeader();
 		void 	sendDirectoryPage(std::string path);
+		bool findUriListing(std::string &uri, bool &isDir);
 		void serveStaticFile(const std::string &uri);
 		int	sendData(const void *data, int len);
 		void handleCGI(std::string uri);

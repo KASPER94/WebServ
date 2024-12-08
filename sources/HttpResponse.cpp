@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 20:17:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 00:12:04 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,31 +165,62 @@ void HttpResponse::createHeader() {
     }
 }
 
+bool isDirectoryEmpty(const std::string &path) {
+    DIR *dir = opendir(path.c_str());
+    if (!dir)
+        return true;
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        std::string name = entry->d_name;
+        if (name != "." && name != "..") {
+            closedir(dir);
+            return false;
+        }
+    }
+    closedir(dir);
+    return true;
+}
+
 void HttpResponse::sendDirectoryPage(std::string path) {
+    if (isDirectoryEmpty(path)) {
+        this->handleError(404, "Directory is empty.");
+        return;
+    }
+
     DIR *dir;
     struct dirent *entry;
 
     if ((dir = opendir(path.c_str())) == NULL) {
-        this->handleError(500, "Impossible d'ouvrir le répertoire : " + path);
+        this->handleError(500, "Unable to open directory: " + path);
         return;
     }
 
+	std::cerr << "### " << path << std::endl;
     std::string body = "<html><head><title>Index of " + path + "</title></head>";
     body += "<body><h1>Index of " + path + "</h1><ul>";
 
-	while ((entry = readdir(dir)) != NULL) {
-		std::string name = entry->d_name;
+    // Parcourir les entrées du répertoire
+    while ((entry = readdir(dir)) != NULL) {
+        std::string name = entry->d_name;
 
-		if (name == "." || name == "..")
-			continue;
+        // Ignorer les entrées spéciales "." et ".."
+        if (name == "." || name == "..")
+            continue;
 
+        // Concaténer le chemin et vérifier si c'est un répertoire
         std::string link = path;
         if (link[link.size() - 1] != '/')
             link += "/";
         link += name;
 
-		body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
-	}
+        struct stat s;
+        if (stat(link.c_str(), &s) == 0 && (s.st_mode & S_IFDIR)) {
+            name += "/"; // Ajouter "/" pour indiquer un répertoire
+        }
+
+        body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
+    }
 
     // Fin de la page HTML
     body += "</ul></body></html>";
@@ -201,12 +232,13 @@ void HttpResponse::sendDirectoryPage(std::string path) {
     this->_body = body;
     this->_headers["Content-Length"] = intToString(body.size());
     this->_headers["Content-Type"] = "text/html";
-	this->_headers["Connection"] = "close";
+    this->_headers["Connection"] = "close";
 
-    // Envoyer le contenu HTML au client
+    // Envoyer les en-têtes et le corps
+    this->createHeader();
+    this->sendHeader();
     this->sendData(body.c_str(), body.size());
 }
-
 
 void	HttpResponse::directoryListing(std::string path) {
 	this->_statusCode = 200;
@@ -214,6 +246,7 @@ void	HttpResponse::directoryListing(std::string path) {
 	this->createHeader();
 	this->sendHeader();
 	this->sendDirectoryPage(path);
+
 }
 
 int	HttpResponse::sendData(const void *data, int len) {
@@ -771,7 +804,6 @@ void HttpResponse::sendResponse() {
 	// 	return ;
 	// }
 	if (isDir) {
-		std::cerr << uri << std::endl;
 		if (!this->_directoryListing)
 			this->directoryListing(uri);
 		else {
@@ -930,7 +962,13 @@ bool	HttpResponse::initializeResponse() {
 		this->handleError(400, "You do not have permission to access this resource.");
 		return (false);
 	}
-
+	
+	std::string tmp = this->getRequest()->returnPATH();
+	std::string location = matchLocation(tmp);
+	if (!location.empty()) {
+		Location *loc = this->getServer()->getLocation(location);
+		_returnURI = loc->getReturnUri();
+	}
 	if (!_returnURI.empty()) {
         std::map<int, std::string>::iterator redirect = this->_returnURI.begin();
         if (redirect->first == 301) {
