@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 17:15:29 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/08 20:26:14 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,44 +19,78 @@ Server::Server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(80
 
 Server::~Server() {
 	delete _uri;
+	for (std::map<std::string, Location*>::iterator it = _locations.begin(); 
+             it != _locations.end(); ++it) {
+            delete it->second;
+        }
+        _locations.clear();
 }
 
 Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port, inet_addr(cpy._host.c_str())) {
-    *this = cpy;
+    _uri = NULL;
+    _port = cpy._port;
+    _host = cpy._host;
+    _name = cpy._name;
+    _directoryListing = cpy._directoryListing;
+    _root = cpy._root;
+    _indexes = cpy._indexes;
+    _maxBodySize = cpy._maxBodySize;
+    _allowedMethod = cpy._allowedMethod;
+    _returnURI = cpy._returnURI;
+    _uploadPath = cpy._uploadPath;
+    _binPath = cpy._binPath;
+    _cgiExtensions = cpy._cgiExtensions;
+    _cgiBin = cpy._cgiBin;
+    _autoindex = cpy._autoindex;
+
+    // Deep copy URI
+    if (cpy._uri) {
+        _uri = new std::vector<std::string>(*cpy._uri);
+    }
+
+    // Deep copy locations
+    for (std::map<std::string, Location *>::const_iterator it = cpy._locations.begin(); 
+         it != cpy._locations.end(); ++it) {
+        _locations[it->first] = new Location(*it->second);
+    }
 }
 
 Server &Server::operator=(const Server &rhs) {
     if (this != &rhs) {
-        this->_port = rhs._port;
-        this->_host = rhs._host;
-        this->_name = rhs._name;
-        this->_directoryListing = rhs._directoryListing;
-        this->_root = rhs._root;
-        this->_indexes = rhs._indexes;
-        this->_maxBodySize = rhs._maxBodySize;
-        this->_allowedMethod = rhs._allowedMethod;
-        this->_returnURI = rhs._returnURI;
-        this->_uploadPath = rhs._uploadPath;
-        this->_binPath = rhs._binPath;
-        this->_cgiExtensions = rhs._cgiExtensions;
-        this->_cgiBin = rhs._cgiBin;
-		this->_autoindex = rhs._autoindex;
-
-
-        for (std::map<std::string, Location *>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
+        // Clean existing data
+        delete _uri;
+        _uri = NULL;
+        for (std::map<std::string, Location *>::iterator it = _locations.begin(); 
+             it != _locations.end(); ++it) {
             delete it->second;
-        }
-        for (std::map<std::string, Location *>::const_iterator it = rhs._locations.begin(); it != rhs._locations.end(); ++it) {
-            _locations[it->first] = new Location(*it->second);
-            // std::cout << (_locations[it->first])->getRoot() << std::endl;
-            // std::cout << *(_locations[it->first])->getCgiExtension().begin() << std::endl;
         }
         _locations.clear();
 
+        // Copy basic members
+        _port = rhs._port;
+        _host = rhs._host;
+        _name = rhs._name;
+        _directoryListing = rhs._directoryListing;
+        _root = rhs._root;
+        _indexes = rhs._indexes;
+        _maxBodySize = rhs._maxBodySize;
+        _allowedMethod = rhs._allowedMethod;
+        _returnURI = rhs._returnURI;
+        _uploadPath = rhs._uploadPath;
+        _binPath = rhs._binPath;
+        _cgiExtensions = rhs._cgiExtensions;
+        _cgiBin = rhs._cgiBin;
+        _autoindex = rhs._autoindex;
+
+        // Deep copy URI
         if (rhs._uri) {
-            this->_uri = new std::vector<std::string>(*rhs._uri);
-        } else {
-            this->_uri = NULL;
+            _uri = new std::vector<std::string>(*rhs._uri);
+        }
+
+        // Deep copy locations
+        for (std::map<std::string, Location *>::const_iterator it = rhs._locations.begin(); 
+             it != rhs._locations.end(); ++it) {
+            _locations[it->first] = new Location(*it->second);
         }
     }
     return *this;
@@ -222,23 +256,32 @@ void Server::addLocation(const std::string &uri, const Location &location) {
 }
 
 void Server::reset() {
-    // Réinitialise tous les membres de l'objet
-    this->_port = 0;
-    this->_host.clear();
-    if (this->_uri) {
-        this->_uri->clear(); // Efface les éléments existants
+    _port = 0;
+    _host.clear();
+    
+    // Clean up URI
+    delete _uri;
+    _uri = new std::vector<std::string>;
+    
+    // Clean up locations
+    for (std::map<std::string, Location *>::iterator it = _locations.begin(); 
+         it != _locations.end(); ++it) {
+        delete it->second;
     }
-	this->_uri = new std::vector<std::string>; // Crée une nouvelle instance si NULL
-    this->_name.clear();
-    this->_indexes.clear();
-    this->_errorPages.clear();
-    this->_locations.clear();
-    this->_maxBodySize = 0;
-    // this->_allowedMethod->clear();
-	//REVENIR SUR LE RESET DU POINTEUR ALLOWED MTHODE
-    this->_returnURI.clear();
-    this->_root.clear();
-    // Réinitialise d'autres champs si nécessaire
+    _locations.clear();
+    
+    _name.clear();
+    _indexes.clear();
+    _errorPages.clear();
+    _maxBodySize = 0;
+    _allowedMethod.clear();
+    _returnURI.clear();
+    _root.clear();
+    _uploadPath.clear();
+    _binPath.clear();
+    _cgiExtensions.clear();
+    _cgiBin.clear();
+    _autoindex = false;
 }
 
 void Server::cleanUp() {
