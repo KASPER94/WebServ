@@ -98,6 +98,7 @@ class HttpResponse {
 		bool handleUpload();
 		void handlePostRequest();
 		void prepareCGIEnvironment(std::vector<std::string> &env);
+		char **createEnv(HttpRequest *request);
 };
 
 #endif

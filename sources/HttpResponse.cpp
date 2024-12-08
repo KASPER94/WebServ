@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 00:04:55 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 01:23:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,37 +271,33 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.close();
 }
 
-void HttpResponse::prepareCGIEnvironment(std::vector<std::string> &e) {
-	t_env *globalEnv = env();
-	
-	for (char **current = globalEnv->envp; *current; ++current) {
-        e.push_back(std::string(*current));
-    }
-    HttpRequest *request = this->getRequest();
-    std::map<std::string, std::string> headers = request->getHeaders();
+char **HttpResponse::createEnv(HttpRequest *request) {
+    std::vector<std::string> envVars;
 
-    // Add common CGI variables
-    e.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    e.push_back("SERVER_PROTOCOL=HTTP/1.1");
-    e.push_back("REQUEST_METHOD=" + request->HttpMethodTostring());
-    e.push_back("REQUEST_URI=" + request->returnPATH());
-    e.push_back("CONTENT_TYPE=" + headers["Content-Type"]);
-    e.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
-    e.push_back("SERVER_NAME=" + this->getServer()->getServerName());
-    e.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
+    // Variables CGI standard
+    // envVars.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    // envVars.push_back("REQUEST_METHOD=" + request->HttpMethodTostring());
+    envVars.push_back("REQUEST_URI=" + request->returnPATH());
+    envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
+    envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
+    // envVars.push_back("SERVER_NAME=" + this->getServer()->getServerName());
+    envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
 
+    // Query String
     const t_query &query = request->getQueryString();
-    e.push_back("QUERY_STRING=" + query.strquery);
+    envVars.push_back("QUERY_STRING=" + query.strquery);
     for (std::map<std::string, std::string>::const_iterator it = query.params.begin(); it != query.params.end(); ++it) {
-        e.push_back("QUERY_PARAM_" + it->first + "=" + it->second);
+        envVars.push_back("QUERY_PARAM_" + it->first + "=" + it->second);
     }
-	
-    // Add all HTTP headers
-    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it) {
+
+    // Ajouter les en-têtes HTTP convertis en format CGI
+    const std::map<std::string, std::string> &headers = request->getHeaders();
+    for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
         std::string key = it->first;
         std::string value = it->second;
 
-        // Convert header to CGI format: HTTP_HEADER_NAME
+        // Convertir les noms d'en-têtes en CGI-compliant
         for (size_t i = 0; i < key.size(); ++i) {
             if (key[i] == '-') {
                 key[i] = '_';
@@ -309,19 +305,90 @@ void HttpResponse::prepareCGIEnvironment(std::vector<std::string> &e) {
                 key[i] = toupper(key[i]);
             }
         }
-        e.push_back("HTTP_" + key + "=" + value);
+        envVars.push_back("HTTP_" + key + "=" + value);
     }
 
-    // Add form data if present
+    // Ajouter les données de formulaire si disponibles
     const std::map<std::string, std::string> &formData = request->getFormData();
     for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
-        e.push_back("FORM_" + it->first + "=" + it->second);
+        envVars.push_back("FORM_" + it->first + "=" + it->second);
     }
+    // Allouer et remplir le tableau char**
+    char **env = new char*[envVars.size() + 1];
+    for (size_t i = 0; i < envVars.size(); ++i) {
+        env[i] = new char[envVars[i].size() + 1];
+        strcpy(env[i], envVars[i].c_str());
+    }
+    env[envVars.size()] = NULL; // Terminateur
+
+    return env;
 }
+
+char **buildArgv(const std::string &cgiBin, const std::string &uri) {
+    char **argv = new char*[3]; // 2 arguments + NULL
+    argv[0] = strdup(cgiBin.c_str());
+    argv[1] = strdup(uri.c_str());
+    argv[2] = NULL; // Terminaison avec NULL
+    return argv;
+}
+
+void freeArgv(char **argv) {
+    for (size_t i = 0; argv[i] != NULL; ++i) {
+        free(argv[i]);
+    }
+    delete[] argv;
+}
+
+char **buildEnvp(const std::vector<std::string> &environ) {
+    char **envp = new char*[environ.size() + 1]; // +1 pour le NULL final
+    for (size_t i = 0; i < environ.size(); ++i) {
+        envp[i] = strdup(environ[i].c_str()); // Copie chaque chaîne dans envp
+    }
+    envp[environ.size()] = NULL; // Terminaison avec NULL
+    return envp;
+}
+
+void freeEnvp(char **envp, size_t size) {
+    for (size_t i = 0; i < size; ++i) {
+        free(envp[i]);
+    }
+    delete[] envp;
+}
+
+char **mergeEnvironments(char **originalEnv, char **cgiEnv) {
+    // Compter le nombre d'entrées dans l'environnement original
+    size_t originalEnvSize = 0;
+    while (originalEnv && originalEnv[originalEnvSize]) {
+        originalEnvSize++;
+    }
+
+    size_t cgiEnvSize = 0;
+	while (cgiEnv && cgiEnv[cgiEnvSize]) {
+        cgiEnvSize++;
+    }
+
+    // Calculer la taille totale
+    size_t totalEnvSize = originalEnvSize + cgiEnvSize;
+    char **mergedEnv = new char*[totalEnvSize + 1]; // +1 pour le NULL final
+
+    // Copier l'environnement original
+    for (size_t i = 0; i < originalEnvSize; ++i) {
+        mergedEnv[i] = strdup(originalEnv[i]);
+    }
+
+    // Ajouter les variables CGI
+    for (size_t i = 0; i < cgiEnvSize; ++i) {
+        mergedEnv[originalEnvSize + i] = strdup(cgiEnv[i]);
+    }
+
+    mergedEnv[totalEnvSize] = NULL; // Ajouter le terminateur NULL
+    return mergedEnv;
+}
+
 
 bool HttpResponse::executeCGI(const std::string &uri) {
     char tempFileName[] = "/tmp/cgi_output_XXXXXX";
-    int tempFd = mkstemp(tempFileName); // Crée un fichier temporaire sécurisé
+    int tempFd = mkstemp(tempFileName); // Fichier temporaire sécurisé
     if (tempFd == -1) {
         this->handleError(500, "CGI execution failed: unable to create temp file");
         return false;
@@ -336,32 +403,35 @@ bool HttpResponse::executeCGI(const std::string &uri) {
         unlink(tempFileName);
         return false;
     }
-
+	HttpRequest *request = this->getRequest();
+	char **en = createEnv(request);
+	char **cgiEnv = mergeEnvironments(en, env()->envp);
+	int i = 0;
+	while (cgiEnv[i]) {
+		std::cout << cgiEnv[i] << std::endl;
+		i++;
+	}
     if (pid == 0) {
         // Processus enfant
         dup2(tempFd, STDOUT_FILENO); // Redirige stdout vers le fichier temporaire
         dup2(tempFd, STDERR_FILENO); // Redirige stderr pour capturer les erreurs
         close(tempFd);
 
-        // Préparation des variables d'environnement
-        std::vector<std::string> environ;
-        prepareCGIEnvironment(environ);
+        // Préparer les variables d'environnement et les arguments
+    	// HttpRequest *request = this->getRequest();
+        // char **en = createEnv(request);
+		// char **cgiEnv = mergeEnvironments(env()->envp, en);
+        char **argv = buildArgv(this->_cgiBin, uri);
 
-        char **envp = new char*[environ.size() + 1];
-        for (size_t i = 0; i < environ.size(); ++i) {
-            envp[i] = strdup(environ[i].c_str());
-        }
-        envp[environ.size()] = NULL;
-
-        // Arguments pour `execve`
-        // char *argv[] = {const_cast<char *>(this->_cgiBin.c_str()), const_cast<char *>(uri.c_str()), NULL};
-
-        if (execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL) == -1) {
-            perror("execve failed");
-            exit(127); // Code d'erreur pour `execve`
+        // Exécuter le script CGI
+        if (execve(this->_cgiBin.c_str(), argv, cgiEnv) == -1) {
+            perror("execve failed"); // Affiche l'erreur dans stderr
+            freeArgv(en);
+            freeArgv(argv);
+            exit(127); // Code d'erreur pour execve
         }
     } else {
-        // Processus parent : attend que l'enfant termine
+        // Processus parent
         close(tempFd);
 
         int status;
@@ -381,9 +451,10 @@ bool HttpResponse::executeCGI(const std::string &uri) {
         }
     }
 
-    // Sortie du CGI écrite dans le fichier temporaire
+    // Le CGI a réussi, la sortie est dans le fichier temporaire
     return true;
 }
+
 
 
 // bool HttpResponse::executeCGI(const std::string &uri) {
