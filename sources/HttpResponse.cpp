@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 01:23:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 14:32:54 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,13 +275,10 @@ char **HttpResponse::createEnv(HttpRequest *request) {
     std::vector<std::string> envVars;
 
     // Variables CGI standard
-    // envVars.push_back("GATEWAY_INTERFACE=CGI/1.1");
     envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
-    // envVars.push_back("REQUEST_METHOD=" + request->HttpMethodTostring());
     envVars.push_back("REQUEST_URI=" + request->returnPATH());
     envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
     envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
-    // envVars.push_back("SERVER_NAME=" + this->getServer()->getServerName());
     envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
 
     // Query String
@@ -313,11 +310,18 @@ char **HttpResponse::createEnv(HttpRequest *request) {
     for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
         envVars.push_back("FORM_" + it->first + "=" + it->second);
     }
-    // Allouer et remplir le tableau char**
     char **env = new char*[envVars.size() + 1];
     for (size_t i = 0; i < envVars.size(); ++i) {
-        env[i] = new char[envVars[i].size() + 1];
-        strcpy(env[i], envVars[i].c_str());
+        if (!envVars[i].empty()) {
+            env[i] = strdup(envVars[i].c_str());
+            if (!env[i]) {
+                for (size_t j = 0; j < i; ++j) {
+                    delete[] env[j];
+                }
+                delete[] env;
+                return NULL;
+            }
+        }
     }
     env[envVars.size()] = NULL; // Terminateur
 
@@ -355,7 +359,7 @@ void freeEnvp(char **envp, size_t size) {
     delete[] envp;
 }
 
-char **mergeEnvironments(char **originalEnv, char **cgiEnv) {
+char **HttpResponse::mergeEnvironments(char **originalEnv, char **cgiEnv) {
     // Compter le nombre d'entrées dans l'environnement original
     size_t originalEnvSize = 0;
     while (originalEnv && originalEnv[originalEnvSize]) {
@@ -382,6 +386,7 @@ char **mergeEnvironments(char **originalEnv, char **cgiEnv) {
     }
 
     mergedEnv[totalEnvSize] = NULL; // Ajouter le terminateur NULL
+	this->_client->setCgiEnv(mergedEnv);
     return mergedEnv;
 }
 
@@ -405,7 +410,12 @@ bool HttpResponse::executeCGI(const std::string &uri) {
     }
 	HttpRequest *request = this->getRequest();
 	char **en = createEnv(request);
-	char **cgiEnv = mergeEnvironments(en, env()->envp);
+	char **cgiEnv;
+	if (this->_client->getCgiEnv() == NULL || this->_client->getCgiEnv()[0] == NULL) {
+		cgiEnv = mergeEnvironments(en, env()->envp);
+	}
+	else
+		cgiEnv = mergeEnvironments(en, this->_client->getCgiEnv());
 	int i = 0;
 	while (cgiEnv[i]) {
 		std::cout << cgiEnv[i] << std::endl;

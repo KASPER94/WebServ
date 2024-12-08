@@ -99,6 +99,7 @@ class HttpResponse {
 		void handlePostRequest();
 		void prepareCGIEnvironment(std::vector<std::string> &env);
 		char **createEnv(HttpRequest *request);
+		char **mergeEnvironments(char **originalEnv, char **cgiEnv);
 };
 
 #endif

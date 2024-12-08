@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 00:48:51 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 11:50:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ Client::Client(int fd, Server *servers):
 	 _error(false),
 	 _servers(servers) {
 	_lastActivityTime = time(NULL) ;
+	// cgiEnv = env()->envp;
+	cgiEnv = NULL;
 	logMsg(DEBUG, "Client socket " + toString(fd) + " created for communication with port " + toString(servers->getPort()));
 }
 
@@ -49,6 +51,7 @@ Client	&Client::operator=(const Client &rhs) {
 	this->_request = rhs._request;
 	this->_response = rhs._response;
 	this->_fd = rhs._fd;
+	this->cgiEnv = rhs.cgiEnv;
 	return (*this);
 }
 
@@ -137,3 +140,10 @@ int Client::getTimeout() const {
     return _timeout;
 }
 
+void Client::setCgiEnv(char **mergedEnv) {
+	this->cgiEnv = mergedEnv;
+}
+
+char **Client::getCgiEnv() {
+	return (cgiEnv);
+}
