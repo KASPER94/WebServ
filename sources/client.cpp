@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 17:39:53 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/08 11:50:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@ Client::Client(int fd, Server *servers):
 	 _fd(fd),
 	 _error(false),
 	 _servers(servers) {
+	_lastActivityTime = time(NULL) ;
+	// cgiEnv = env()->envp;
+	cgiEnv = NULL;
 	logMsg(DEBUG, "Client socket " + toString(fd) + " created for communication with port " + toString(servers->getPort()));
 }
 
@@ -48,6 +51,7 @@ Client	&Client::operator=(const Client &rhs) {
 	this->_request = rhs._request;
 	this->_response = rhs._response;
 	this->_fd = rhs._fd;
+	this->cgiEnv = rhs.cgiEnv;
 	return (*this);
 }
 
@@ -78,6 +82,7 @@ bool	Client::getError() const {
 }
 
 bool	Client::appendRequest(const char *data, int bytes) {
+    _lastActivityTime = time(NULL); 
 	if (!this->_request)
 		this->_request = new HttpRequest(this);
 	// this->_creationDate = time(0);
@@ -85,11 +90,12 @@ bool	Client::appendRequest(const char *data, int bytes) {
 }
 
 Server	*Client::getServer() const {
-	std::cout << this->_servers << std::endl;
+	// std::cout << this->_servers << std::endl;
 	return (this->_servers);
 }
 
 void	Client::sendResponse() {
+    _lastActivityTime = time(NULL);
 	this->_response = new HttpResponse(this);
 	this->_response->sendResponse();
 }
@@ -118,6 +124,26 @@ void Client::resetForNextRequest() {
     _response = new HttpResponse(this);  // Crée une nouvelle réponse
 
     // Réinitialise les erreurs et autres indicateurs
+	_lastActivityTime = time(NULL); 
     _error = false;
 }
 
+bool Client::isTimeout() {
+    return difftime(time(NULL), _lastActivityTime) > _timeout;
+}
+
+time_t Client::getLastActivityTime() const {
+    return _lastActivityTime;
+}
+
+int Client::getTimeout() const {
+    return _timeout;
+}
+
+void Client::setCgiEnv(char **mergedEnv) {
+	this->cgiEnv = mergedEnv;
+}
+
+char **Client::getCgiEnv() {
+	return (cgiEnv);
+}

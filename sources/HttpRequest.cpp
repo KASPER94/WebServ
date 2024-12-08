@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/06 22:32:43 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/08 00:34:07 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,11 +108,20 @@ void HttpRequest::parseAcceptedMimes(std::string &line) {
 }
 
 void HttpRequest::parseConnection(std::string &line) {
-    _keepAliveConnection = (line == "keep-alive");
+	std::string tmp = line.substr(0, 10);
+    if (tmp == "keep-alive" || tmp == "Keep-Alive" || tmp == "keep-alive") {
+        _keepAliveConnection = true;
+	}
+    else
+        _keepAliveConnection = false;
 }
 
 void HttpRequest::parseUserAgent(std::string &line) {
     _userAgent = line;
+}
+
+void HttpRequest::parseContentLen(std::string &line) {
+    _contentLen = atoi(line.c_str());
 }
 
 void HttpRequest::parseContentType(std::string &line) {
@@ -148,6 +157,7 @@ void HttpRequest::initializeHeaderParsers() {
 	parseConnection(_headers["Connection"]);
 	parseUserAgent(_headers["User-Agent"]);
 	parseContentType(_headers["Content-Type"]);
+	parseContentLen(_headers["Content-Length"]);
 	parseHost(_headers["Host"]);
 	parseCookie(_headers["cookie"]);
 }
@@ -179,7 +189,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 	_isGood = true;
 	_receivedBodySize += length;
 
-	size_t maxBody = this->_client->getServer()->getClientMaxBody();
+	// size_t maxBody = this->_client->getServer()->getClientMaxBody();
 	// std::cout << "ClientMaxBody (avant conversion): " << maxBody << std::endl;
 
 	// Vérifiez si maxBody est raisonnable et différent de zéro
@@ -188,7 +198,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 	// 	return false;
 	// }
 
-	size_t confBodySize = maxBody ;
+	// size_t confBodySize = maxBody ;
 	// std::cout << "ClientMaxBody après conversion en bytes (confBodySize): " << confBodySize << std::endl;
 
     _requestData.append(data, length);  // Accumule les données reçues dans une std::string
@@ -200,11 +210,11 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 			_endRequested = true;
             return (_endRequested);
         }
-		if (confBodySize && _receivedBodySize >= confBodySize) {
-			logMsg(ERROR, "Request exceeds the client_max_body_size");
-			_tooLarge = true;
-            return (_tooLarge);
-		}
+		// if (confBodySize && _receivedBodySize >= confBodySize) {
+		// 	std::cerr << "Erreur : La taille du corps de la requête dépasse la limite maximale autorisée." << std::endl;
+		// 	_tooLarge = true;
+        //     return (_tooLarge);
+		// }
     }
     return (_endRequested);  // Retourne false si la requête n'est pas encore complète
 }
@@ -436,33 +446,27 @@ bool	HttpRequest::isGood() const {
 // }
 
 void HttpRequest::decodeFormData() {
-	// if (!_rawRequest.empty()) {
-    // 	_requestData.erase();
-    // 	_requestData = _rawRequest.substr(0);
-	// }
     size_t pos = _requestData.find("\r\n\r\n") + 4;
     std::string tmp = _requestData.substr(pos);
 
-	if (tmp.find(_boundary) == std::string::npos) {
-		logMsg(ERROR, "Broken request: delimiter not found");
-		return;
-	}
+    if (tmp.find(_boundary) == std::string::npos) {
+        logMsg(ERROR, "Broken request: delimiter not found");
+        return;
+    }
 
     size_t boundaryPos = tmp.find(_boundary);
     while (boundaryPos != std::string::npos) {
-        boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
+        boundaryPos += _boundary.size() + 2; // Sauter le boundary et "\r\n"
         size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
         if (nextBoundaryPos == std::string::npos) {
             nextBoundaryPos = tmp.find(_boundary + "--", boundaryPos);
         }
 
-        // Nettoyer les espaces ou lignes supplémentaires autour du boundary
         while (boundaryPos < tmp.size() && (tmp[boundaryPos] == '\r' || tmp[boundaryPos] == '\n' || tmp[boundaryPos] == ' ')) {
             ++boundaryPos;
         }
         std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
 
-        // Traitez chaque partie
         size_t namePos = part.find("name=\"");
         if (namePos != std::string::npos) {
             namePos += 6;
@@ -472,25 +476,32 @@ void HttpRequest::decodeFormData() {
             size_t contentPos = part.find("\r\n\r\n") + 4;
             std::string content = part.substr(contentPos);
 
-            // Supprimez les délimiteurs indésirables
+            size_t contentBackS = content.find("\n");
+            if (contentBackS != std::string::npos) {
+                std::string tmp3 = _boundary + "--";
+                if (content.find(tmp3) == std::string::npos) { 
+                    content = content.substr(0, content.size() - _boundary.size() - 4);
+                }
+            }
+
             size_t contentEnd = content.rfind("\r\n--" + _boundary);
             if (contentEnd != std::string::npos) {
                 content = content.substr(0, contentEnd);
             }
 
             if (part.find("filename=\"") != std::string::npos) {
-                namePos = part.find("filename=\"") + 10;
-                size_t endNamePos = part.find("\"", namePos);
-                std::string fileName = part.substr(namePos, endNamePos - namePos);
+                size_t filenamePos = part.find("filename=\"") + 10;
+                size_t endFilenamePos = part.find("\"", filenamePos);
+                std::string fileName = part.substr(filenamePos, endFilenamePos - filenamePos);
                 _fileData[fileName] = content;
             } else {
                 _formData[name] = content;
             }
         }
-
         boundaryPos = nextBoundaryPos;
     }
 }
+
 
 void HttpRequest::parseHeaders() {
     std::istringstream stream(_requestData);
@@ -601,6 +612,10 @@ bool HttpRequest::keepAlive() const {
 	return (_keepAliveConnection);
 }
 
+size_t HttpRequest::getContentLen() const {
+	return (_contentLen);
+}
+
 std::string	HttpRequest::returnURI() {
 	return (_uri);
 }
@@ -611,4 +626,16 @@ std::string	HttpRequest::returnPATH() {
 
 std::map<std::string, std::string> &HttpRequest::getFileData() {
 	return this->_fileData;
+}
+
+std::map<std::string, std::string> &HttpRequest::getFormData() {
+	return this->_formData;
+}
+
+std::map<std::string, std::string> 	HttpRequest::getHeaders() {
+	return this->_headers;
+}
+
+s_query HttpRequest::getQueryString() {
+    return _query;
 }

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/15 19:06:09 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 00:38:17 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ class Webserv {
 		void getRequest(int clientSock);
 		bool isServerSocket(int sock) const ;
 		void			deleteClient(int fd);
-
+		void checkClientTimeouts();
 };
 
 #endif

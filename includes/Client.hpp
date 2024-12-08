@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/17 20:16:55 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 11:51:15 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ class Client {
 		int				_fd;
 		bool			_error;
 		Server			*_servers;
+		char			**cgiEnv;
+		time_t _lastActivityTime; // Temps de la dernière activité
+    	static const int _timeout = 60; 
 
 		// std::string _requestData;        // Contient les données de la requête reçues
 		// bool _headersParsed;     // Indicateur si les en-têtes ont été analysés
@@ -67,6 +70,12 @@ class Client {
 		int getFd() const;
 		void setFd(int fd);
 		void resetForNextRequest();
+		void updateLastActivity();
+		bool isTimeout();
+		time_t getLastActivityTime() const;
+		int getTimeout() const;
+		char **getCgiEnv();
+		void setCgiEnv(char **mergedEnv);
 };
 
 std::ostream &operator<<(std::ostream &o, const Client &client);

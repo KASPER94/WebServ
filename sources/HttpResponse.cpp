@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/05 18:21:05 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/08 20:17:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@ void HttpResponse::sendHeader() {
     std::string statusDescription;
     switch (this->_statusCode) {
         case 200: statusDescription = "OK"; break;
+        case 201: statusDescription = "Created"; break;
+        case 204: statusDescription = "No Content"; break;
         case 301: statusDescription = "Moved Permanently"; break;
         case 400: statusDescription = "Bad Request"; break;
         case 403: statusDescription = "Forbidden"; break;
@@ -147,45 +149,47 @@ void	HttpResponse::tryDeleteFile(std::string &uri) {
 
 void HttpResponse::createHeader() {
     this->_headers["Server"] = "Webserv/1.0";
-	if (!this->_mime.empty()) {
-		this->_headers["Content-Type"] = this->_mime;
-	} else {
-		this->_headers["Content-Type"] = "text/html";
+	if (this->_headers["Content-Type"].empty()) {
+		if (!this->_mime.empty()) {
+			this->_headers["Content-Type"] = this->_mime;
+		} else {
+			this->_headers["Content-Type"] = "text/html";
+		}
 	}
 	//changer avec keepalive !!!!!
-	this->_headers["Connection"] = "close";
+	if (this->getRequest()->keepAlive()) {
+        this->_headers["Connection"] = "keep-alive";
+        this->_headers["Keep-Alive"] = "timeout=" + intToString(this->_client->getTimeout());
+    } else {
+        this->_headers["Connection"] = "close";
+    }
 }
 
 void HttpResponse::sendDirectoryPage(std::string path) {
     DIR *dir;
     struct dirent *entry;
 
-    // Ouvrir le répertoire spécifié
     if ((dir = opendir(path.c_str())) == NULL) {
         this->handleError(500, "Impossible d'ouvrir le répertoire : " + path);
         return;
     }
 
-    // Début de la page HTML
     std::string body = "<html><head><title>Index of " + path + "</title></head>";
     body += "<body><h1>Index of " + path + "</h1><ul>";
 
-    // Parcourir les entrées du répertoire
-    while ((entry = readdir(dir)) != NULL) {
-        std::string name = entry->d_name;
+	while ((entry = readdir(dir)) != NULL) {
+		std::string name = entry->d_name;
 
-        // Ignorer les entrées spéciales "." et ".."
-        if (name == "." || name == "..")
+		if (name == "." || name == "..")
 			continue;
 
-        // Construire un lien pour chaque fichier ou répertoire
         std::string link = path;
-        if (link.c_str()[link.size() - 1] != '/')
-			link += "/";
+        if (link[link.size() - 1] != '/')
+            link += "/";
         link += name;
 
-        body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
-    }
+		body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
+	}
 
     // Fin de la page HTML
     body += "</ul></body></html>";
@@ -197,6 +201,10 @@ void HttpResponse::sendDirectoryPage(std::string path) {
     this->_body = body;
     this->_headers["Content-Length"] = intToString(body.size());
     this->_headers["Content-Type"] = "text/html";
+	this->_headers["Connection"] = "close";
+
+    // Envoyer le contenu HTML au client
+    this->sendData(body.c_str(), body.size());
 }
 
 
@@ -231,7 +239,7 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
 
     if (!file.is_open()) {
 		if (uri.find("favicon.ico") != std::string::npos) {
-            this->_statusCode = 404;
+            this->_statusCode = 204;
             this->_mime = "image/x-icon";
             this->_headers["Content-Type"] = this->_mime;
             this->_headers["Content-Length"] = "0";
@@ -262,9 +270,134 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.close();
 }
 
+char **HttpResponse::createEnv(HttpRequest *request) {
+    std::vector<std::string> envVars;
+
+    // Variables CGI standard
+    envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
+    envVars.push_back("REQUEST_URI=" + request->returnPATH());
+    envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
+	if (request->getContentLen() == 0)
+	    envVars.push_back("CONTENT_LENGTH=0");
+	else
+    	envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
+    envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
+    envVars.push_back("SERVER_PORT=" + request->getMethod());
+
+    // Query String
+    const t_query &query = request->getQueryString();
+    envVars.push_back("QUERY_STRING=" + query.strquery);
+    for (std::map<std::string, std::string>::const_iterator it = query.params.begin(); it != query.params.end(); ++it) {
+        envVars.push_back("QUERY_PARAM_" + it->first + "=" + it->second);
+    }
+
+    // Ajouter les en-têtes HTTP convertis en format CGI
+    const std::map<std::string, std::string> &headers = request->getHeaders();
+    for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+        std::string key = it->first;
+        std::string value = it->second;
+
+        // Convertir les noms d'en-têtes en CGI-compliant
+        for (size_t i = 0; i < key.size(); ++i) {
+            if (key[i] == '-') {
+                key[i] = '_';
+            } else {
+                key[i] = toupper(key[i]);
+            }
+        }
+        envVars.push_back("HTTP_" + key + "=" + value);
+    }
+
+    // Ajouter les données de formulaire si disponibles
+    const std::map<std::string, std::string> &formData = request->getFormData();
+    for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
+        envVars.push_back("FORM_" + it->first + "=" + it->second);
+    }
+    char **env = new char*[envVars.size() + 1];
+    for (size_t i = 0; i < envVars.size(); ++i) {
+        if (!envVars[i].empty()) {
+            env[i] = strdup(envVars[i].c_str());
+            if (!env[i]) {
+                for (size_t j = 0; j < i; ++j) {
+                    delete[] env[j];
+                }
+                delete[] env;
+                return NULL;
+            }
+        }
+    }
+    env[envVars.size()] = NULL; // Terminateur
+
+    return env;
+}
+
+char **buildArgv(const std::string &cgiBin, const std::string &uri) {
+    char **argv = new char*[3]; // 2 arguments + NULL
+    argv[0] = strdup(cgiBin.c_str());
+    argv[1] = strdup(uri.c_str());
+    argv[2] = NULL; // Terminaison avec NULL
+    return argv;
+}
+
+void freeArgv(char **argv) {
+    for (size_t i = 0; argv[i] != NULL; ++i) {
+        free(argv[i]);
+    }
+    delete[] argv;
+}
+
+char **buildEnvp(const std::vector<std::string> &environ) {
+    char **envp = new char*[environ.size() + 1]; // +1 pour le NULL final
+    for (size_t i = 0; i < environ.size(); ++i) {
+        envp[i] = strdup(environ[i].c_str()); // Copie chaque chaîne dans envp
+    }
+    envp[environ.size()] = NULL; // Terminaison avec NULL
+    return envp;
+}
+
+void freeEnvp(char **envp, size_t size) {
+    for (size_t i = 0; i < size; ++i) {
+        free(envp[i]);
+    }
+    delete[] envp;
+}
+
+char **HttpResponse::mergeEnvironments(char **originalEnv, char **cgiEnv) {
+    std::set<std::string> envSet;
+    std::vector<std::string> mergedEnv;
+
+    // Add original environment variables to the set and vector
+    for (size_t i = 0; originalEnv && originalEnv[i] != NULL; ++i) {
+        std::string var(originalEnv[i]);
+        envSet.insert(var.substr(0, var.find('='))); // Store variable name only
+        mergedEnv.push_back(var);
+    }
+
+    // Add CGI environment variables, avoiding duplicates
+    for (size_t i = 0; cgiEnv && cgiEnv[i] != NULL; ++i) {
+        std::string var(cgiEnv[i]);
+        std::string key = var.substr(0, var.find('='));
+        if (envSet.find(key) == envSet.end()) { // Add only if not already in set
+            envSet.insert(key);
+            mergedEnv.push_back(var);
+        }
+    }
+
+    // Convert the vector to a NULL-terminated array
+    char **mergedArray = new char*[mergedEnv.size() + 1];
+    for (size_t i = 0; i < mergedEnv.size(); ++i) {
+        mergedArray[i] = strdup(mergedEnv[i].c_str());
+    }
+    mergedArray[mergedEnv.size()] = NULL; // Add NULL terminator
+
+    return mergedArray;
+}
+
+
+
 bool HttpResponse::executeCGI(const std::string &uri) {
     char tempFileName[] = "/tmp/cgi_output_XXXXXX";
-    int tempFd = mkstemp(tempFileName); // Create a secure temporary file
+    int tempFd = mkstemp(tempFileName); // Fichier temporaire sécurisé
     if (tempFd == -1) {
         this->handleError(500, "CGI execution failed: unable to create temp file");
         return false;
@@ -276,45 +409,132 @@ bool HttpResponse::executeCGI(const std::string &uri) {
     if (pid < 0) {
         this->handleError(500, "CGI execution failed: fork error");
         close(tempFd);
-        unlink(tempFileName); // Clean up temporary file
+        unlink(tempFileName);
         return false;
     }
-
+	HttpRequest *request = this->getRequest();
+	char **en = createEnv(request);
+	char **cgiEnv;
+	if (this->_client->getCgiEnv() == NULL || this->_client->getCgiEnv()[0] == NULL) {
+		cgiEnv = mergeEnvironments(en, env()->envp);
+	}
+	else
+		cgiEnv = mergeEnvironments(en, this->_client->getCgiEnv());
+	// int i = 0;
+	// while (cgiEnv[i]) {
+	// 	std::cout << cgiEnv[i] << std::endl;
+	// 	i++;
+	// }
     if (pid == 0) {
-        dup2(tempFd, STDOUT_FILENO); // Redirect CGI output to the temp file
-        close(tempFd);               // Close the temp file descriptor in the child process
-        if (execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL) == -1) {
-            perror("exec failed");
-            exit(127); // Exit with a specific code indicating `execl` failure
+        // Processus enfant
+        dup2(tempFd, STDOUT_FILENO); // Redirige stdout vers le fichier temporaire
+        dup2(tempFd, STDERR_FILENO); // Redirige stderr pour capturer les erreurs
+        close(tempFd);
+
+        // Préparer les variables d'environnement et les arguments
+    	// HttpRequest *request = this->getRequest();
+        // char **en = createEnv(request);
+		// char **cgiEnv = mergeEnvironments(env()->envp, en);
+        char **argv = buildArgv(this->_cgiBin, uri);
+
+        // Exécuter le script CGI
+        if (execve(this->_cgiBin.c_str(), argv, cgiEnv) == -1) {
+            perror("execve failed"); // Affiche l'erreur dans stderr
+            freeArgv(en);
+            freeArgv(argv);
+            exit(127); // Code d'erreur pour execve
         }
     } else {
-        // Parent process: Wait for the child and handle the output
-        close(tempFd); // Close the temp file descriptor in the parent process
+        // Processus parent
+        close(tempFd);
 
         int status;
-        waitpid(pid, &status, 0); // Wait for the child process to finish
+        waitpid(pid, &status, 0); // Attend la fin du processus enfant
 
         if (WIFEXITED(status)) {
             int exitCode = WEXITSTATUS(status);
             if (exitCode != 0) {
-                if (exitCode == 127) {
-                    this->handleError(500, "CGI binary not found or execution failed");
-                } else {
-                    this->handleError(500, "CGI execution failed with error code: " + intToString(exitCode));
-                }
-                unlink(tempFileName); // Clean up the temporary file
+                this->handleError(500, "CGI execution failed with code: " + intToString(exitCode));
+                unlink(tempFileName);
                 return false;
             }
         } else {
             this->handleError(500, "CGI process terminated abnormally");
-            unlink(tempFileName); // Clean up the temporary file
+            unlink(tempFileName);
             return false;
         }
     }
 
-    // Success: Output written to the temporary file
+    // Le CGI a réussi, la sortie est dans le fichier temporaire
     return true;
 }
+
+
+
+// bool HttpResponse::executeCGI(const std::string &uri) {
+//     char tempFileName[] = "/tmp/cgi_output_XXXXXX";
+//     int tempFd = mkstemp(tempFileName); // Create a secure temporary file
+//     if (tempFd == -1) {
+//         this->handleError(500, "CGI execution failed: unable to create temp file");
+//         return false;
+//     }
+
+//     this->_cgiTmpFile = tempFileName;
+
+//     pid_t pid = fork();
+//     if (pid < 0) {
+//         this->handleError(500, "CGI execution failed: fork error");
+//         close(tempFd);
+//         unlink(tempFileName); // Clean up temporary file
+//         return false;
+//     }
+
+//     if (pid == 0) {
+//         dup2(tempFd, STDOUT_FILENO); // Redirect CGI output to the temp file
+//         close(tempFd);               // Close the temp file descriptor in the child process
+
+//         std::vector<std::string> env;
+//         prepareCGIEnvironment(env);
+
+//         // Convert to `char*` array
+//         char **envp = new char*[env.size() + 1];
+//         for (size_t i = 0; i < env.size(); ++i) {
+//             envp[i] = strdup(env[i].c_str());
+//         }
+//         envp[env.size()] = NULL;
+// 		char *argv[] = {const_cast<char *>(this->uri.c_str()), NULL};
+//         if (execl(this->_cgiBin.c_str(), this->_cgiBin.c_str(), uri.c_str(), NULL) == -1) {
+//             perror("exec failed");
+//             exit(127); // Exit with a specific code indicating `execl` failure
+//         }
+//     } else {
+//         // Parent process: Wait for the child and handle the output
+//         close(tempFd); // Close the temp file descriptor in the parent process
+
+//         int status;
+//         waitpid(pid, &status, 0); // Wait for the child process to finish
+
+//         if (WIFEXITED(status)) {
+//             int exitCode = WEXITSTATUS(status);
+//             if (exitCode != 0) {
+//                 if (exitCode == 127) {
+//                     this->handleError(500, "CGI binary not found or execution failed");
+//                 } else {
+//                     this->handleError(500, "CGI execution failed with error code: " + intToString(exitCode));
+//                 }
+//                 unlink(tempFileName); // Clean up the temporary file
+//                 return false;
+//             }
+//         } else {
+//             this->handleError(500, "CGI process terminated abnormally");
+//             unlink(tempFileName); // Clean up the temporary file
+//             return false;
+//         }
+//     }
+
+//     // Success: Output written to the temporary file
+//     return true;
+// }
 
 // bool HttpResponse::executeCGI(const std::string &uri) {
 //     int pipe_fd[2];
@@ -362,34 +582,46 @@ void HttpResponse::handleCGI(std::string uri) {
         this->handleError(500, "CGI Execution Failed");
         return;
     }
-    // Gérer le fichier temporaire produit par le CGI
+
+    // Lire le fichier temporaire contenant la sortie CGI
     std::ifstream cgiOutput(this->_cgiTmpFile.c_str(), std::ios::binary);
     if (!cgiOutput.is_open()) {
         this->handleError(500, "Failed to Open CGI Output");
         return;
     }
 
-    // Lire et analyser la sortie CGI
     std::stringstream buffer;
-    buffer << cgiOutput.rdbuf();
+    buffer << cgiOutput.rdbuf(); // Lire tout le contenu du fichier CGI
     std::string cgiResponse = buffer.str();
+    cgiOutput.close();
 
-    // Parse en-têtes CGI
+    // Vérifier la sortie CGI
     size_t headerEnd = cgiResponse.find("\r\n\r\n");
     if (headerEnd == std::string::npos) {
         this->handleError(500, "Malformed CGI Response");
         return;
     }
-    this->_headers["Content-Type"] = parseContentType(cgiResponse.substr(0, headerEnd));
-    this->_body = cgiResponse.substr(headerEnd + 4);
 
-    // Créer l'en-tête HTTP
+    // Extraire les en-têtes et le corps
+    std::string headers = cgiResponse.substr(0, headerEnd);
+    std::string body = cgiResponse.substr(headerEnd + 4);
+
+    // Vérifiez et configurez les en-têtes (ex : Content-Type, Content-Length)
+    if (headers.find("Content-Length:") == std::string::npos) {
+        _headers["Content-Length"] = intToString(body.size());
+    }
+    if (headers.find("Content-Type:") == std::string::npos) {
+        _headers["Content-Type"] = "text/html"; // Définir un type MIME par défaut
+    }
+
+    // Envoyer la réponse
     this->_statusCode = 200;
     this->createHeader();
     this->sendHeader();
-    this->sendData(this->_body.c_str(), this->_body.size());
-    cgiOutput.close();
-    return;
+    this->sendData(body.c_str(), body.size());
+
+    // Supprimez le fichier temporaire
+    unlink(this->_cgiTmpFile.c_str());
 }
 
 bool DirectoriesRecursively(const std::string &path) {
@@ -440,9 +672,71 @@ bool HttpResponse::handleUpload() {
         }
 		file << it->second;
 		file.close();
+		_statusCode = 201;
 	}
 	logMsg(DEBUG, "Files uploaded successfully to " + uploadPath);
 	return true;
+}
+
+void HttpResponse::handlePostRequest() {
+    // Check for file uploads
+    const std::map<std::string, std::string>& files = this->getRequest()->getFileData();
+    const std::map<std::string, std::string>& formData = this->getRequest()->getFormData();
+
+    if (!files.empty()) {
+        if (handleUpload()) {
+            // Respond with a JSON success message for uploads
+            this->_statusCode = 201; // Created
+            std::string jsonResponse = "{\n  \"status\": \"success\",\n  \"message\": \"Files uploaded successfully\",\n  \"files\": [\n";
+
+            for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
+                jsonResponse += "    \"" + it->first + "\"";
+                std::map<std::string, std::string>::const_iterator nextIt = it;
+                ++nextIt; // Manual iterator increment to check the next element
+                if (nextIt != files.end()) {
+                    jsonResponse += ",";
+                }
+                jsonResponse += "\n";
+            }
+
+            jsonResponse += "  ]\n}";
+            this->_headers["Content-Type"] = "application/json";
+            this->_headers["Content-Length"] = intToString(jsonResponse.size());
+            this->createHeader();
+            this->sendHeader();
+            this->sendData(jsonResponse.c_str(), jsonResponse.size());
+        } else {
+            handleError(500, "Failed to upload files.");
+        }
+        return;
+    }
+
+    // Handle form data only
+    if (!formData.empty()) {
+        this->_statusCode = 200; // OK
+        std::string jsonResponse = "{\n  \"status\": \"success\",\n  \"message\": \"Form data received successfully\",\n  \"data\": {\n";
+
+        for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
+            jsonResponse += "    \"" + it->first + "\": \"" + it->second + "\"";
+            std::map<std::string, std::string>::const_iterator nextIt = it;
+            ++nextIt; // Manual iterator increment to check the next element
+            if (nextIt != formData.end()) {
+                jsonResponse += ",";
+            }
+            jsonResponse += "\n";
+        }
+
+        jsonResponse += "  }\n}";
+        this->_headers["Content-Type"] = "application/json";
+        this->_headers["Content-Length"] = intToString(jsonResponse.size());
+        this->createHeader();
+        this->sendHeader();
+        this->sendData(jsonResponse.c_str(), jsonResponse.size());
+        return;
+    }
+
+    // If no form data or files were found
+    handleError(400, "No valid data provided in the POST request.");
 }
 
 void HttpResponse::sendResponse() {
@@ -462,13 +756,23 @@ void HttpResponse::sendResponse() {
 		tryDeleteFile(uri);
 		return ;
 	}
-	if (this->getRequest()->getMethod() == POST && !this->getRequest()->getFileData().empty()) {
-		if (!this->handleUpload()) {
-			return ;
-		}
-	}
+	if (this->getRequest()->getMethod() == POST) {
+        handlePostRequest();
+        return;
+    }
+	// if (this->getRequest()->getMethod() == POST && !this->getRequest()->getFileData().empty()) {
+	// 	if (!this->handleUpload()) {
+	// 		_statusCode = 404;
+	// 	}
+	// 	else 
+	// 	this->createHeader();
+	// 	this->sendHeader();
+	// 	this->sendData(this->_body.c_str(), this->_body.size());
+	// 	return ;
+	// }
 	if (isDir) {
-		if (this->_directoryListing)
+		std::cerr << uri << std::endl;
+		if (!this->_directoryListing)
 			this->directoryListing(uri);
 		else {
 			handleError(404, "Not Found");
@@ -595,10 +899,10 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		// 	follow = false;
 		// }
 	}
-	if (uri == "/")
+	// if (uri == "/")
 		uri = resolvePath;
-	else
-		uri = _root + this->_client->getRequest()->returnPATH();
+	// else
+	// 	uri = _root + this->_client->getRequest()->returnPATH();
 
 	// std::cout << "444 --> " << this->_client->getRequest()->returnPATH() << std::endl;
 	// 	follow = true;

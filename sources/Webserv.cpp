@@ -6,7 +6,7 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 22:46:41 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/08 20:29:23 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,12 @@ void Webserv::getRequest(int clientSock) {
     }
 
     buffer[bytesRead] = '\0';  // Terminer la chaîne de caractères
-	logMsg(DEBUG, "Fragment of request received on socket " + toString(clientSock));
-    std::cout << buffer << std::endl;
+	// logMsg(DEBUG, "Fragment of request received on socket " + toString(clientSock));
+    // std::cout << buffer << std::endl;
 	bool isRequestComplete = client->appendRequest(buffer, bytesRead);
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {
-		logMsg(DEBUG, "Waiting for more fragments of request on socket " + toString(clientSock));
+		// logMsg(DEBUG, "Waiting for more fragments of request on socket " + toString(clientSock));
         struct epoll_event clientEvent;
         clientEvent.data.fd = clientSock;
         clientEvent.events = EPOLLIN | EPOLLET;
@@ -151,7 +151,7 @@ void Webserv::sendResponse(int clientSock) {
 	size_t totalBytesSent = 0;
     size_t responseSize = response.size();
 	logMsg(DEBUG, "Response to be sent to client socket " + toString(clientSock));
-	std::cout << response << std::endl;
+	// std::cout << response << std::endl;
 
 	if (client->getError()) {
 		deleteClient(clientSock);
@@ -201,6 +201,21 @@ void Webserv::sendResponse(int clientSock) {
 	// } else {
 	// 	std::cout << "Réponse envoyée au client." << std::endl;
 	// }
+}
+
+void Webserv::checkClientTimeouts() {
+    std::map<int, Client *>::iterator it = _clients.begin();
+    while (it != _clients.end()) {
+        Client *client = it->second;
+        if (client->isTimeout()) {
+            logMsg(INFO, "Client using socket " + toString(client->getFd()) + " timed out due to inactivity");
+            int clientFd = client->getFd();
+            deleteClient(clientFd);
+            it = _clients.begin(); // Recommencer l'itération car le map a été modifié
+        } else {
+            ++it;
+        }
+    }
 }
 
 void Webserv::initializeSockets() {
@@ -312,6 +327,7 @@ void Webserv::initializeSockets() {
 				//     std::cerr << "Socket " << sock << " introuvable ou événement inattendu" << std::endl;
             }
         }
+		checkClientTimeouts();
     }
     close(_epollfd);
     delete env()->webserv;

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/06 01:14:24 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/07 21:55:33 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class HttpRequest {
 		std::string							_version;
 		std::vector<std::string>			_acceptedMimes;
 		std::string							_contentType;
+		size_t								_contentLen;
 		std::string							_userAgent;
 		std::string							_host;
 		std::string							_cookie;
@@ -93,6 +94,7 @@ class HttpRequest {
 		void 			parseAcceptedMimes(std::string &line);
 		void 			parseConnection(std::string &line);
 		void 			parseUserAgent(std::string &line);
+		void			parseContentLen(std::string &line);
 		void 			parseHost(std::string &line);
 		void 			parseCookie(std::string &line);
 		void 			parseContentType(std::string &line);
@@ -113,6 +115,7 @@ class HttpRequest {
 		bool 			isChunkedBodyComplete();
 		void 			setHeader(std::map<std::string, std::string> *header) const;
 		std::string 	getHeader(std::string find);
+		std::map<std::string, std::string> 	getHeaders();
 		bool		 	getCompleted() const;
 		bool		 	getEnd() const;
 		std::map<std::string, std::string> &getFormData() const;
@@ -120,8 +123,11 @@ class HttpRequest {
 		bool tooLarge() const ;
 		bool	isGood() const;
 		std::string	returnURI();
+		size_t getContentLen() const;
 		std::string	returnPATH();
 		std::map<std::string, std::string> &getFileData();
+		std::map<std::string, std::string> &getFormData();
+		s_query getQueryString();
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);

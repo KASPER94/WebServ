@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/05 16:34:57 by yrigny           ###   ########.fr       */
+/*   Updated: 2024/12/07 23:20:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	signalHandler(int signum) {
 	}
 }
 
-bool webserv(char *config_file) {
+bool webserv(char *config_file, char **envi) {
 
     try {
         conf config(config_file);
@@ -50,6 +50,7 @@ bool webserv(char *config_file) {
 				throw std::runtime_error("Port conflict error. Check your server configuration.");
 			}
 		}
+		env()->envp = envi;
 		env()->webserv->initializeSockets();
 	}
     catch (std::exception &e)
@@ -59,13 +60,13 @@ bool webserv(char *config_file) {
     return (true);
 }
 
-int main(int ac, char **av) {
+int main(int ac, char **av, char **envp) {
 	signal(SIGINT, signalHandler);
     if (ac == 1) {
-        webserv((char *)"./config/default.conf");
+        webserv((char *)"./config/default.conf", envp);
     }
     else if (ac == 2) {
-        webserv(av[1]);
+        webserv(av[1], envp);
     }
     else {
         std::cout << "\033[31m" << "Usage: ./webserv [configuration file]" << "\033[0m" << std::endl;
