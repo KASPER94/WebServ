@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/07 23:11:49 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 16:35:21 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include <sys/wait.h>
 #include <sys/stat.h>
 # include <errno.h>
+# include <set>
 
 # define MAX_EVENTS 10
 # define BUFFER_SIZE 4096

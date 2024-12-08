@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 15:58:52 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 16:34:53 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -364,38 +364,40 @@ void freeEnvp(char **envp, size_t size) {
 }
 
 char **HttpResponse::mergeEnvironments(char **originalEnv, char **cgiEnv) {
-    // Compter le nombre d'entrées dans l'environnement original
-    size_t originalEnvSize = 0;
-    while (originalEnv && originalEnv[originalEnvSize]) {
-        originalEnvSize++;
+    std::set<std::string> envSet;
+    std::vector<std::string> mergedEnv;
+
+    // Add original environment variables to the set and vector
+    for (size_t i = 0; originalEnv && originalEnv[i] != NULL; ++i) {
+        std::string var(originalEnv[i]);
+        envSet.insert(var.substr(0, var.find('='))); // Store variable name only
+        mergedEnv.push_back(var);
     }
 
-    size_t cgiEnvSize = 0;
-	while (cgiEnv && cgiEnv[cgiEnvSize]) {
-        cgiEnvSize++;
+    // Add CGI environment variables, avoiding duplicates
+    for (size_t i = 0; cgiEnv && cgiEnv[i] != NULL; ++i) {
+        std::string var(cgiEnv[i]);
+        std::string key = var.substr(0, var.find('='));
+        if (envSet.find(key) == envSet.end()) { // Add only if not already in set
+            envSet.insert(key);
+            mergedEnv.push_back(var);
+        }
     }
 
-    // Calculer la taille totale
-    size_t totalEnvSize = originalEnvSize + cgiEnvSize;
-    char **mergedEnv = new char*[totalEnvSize + 1]; // +1 pour le NULL final
-
-    // Copier l'environnement original
-    for (size_t i = 0; i < originalEnvSize; ++i) {
-        mergedEnv[i] = strdup(originalEnv[i]);
+    // Convert the vector to a NULL-terminated array
+    char **mergedArray = new char*[mergedEnv.size() + 1];
+    for (size_t i = 0; i < mergedEnv.size(); ++i) {
+        mergedArray[i] = strdup(mergedEnv[i].c_str());
     }
+    mergedArray[mergedEnv.size()] = NULL; // Add NULL terminator
 
-    // Ajouter les variables CGI
-    for (size_t i = 0; i < cgiEnvSize; ++i) {
-        mergedEnv[originalEnvSize + i] = strdup(cgiEnv[i]);
-    }
-
-    mergedEnv[totalEnvSize] = NULL; // Ajouter le terminateur NULL
-	this->_client->setCgiEnv(mergedEnv);
-    return mergedEnv;
+    return mergedArray;
 }
 
 
+
 bool HttpResponse::executeCGI(const std::string &uri) {
+	std::cout << "coucou" << std::endl;
     char tempFileName[] = "/tmp/cgi_output_XXXXXX";
     int tempFd = mkstemp(tempFileName); // Fichier temporaire sécurisé
     if (tempFd == -1) {
@@ -420,11 +422,11 @@ bool HttpResponse::executeCGI(const std::string &uri) {
 	}
 	else
 		cgiEnv = mergeEnvironments(en, this->_client->getCgiEnv());
-	int i = 0;
-	while (cgiEnv[i]) {
-		std::cout << cgiEnv[i] << std::endl;
-		i++;
-	}
+	// int i = 0;
+	// while (cgiEnv[i]) {
+	// 	std::cout << cgiEnv[i] << std::endl;
+	// 	i++;
+	// }
     if (pid == 0) {
         // Processus enfant
         dup2(tempFd, STDOUT_FILENO); // Redirige stdout vers le fichier temporaire
