@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 16:34:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 20:17:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,32 +169,27 @@ void HttpResponse::sendDirectoryPage(std::string path) {
     DIR *dir;
     struct dirent *entry;
 
-    // Ouvrir le répertoire spécifié
     if ((dir = opendir(path.c_str())) == NULL) {
         this->handleError(500, "Impossible d'ouvrir le répertoire : " + path);
         return;
     }
 
-    // Début de la page HTML
     std::string body = "<html><head><title>Index of " + path + "</title></head>";
     body += "<body><h1>Index of " + path + "</h1><ul>";
 
-    // Parcourir les entrées du répertoire
-    while ((entry = readdir(dir)) != NULL) {
-        std::string name = entry->d_name;
+	while ((entry = readdir(dir)) != NULL) {
+		std::string name = entry->d_name;
 
-        // Ignorer les entrées spéciales "." et ".."
-        if (name == "." || name == "..")
+		if (name == "." || name == "..")
 			continue;
 
-        // Construire un lien pour chaque fichier ou répertoire
         std::string link = path;
-        if (link.c_str()[link.size() - 1] != '/')
-			link += "/";
+        if (link[link.size() - 1] != '/')
+            link += "/";
         link += name;
 
-        body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
-    }
+		body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
+	}
 
     // Fin de la page HTML
     body += "</ul></body></html>";
@@ -206,6 +201,10 @@ void HttpResponse::sendDirectoryPage(std::string path) {
     this->_body = body;
     this->_headers["Content-Length"] = intToString(body.size());
     this->_headers["Content-Type"] = "text/html";
+	this->_headers["Connection"] = "close";
+
+    // Envoyer le contenu HTML au client
+    this->sendData(body.c_str(), body.size());
 }
 
 
@@ -397,7 +396,6 @@ char **HttpResponse::mergeEnvironments(char **originalEnv, char **cgiEnv) {
 
 
 bool HttpResponse::executeCGI(const std::string &uri) {
-	std::cout << "coucou" << std::endl;
     char tempFileName[] = "/tmp/cgi_output_XXXXXX";
     int tempFd = mkstemp(tempFileName); // Fichier temporaire sécurisé
     if (tempFd == -1) {
@@ -773,7 +771,8 @@ void HttpResponse::sendResponse() {
 	// 	return ;
 	// }
 	if (isDir) {
-		if (this->_directoryListing)
+		std::cerr << uri << std::endl;
+		if (!this->_directoryListing)
 			this->directoryListing(uri);
 		else {
 			handleError(404, "Not Found");
@@ -900,10 +899,10 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		// 	follow = false;
 		// }
 	}
-	if (uri == "/")
+	// if (uri == "/")
 		uri = resolvePath;
-	else
-		uri = _root + this->_client->getRequest()->returnPATH();
+	// else
+	// 	uri = _root + this->_client->getRequest()->returnPATH();
 
 	// std::cout << "444 --> " << this->_client->getRequest()->returnPATH() << std::endl;
 	// 	follow = true;
