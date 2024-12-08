@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 14:32:54 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/08 15:58:52 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -278,8 +278,12 @@ char **HttpResponse::createEnv(HttpRequest *request) {
     envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
     envVars.push_back("REQUEST_URI=" + request->returnPATH());
     envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
-    envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
+	if (request->getContentLen() == 0)
+	    envVars.push_back("CONTENT_LENGTH=0");
+	else
+    	envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
     envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
+    envVars.push_back("SERVER_PORT=" + request->getMethod());
 
     // Query String
     const t_query &query = request->getQueryString();
