@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 16:21:57 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 17:11:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -784,7 +784,6 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
             }
         } else if (uri.compare("/")) {
 			resolvePath = uri;
-			std::cout << resolvePath << std::endl;
 		} else {
 			if (_root.c_str()[_root.size() - 1] == '/')
 				resolvePath = _root;
@@ -793,10 +792,12 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 		}
     }
 	else {
-		if (_root.c_str()[_root.size() - 1] == '/')
-			resolvePath = _root;
-		else
-			resolvePath = _root + uri;
+		// std::cerr << "### 00 " << uri << std::endl;
+		// if (_root.c_str()[_root.size() - 1] == '/')
+		// 	resolvePath = _root;
+		// else
+		resolvePath = _root + uri;
+		
 	}
 	if (!hasAccess(resolvePath, isDir)) {
         follow = false;
