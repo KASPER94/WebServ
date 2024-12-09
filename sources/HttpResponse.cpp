@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 18:18:27 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 23:39:24 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "HttpResponse.hpp"
+# include <algorithm>
 
 HttpResponse::HttpResponse(): _client(NULL) {}
 
@@ -23,13 +24,6 @@ HttpResponse::HttpResponse(const HttpResponse &cpy) {
 }
 
 HttpResponse::~HttpResponse() {
-    // if (_cgiEnv) {
-    //     // Assurez-vous de libérer la mémoire allouée à chaque chaîne
-    //     for (size_t i = 0; _cgiEnv[i] != NULL; ++i) {
-    //         free(_cgiEnv[i]);
-    //     }
-    //     delete[] _cgiEnv; // Libère le tableau char**
-    // }
 }
 
 HttpResponse &HttpResponse::operator=(const HttpResponse &rhs) {
@@ -204,53 +198,59 @@ void HttpResponse::sendDirectoryPage(std::string path) {
         return;
     }
 
-    // Obtenez l'URI demandé par le client
+    // Get requested URI path
     std::string requestPath = this->getRequest()->returnPATH();
+    
+    // Create HTML header with proper styling
+    std::string body = "<html><head><title>Index of " + requestPath + "</title>";
+    body += "<style>body{font-family:Arial,sans-serif;margin:40px;} ";
+    body += "a{text-decoration:none;color:#0066cc;} ";
+    body += "a:hover{text-decoration:underline;}</style></head>";
+    body += "<body><h1>Index of " + requestPath + "</h1><hr><ul style='list-style:none;padding:0'>";
 
-    std::string body = "<html><head><title>Index of " + requestPath + "</title></head>";
-    body += "<body><h1>Index of " + requestPath + "</h1><ul>";
-
-    // Parcourir les entrées du répertoire
     while ((entry = readdir(dir)) != NULL) {
         std::string name = entry->d_name;
-
-        // Ignorer les entrées spéciales "." et ".."
-        if (name == "." || name == "..")
+        
+        // Skip . and .. entries
+        if (name == "." || name == "..") 
             continue;
 
-        // Créez un lien relatif basé sur l'URI demandé
+        // Create proper link path
         std::string link = requestPath;
         if (link[link.size() - 1] != '/')
             link += "/";
         link += name;
 
         struct stat s;
+        std::string fullPath = path + "/" + name;
         std::string displayName = name;
-        if (stat((path + "/" + name).c_str(), &s) == 0 && (s.st_mode & S_IFDIR)) {
-            displayName += "/"; // Ajouter "/" pour indiquer un répertoire
+        
+        if (stat(fullPath.c_str(), &s) == 0) {
+            // Add trailing slash for directories
+            if (S_ISDIR(s.st_mode)) {
+                displayName += "/";
+            }
+            // Format size for files
+            std::string size = S_ISDIR(s.st_mode) ? "-" : intToString(s.st_size) + " bytes";
+            
+            body += "<li style='margin:5px 0'><a href=\"" + link + "\">" + displayName + "</a> ";
+            body += "<span style='color:#666;margin-left:20px'>" + size + "</span></li>";
         }
-
-        body += "<li><a href=\"" + link + "\">" + displayName + "</a></li>";
     }
 
-    // Fin de la page HTML
-    body += "</ul></body></html>";
-
-    // Fermer le répertoire
+    body += "</ul><hr></body></html>";
     closedir(dir);
 
-    // Stocker le corps de la réponse et sa longueur
-    this->_body = body;
-    this->_headers["Content-Length"] = intToString(body.size());
+    // Set headers
+    this->_statusCode = 200;
     this->_headers["Content-Type"] = "text/html";
-    this->_headers["Connection"] = "close";
-
-    // Envoyer les en-têtes et le corps
+    this->_headers["Content-Length"] = intToString(body.size());
+    
+    // Send response
     this->createHeader();
     this->sendHeader();
     this->sendData(body.c_str(), body.size());
 }
-
 
 void	HttpResponse::directoryListing(std::string path) {
 	this->_statusCode = 200;
@@ -258,29 +258,24 @@ void	HttpResponse::directoryListing(std::string path) {
 	this->sendDirectoryPage(path);
 }
 
-int	HttpResponse::sendData(const void *data, int len) {
-	const char	*ptr = static_cast<const char *>(data);
-	int			bytes;
+int HttpResponse::sendData(const void *data, int len) {
+    const char *ptr = static_cast<const char *>(data);
+    int bytes;
 
-	// if (this->keepAlive() && !this->getClientError() && this->_cgiIndex == -1)
-	// 	this->sendChunkSize(len);
-	while (len > 0 && !this->_client->getError()) {
-		bytes = send(this->_client->getFd(), ptr, len, 0);
-		this->checkSend(bytes);
-		ptr += bytes;
-		len -= bytes;
-	}
-	// if (this->keepAlive() && !this->getClientError() && this->_cgiIndex == -1){
-	// 	this->sendChunkEnd();
-	// }
-	return (0);
+    while (len > 0 && !this->_client->getError()) {
+        bytes = send(this->_client->getFd(), ptr, len, 0);
+        this->checkSend(bytes);
+        ptr += bytes;
+        len -= bytes;
+    }
+    return (0);
 }
 
 void HttpResponse::serveStaticFile(const std::string &uri) {
     std::ifstream file(uri.c_str(), std::ios::binary);
 
     if (!file.is_open()) {
-		if (uri.find("favicon.ico") != std::string::npos) {
+        if (uri.find("favicon.ico") != std::string::npos) {
             this->_statusCode = 204;
             this->_mime = "image/x-icon";
             this->_headers["Content-Type"] = this->_mime;
@@ -292,20 +287,30 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
         this->handleError(500, "Failed to Open File");
         return;
     }
+
+    // Get file size
     file.seekg(0, std::ios::end);
     size_t fileSize = file.tellg();
     file.seekg(0, std::ios::beg);
 
+    // Get file extension and MIME type
     std::string ext = uri.substr(uri.find_last_of(".") + 1);
     this->_mime = Mime::getMimeType(ext);
 
+    // Set response headers
     this->_statusCode = 200;
     this->_headers["Content-Type"] = this->_mime;
     this->_headers["Content-Length"] = intToString(fileSize);
+    
+    // Add Content-Disposition for downloads
+    std::string filename = uri.substr(uri.find_last_of("/") + 1);
+    this->_headers["Content-Disposition"] = "inline; filename=\"" + filename + "\"";
+    
     this->createHeader();
     this->sendHeader();
 
-    char buffer[2048];
+    // Send file contents in chunks
+    char buffer[4096];
     while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
         this->sendData(buffer, file.gcount());
     }
@@ -736,96 +741,87 @@ void	HttpResponse::setInfos() {
 	this->_indexes = this->getServer()->getIndexes();
 }
 
-bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
-	std::string resolvePath;
-	std::string location;
-	bool follow = true;
-	isDir = false;
-	saveLoc.inLoc = false;
-	_isCGI = false;
+static std::string joinPaths(const std::string& path1, const std::string& path2) {
+    if (path1.empty()) return path2;
+    if (path2.empty()) return path1;
+    
+    std::string result = path1;
+    if (result[result.length()-1] == '/' && path2[0] == '/') {
+        result = result.substr(0, result.length()-1);
+    } else if (result[result.length()-1] != '/' && path2[0] != '/') {
+        result += '/';
+    }
+    return result + path2;
+}
 
-	if (_isLocation) {
+bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
+    std::string resolvePath;
+    std::string location;
+    // bool follow = true;
+    isDir = false;
+    saveLoc.inLoc = false;
+    _isCGI = false;
+
+    if (_isLocation) {
         location = matchLocation(uri);
         if (!location.empty()) {
-
-			saveLoc.inLoc = true;
+            saveLoc.inLoc = true;
             Location *loc = this->getServer()->getLocation(location);
-			saveLoc.loc = *loc;
-            resolvePath = loc->getRoot();
-			if (uri.compare(location)) {
-				std::string tmp = uri.substr(uri.find(location) + location.size());
-				resolvePath = loc->getRoot() + tmp;
-			}
-            if (resolvePath[resolvePath.size() - 1] != '/')
-                resolvePath += '/';
-            // resolvePath += uri.substr(location.size());
+            saveLoc.loc = *loc;
+            
+            if (uri.compare(location)) {
+                std::string relativePath = uri.substr(uri.find(location) + location.size());
+                resolvePath = joinPaths(loc->getRoot(), relativePath);
+            } else {
+                resolvePath = loc->getRoot();
+            }
+
             if (!loc->getIndex().empty()) {
-                std::string indexPath = resolvePath;
-                if (indexPath[indexPath.size() - 1] != '/')
-                    indexPath += '/';
-                indexPath += loc->getIndex();
+                std::string indexPath = joinPaths(resolvePath, loc->getIndex());
                 if (access(indexPath.c_str(), F_OK) != -1) {
                     uri = indexPath;
                     isDir = false;
-					const std::vector<std::string> &cgiExtensions = loc->getCgiExtension();
-					if (!cgiExtensions.empty()) {
-						for (std::vector<std::string>::const_iterator it = cgiExtensions.begin(); it != cgiExtensions.end(); ++it) {
-							if (!it->empty() && uri.find(*it) != std::string::npos) {
-								follow = true;
-								_isCGI = true;
-								this->_cgiBin = loc->getCgiBin();
-								if (!loc->getAllowedMethods().empty()){
-									this->_allowedMethod = loc->getAllowedMethods();
-								}
-								//allowed mthod
-								return follow;
-							}
-						}
-					} else
-						return (true);
+                    const std::vector<std::string>& cgiExtensions = loc->getCgiExtension();
+                    if (!cgiExtensions.empty()) {
+                        for (std::vector<std::string>::const_iterator it = cgiExtensions.begin();
+                             it != cgiExtensions.end(); ++it) {
+                            if (!it->empty() && uri.find(*it) != std::string::npos) {
+                                _isCGI = true;
+                                this->_cgiBin = loc->getCgiBin();
+                                if (!loc->getAllowedMethods().empty()) {
+                                    this->_allowedMethod = loc->getAllowedMethods();
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                    return true;
                 }
             }
         } else if (uri.compare("/")) {
-			resolvePath = uri;
-		} else {
-			if (_root.c_str()[_root.size() - 1] == '/')
-				resolvePath = _root;
-			else
-            	resolvePath = _root + uri;
-		}
+            resolvePath = uri;
+        } else {
+            resolvePath = joinPaths(_root, uri);
+        }
+    } else {
+        resolvePath = joinPaths(_root, uri);
     }
-	else {
-		// std::cerr << "### 00 " << uri << std::endl;
-		// if (_root.c_str()[_root.size() - 1] == '/')
-		// 	resolvePath = _root;
-		// else
-		resolvePath = _root + uri;
-		
-	}
-	if (!hasAccess(resolvePath, isDir)) {
-        follow = false;
+
+    if (!hasAccess(resolvePath, isDir)) {
+        return false;
     }
-	for (std::vector<std::string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
-		if (*it != "" && (resolvePath.find(*it) != std::string::npos || resolvePath.find(*it) != std::string::npos)) {
-			uri = resolvePath;
-            // std::cout << "CGI Request Detected: " << resolvePath << std::endl;
-			follow = true;
-			_isCGI = true;
-            return (follow);
-		}
-		// else if ((uri != "" && uri != "/") && !_isLocation) {
-		// 	follow = false;
-		// }
-	}
-	// if (uri == "/")
-		uri = resolvePath;
 
-	// else
-	// 	uri = _root + this->_client->getRequest()->returnPATH();
+    for (std::vector<std::string>::const_iterator it = this->_cgiExt.begin();
+         it != this->_cgiExt.end(); ++it) {
+        if (!it->empty() && resolvePath.find(*it) != std::string::npos) {
+            uri = resolvePath;
+            _isCGI = true;
+            return true;
+        }
+    }
 
-	// std::cout << "444 --> " << this->_client->getRequest()->returnPATH() << std::endl;
-	// 	follow = true;
-	return (follow);
+    uri = resolvePath;
+    return true;
 }
 
 std::string HttpResponse::matchLocation(std::string &requestUri) const {
