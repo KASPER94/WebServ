@@ -79,7 +79,7 @@ class HttpResponse {
 		bool	initializeResponse();
 		Server	*getServer() const;
 		bool resolveUri(std::string &uri, bool &isDir);
-		void movedPermanently(const std::string &url);
+		void movedPermanently(std::string path);
 		void handleRedirect(int code, const std::string &uri);
 		void	sendHeader();
 		void	checkSend(int bytes);

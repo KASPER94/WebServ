@@ -6,12 +6,14 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 23:39:24 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/10 00:31:46 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "HttpResponse.hpp"
 # include <algorithm>
+# include <sstream>
+# include <iomanip>
 
 HttpResponse::HttpResponse(): _client(NULL) {}
 
@@ -68,85 +70,120 @@ void	HttpResponse::checkSend(int bytes) {
 	}
 }
 
-bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
-    struct stat	s;
+std::string normalizeUrl(const std::string& path) {
+    std::string normalized = path;
+    size_t pos;
+    // Replace multiple consecutive slashes with a single slash
+    while ((pos = normalized.find("//")) != std::string::npos) {
+        normalized.replace(pos, 2, "/");
+    }
+    // Remove trailing slashes except for root path
+    while (normalized.length() > 1 && normalized[normalized.length() - 1] == '/') {
+        normalized.erase(normalized.length() - 1);
+    }
+    return normalized;
+}
 
-	if (stat(uri.c_str(), &s) == 0) {
-		if (s.st_mode & S_IFDIR) {
-			isDir = true;
-			if (uri[uri.length() - 1] != '/') {
-				this->movedPermanently(this->getRequest()->returnPATH() + "/");
-				return (false);
-			}
-		}
-		else
-			isDir = false;
-	}
-	if (isDir) {
-		for (std::vector<std::string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
-			if (*it == "")
-				continue;
-			if (access((uri + *it).c_str(), F_OK) != -1) {
-				if (access((uri + *it).c_str(), R_OK) == -1) {
-					this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
-					return (false);
-				}
-				uri += *it;
-				isDir = false;
-				break;
-			}
-		}
-		if (saveLoc.inLoc) {
-			std::string index = saveLoc.loc.getIndex();
-			if (!index.empty() && access((uri + index).c_str(), F_OK) != -1) {
-				if (access((uri + index).c_str(), R_OK) == -1) {
-					this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
-					return (false);
-				}
-				uri += index;
-				isDir = false;
-				return true;
-			}
-		}
-	}
-	return (true);
-    // return access(uri.c_str(), F_OK) != -1 && access(uri.c_str(), R_OK) != -1;
+bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
+    struct stat s;
+
+    if (stat(uri.c_str(), &s) == 0) {
+        if (s.st_mode & S_IFDIR) {
+            isDir = true;
+            // Get the raw path without any normalization
+            std::string path = this->getRequest()->returnPATH();
+            // Only redirect if there's really no trailing slash
+            if (path != "/" && path[path.length() - 1] != '/') {
+                this->movedPermanently(path + "/");
+                return false;
+            }
+        }
+        else
+            isDir = false;
+    }
+    if (isDir) {
+        for (std::vector<std::string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
+            if (*it == "")
+                continue;
+            if (access((uri + *it).c_str(), F_OK) != -1) {
+                if (access((uri + *it).c_str(), R_OK) == -1) {
+                    this->handleError(403, "Permission denied");
+                    return false;
+                }
+                uri += *it;
+                isDir = false;
+                break;
+            }
+        }
+    }
+    return true;
 }
 
 bool	HttpResponse::methodAllowed(enum HttpMethod method) {
-	std::vector<std::string>::iterator it = this->_allowedMethod.begin();
 	(void)method;
-	if (it == this->_allowedMethod.end())
-		if (*it == this->getRequest()->HttpMethodTostring())
-			return (true);
-	for (; it != this->_allowedMethod.end(); it++) {
-		if (*it == this->getRequest()->HttpMethodTostring())
-			return (true);
+	if (this->_allowedMethod.empty())
+		return false;
+
+	std::string requestMethod = this->getRequest()->HttpMethodTostring();
+	
+	for (std::vector<std::string>::iterator it = this->_allowedMethod.begin(); 
+		 it != this->_allowedMethod.end(); ++it) {
+		if (*it == requestMethod)
+			return true;
 	}
-	return (false);
+	return false;
 }
 
-void	HttpResponse::tryDeleteFile(std::string &uri) {
-	std::string	root;
+void HttpResponse::tryDeleteFile(std::string &uri) {
+    std::string root;
 
-	if (this->_isLocation) {
-		root = this->_root;
-	} else
-		root = this->getServer()->getRoot();
-	if (!childPath(getFullPath(root), getFullPath(uri)))
-		this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
-	else {
-		if (access(uri.c_str(), F_OK) != -1) {
-			if (access(uri.c_str(), R_OK) == -1) {
-				this->handleError(403, "La requête est invalide. Veuillez vérifier les paramètres et le format de votre demande.");
-				return ;
-			}
-		}
-		if (remove(uri.c_str()) == 0)
-			this->handleError(200, "Le fichier a été supprimé avec succès.");
-		else
-			this->handleError(204, "Le fichier n'existait pas ou n'a pas pu être supprimé.");
-	}
+    if (this->_isLocation) {
+        root = this->_root;
+    } else {
+        root = this->getServer()->getRoot();
+    }
+
+    // Normalize the URI before using it
+    uri = normalizeUrl(uri);
+
+    // Debug output to check paths
+    std::cout << "Root path: " << root << std::endl;
+    std::cout << "URI path: " << uri << std::endl;
+    std::cout << "Full root path: " << getFullPath(root) << std::endl;
+    std::cout << "Full URI path: " << getFullPath(uri) << std::endl;
+
+    // Check if file exists before checking permissions
+    if (access(uri.c_str(), F_OK) == -1) {
+        this->handleError(404, "File not found");
+        return;
+    }
+
+    // Check write permissions
+    if (access(uri.c_str(), W_OK) == -1) {
+        this->handleError(403, "Permission denied");
+        return;
+    }
+
+    // Check if path is within root directory
+    if (!childPath(getFullPath(root), getFullPath(uri))) {
+        this->handleError(403, "Access denied");
+        return;
+    }
+
+    // Try to delete the file
+    if (remove(uri.c_str()) == 0) {
+        // Success - send 204 No Content
+        this->_statusCode = 204;
+        this->_headers.clear();
+        this->_headers["Content-Length"] = "0";  // Add Content-Length header
+        this->createHeader();
+        this->sendHeader();
+    } else {
+        // If deletion fails, provide more specific error message
+        std::string errorMsg = "Failed to delete file: ";
+        errorMsg += strerror(errno);
+        this->handleError(500, errorMsg);
+    }
 }
 
 void HttpResponse::createHeader() {
@@ -184,6 +221,31 @@ bool isDirectoryEmpty(const std::string &path) {
     return true;
 }
 
+class DirectoryEntryCompare {
+public:
+    bool operator()(const std::pair<std::string, std::string>& a, 
+                   const std::pair<std::string, std::string>& b) const {
+        if (a.second != b.second) 
+            return a.second > b.second;
+        return a.first < b.first;
+    }
+};
+
+std::string formatFileSize(size_t bytes) {
+    const char* units[] = {"B", "KB", "MB", "GB"};
+    int unit = 0;
+    double size = static_cast<double>(bytes);
+    
+    while (size >= 1024.0 && unit < 3) {
+        size /= 1024.0;
+        unit++;
+    }
+    
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(1) << size << " " << units[unit];
+    return ss.str();
+}
+
 void HttpResponse::sendDirectoryPage(std::string path) {
     if (isDirectoryEmpty(path)) {
         this->handleError(404, "Directory is empty.");
@@ -198,55 +260,129 @@ void HttpResponse::sendDirectoryPage(std::string path) {
         return;
     }
 
-    // Get requested URI path
     std::string requestPath = this->getRequest()->returnPATH();
     
-    // Create HTML header with proper styling
-    std::string body = "<html><head><title>Index of " + requestPath + "</title>";
-    body += "<style>body{font-family:Arial,sans-serif;margin:40px;} ";
-    body += "a{text-decoration:none;color:#0066cc;} ";
-    body += "a:hover{text-decoration:underline;}</style></head>";
-    body += "<body><h1>Index of " + requestPath + "</h1><hr><ul style='list-style:none;padding:0'>";
+    std::string body = "<!DOCTYPE html><html><head><title>File Manager - " + requestPath + "</title>";
+    body += "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css'>";
+    body += "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css'>";
+    body += "<style>";
+    body += "body { background-color: #f8f9fa; padding: 2rem; }";
+    body += ".file-manager { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }";
+    body += ".file-item { display: flex; align-items: center; padding: 0.75rem; border-bottom: 1px solid #eee; }";
+    body += ".file-item:hover { background-color: #f8f9fa; }";
+    body += ".file-icon { font-size: 1.2rem; margin-right: 1rem; width: 24px; }";
+    body += ".file-name { flex-grow: 1; }";
+    body += ".file-actions { min-width: 100px; text-align: right; }";
+    body += ".file-size { color: #6c757d; font-size: 0.9rem; min-width: 100px; text-align: right; margin-right: 1rem; }";
+    body += ".upload-zone { border: 2px dashed #dee2e6; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; text-align: center; }";
+    body += ".upload-zone:hover { border-color: #0d6efd; }";
+    body += "</style></head>";
+    
+    body += "<body><div class='container'><div class='file-manager p-3'>";
+    body += "<div class='d-flex justify-content-between align-items-center mb-4'>";
+    body += "<h4 class='m-0'><i class='bi bi-folder2-open me-2'></i>File Manager - " + requestPath + "</h4>";
+    
+    // Add upload form
+    body += "<div class='upload-zone'>";
+    body += "<form method='post' enctype='multipart/form-data' class='mb-0'>";
+    body += "<div class='d-flex align-items-center gap-3'>";
+    body += "<input type='file' name='file' class='form-control' style='width: auto;'>";
+    body += "<button type='submit' class='btn btn-primary'><i class='bi bi-upload me-2'></i>Upload</button>";
+    body += "</div></form></div></div>";
+
+    std::vector<std::pair<std::string, std::string> > entries;
 
     while ((entry = readdir(dir)) != NULL) {
         std::string name = entry->d_name;
-        
-        // Skip . and .. entries
-        if (name == "." || name == "..") 
-            continue;
-
-        // Create proper link path
-        std::string link = requestPath;
-        if (link[link.size() - 1] != '/')
-            link += "/";
-        link += name;
-
-        struct stat s;
-        std::string fullPath = path + "/" + name;
-        std::string displayName = name;
-        
-        if (stat(fullPath.c_str(), &s) == 0) {
-            // Add trailing slash for directories
-            if (S_ISDIR(s.st_mode)) {
-                displayName += "/";
+        if (name != "." && name != "..") {
+            struct stat s;
+            std::string fullPath = path + "/" + name;
+            if (stat(fullPath.c_str(), &s) == 0) {
+                std::string type = S_ISDIR(s.st_mode) ? "dir" : "file";
+                entries.push_back(std::make_pair(name, type));
             }
-            // Format size for files
-            std::string size = S_ISDIR(s.st_mode) ? "-" : intToString(s.st_size) + " bytes";
-            
-            body += "<li style='margin:5px 0'><a href=\"" + link + "\">" + displayName + "</a> ";
-            body += "<span style='color:#666;margin-left:20px'>" + size + "</span></li>";
         }
     }
 
-    body += "</ul><hr></body></html>";
+    std::sort(entries.begin(), entries.end(), DirectoryEntryCompare());
+
+    // Add parent directory link if not at root
+    if (requestPath != "/") {
+        body += "<div class='file-item'>";
+        body += "<i class='bi bi-arrow-up-circle file-icon text-primary'></i>";
+        body += "<a href='../' class='file-name text-decoration-none'>Parent Directory</a>";
+        body += "<span class='file-size'>-</span>";
+        body += "<div class='file-actions'></div>";
+        body += "</div>";
+    }
+
+    // Output sorted entries
+    for (std::vector<std::pair<std::string, std::string> >::iterator it = entries.begin(); 
+         it != entries.end(); ++it) {
+        std::string name = it->first;
+        bool isDir = it->second == "dir";
+        std::string link = requestPath;
+        // Remove trailing slashes except for root path
+        while (link.length() > 1 && link[link.length() - 1] == '/') {
+            link.erase(link.length() - 1);
+        }
+        link += "/";  // Add single trailing slash
+        link += name;
+
+        body += "<div class='file-item'>";
+        if (isDir) {
+            body += "<i class='bi bi-folder-fill file-icon text-warning'></i>";
+            body += "<a href='" + link + "/' class='file-name text-decoration-none'>" + name + "</a>";
+            body += "<span class='file-size'>-</span>";
+        } else {
+            body += "<i class='bi bi-file-earmark file-icon text-secondary'></i>";
+            body += "<a href='" + link + "' class='file-name text-decoration-none'>" + name + "</a>";
+            struct stat s;
+            std::string fullPath = path + "/" + name;
+            if (stat(fullPath.c_str(), &s) == 0) {
+                std::string size = formatFileSize(s.st_size);
+                body += "<span class='file-size'>" + size + "</span>";
+            }
+        }
+        
+        // Add delete button for files (not directories)
+        if (!isDir) {
+            body += "<div class='file-actions'>";
+            body += "<button onclick='deleteFile(\"" + link + "\")' class='btn btn-sm btn-outline-danger'>";
+            body += "<i class='bi bi-trash'></i></button></div>";
+        } else {
+            body += "<div class='file-actions'></div>";
+        }
+        body += "</div>";
+    }
+
+    // Add JavaScript for delete functionality
+    body += "<script>";
+    body += "function deleteFile(path) {";
+    body += "  if (!confirm('Are you sure you want to delete this file?')) return;";
+    body += "  var xhr = new XMLHttpRequest();";
+    body += "  xhr.open('DELETE', path, true);";
+    body += "  xhr.onload = function() {";
+    body += "    if (xhr.status === 204) {";
+    body += "      window.location.reload();";
+    body += "    } else {";
+    body += "      alert('Error deleting file');";
+    body += "    }";
+    body += "  };";
+    body += "  xhr.onerror = function() {";
+    body += "    alert('Error deleting file');";
+    body += "  };";
+    body += "  xhr.send();";
+    body += "}";
+    body += "</script>";
+
+    body += "</div></div></body></html>";
     closedir(dir);
 
-    // Set headers
     this->_statusCode = 200;
     this->_headers["Content-Type"] = "text/html";
     this->_headers["Content-Length"] = intToString(body.size());
     
-    // Send response
     this->createHeader();
     this->sendHeader();
     this->sendData(body.c_str(), body.size());
@@ -585,38 +721,79 @@ bool DirectoriesRecursively(const std::string &path) {
 }
 
 bool HttpResponse::handleUpload() {
-	std::string uploadPath = this->_client->getServer()->getUploadPath();
-	if (uploadPath.empty()) {
-		logMsg(DEBUG, "No upload path defined in configuration");
-		this->handleError(500, "Upload path not configured.");
-		return false;
-	}
-
-	std::string Path = _root + uploadPath;
-    if (!DirectoriesRecursively(Path)) {
-        this->handleError(500, "Cannot create upload directory.");
+    std::string uploadPath = this->_client->getServer()->getUploadPath();
+    if (uploadPath.empty()) {
+        logMsg(DEBUG, "No upload path defined in configuration");
+        this->handleError(500, "Upload path not configured.");
         return false;
     }
 
-	const std::map<std::string, std::string> &files = this->_client->getRequest()->getFileData();
-	for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
-		std::string filePath = _root;
-		if (uploadPath.c_str()[uploadPath.size() - 1] == '/')
-			filePath += uploadPath + it->first;
-		else
-			filePath += uploadPath + "/" + it->first;
-       	std::ofstream file(filePath.c_str(), std::ios::binary | std::ios::trunc);
+    // Create full path
+    std::string fullPath = _root;
+    if (uploadPath[0] != '/')
+        fullPath += "/";
+    fullPath += uploadPath;
+
+    // Ensure directory exists
+    if (!DirectoriesRecursively(fullPath)) {
+        // Try to create directory if it doesn't exist
+        std::string cmd = "mkdir -p " + fullPath;
+        if (system(cmd.c_str()) != 0) {
+            this->handleError(500, "Cannot create upload directory.");
+            return false;
+        }
+    }
+
+    const std::map<std::string, std::string> &files = this->_client->getRequest()->getFileData();
+    for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
+        std::string filePath = fullPath;
+        if (filePath[filePath.size() - 1] != '/')
+            filePath += "/";
+        filePath += it->first;
+
+        // Open file in binary mode with large buffer
+        std::ofstream file(filePath.c_str(), std::ios::binary | std::ios::trunc);
         if (!file.is_open()) {
-			logMsg(DEBUG, "Failed to create uploaded file " + filePath + ": " + std::string(strerror(errno)));
+            logMsg(DEBUG, "Failed to create uploaded file " + filePath + ": " + std::string(strerror(errno)));
             this->handleError(500, "Failed to create uploaded file.");
             return false;
         }
-		file << it->second;
-		file.close();
-		_statusCode = 201;
-	}
-	logMsg(DEBUG, "Files uploaded successfully to " + uploadPath);
-	return true;
+
+        // Set buffer size for better performance with large files
+        char buffer[8192];
+        file.rdbuf()->pubsetbuf(buffer, sizeof(buffer));
+
+        // Write file in chunks
+        const std::string &data = it->second;
+        size_t totalSize = data.size();
+        size_t written = 0;
+        
+        while (written < totalSize) {
+            size_t chunkSize = std::min(size_t(8192), totalSize - written);
+            file.write(data.c_str() + written, chunkSize);
+            
+            if (file.fail()) {
+                file.close();
+                unlink(filePath.c_str()); // Delete partially written file
+                logMsg(DEBUG, "Failed writing to file " + filePath + ": " + std::string(strerror(errno)));
+                this->handleError(500, "Failed writing to uploaded file.");
+                return false;
+            }
+            written += chunkSize;
+        }
+
+        file.close();
+        if (file.fail()) {
+            unlink(filePath.c_str());
+            logMsg(DEBUG, "Failed closing file " + filePath + ": " + std::string(strerror(errno)));
+            this->handleError(500, "Failed finalizing uploaded file.");
+            return false;
+        }
+        _statusCode = 201;
+    }
+
+    logMsg(DEBUG, "Files uploaded successfully to " + uploadPath);
+    return true;
 }
 
 void HttpResponse::handlePostRequest() {
@@ -626,26 +803,41 @@ void HttpResponse::handlePostRequest() {
 
     if (!files.empty()) {
         if (handleUpload()) {
-            // Respond with a JSON success message for uploads
-            this->_statusCode = 201; // Created
-            std::string jsonResponse = "{\n  \"status\": \"success\",\n  \"message\": \"Files uploaded successfully\",\n  \"files\": [\n";
-
+            // Create an HTML response with a nice notification
+            std::string htmlResponse = "<!DOCTYPE html><html><head>";
+            htmlResponse += "<title>Upload Success</title>";
+            htmlResponse += "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css'>";
+            htmlResponse += "<style>";
+            htmlResponse += "body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }";
+            htmlResponse += ".notification { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; max-width: 500px; width: 90%; }";
+            htmlResponse += ".success-icon { color: #28a745; font-size: 3rem; margin-bottom: 1rem; }";
+            htmlResponse += ".file-list { margin: 1rem 0; padding: 0.5rem; background: #f8f9fa; border-radius: 5px; }";
+            htmlResponse += "</style>";
+            htmlResponse += "</head><body>";
+            htmlResponse += "<div class='notification'>";
+            htmlResponse += "<div class='success-icon'>GG</div>";
+            htmlResponse += "<h4 class='mb-3'>Upload Successful!</h4>";
+            htmlResponse += "<p class='text-muted'>The following files were uploaded:</p>";
+            htmlResponse += "<div class='file-list'>";
+            
             for (std::map<std::string, std::string>::const_iterator it = files.begin(); it != files.end(); ++it) {
-                jsonResponse += "    \"" + it->first + "\"";
-                std::map<std::string, std::string>::const_iterator nextIt = it;
-                ++nextIt; // Manual iterator increment to check the next element
-                if (nextIt != files.end()) {
-                    jsonResponse += ",";
-                }
-                jsonResponse += "\n";
+                htmlResponse += "<div class='text-primary'>" + it->first + "</div>";
             }
+            
+            htmlResponse += "</div>";
+            htmlResponse += "<button onclick='window.history.back()' class='btn btn-primary mt-3'>Go Back</button>";
+            htmlResponse += "</div>";
+            htmlResponse += "<script>";
+            htmlResponse += "setTimeout(function() { window.history.back(); }, 2000);";  // Auto redirect after 2 seconds
+            htmlResponse += "</script>";
+            htmlResponse += "</body></html>";
 
-            jsonResponse += "  ]\n}";
-            this->_headers["Content-Type"] = "application/json";
-            this->_headers["Content-Length"] = intToString(jsonResponse.size());
+            this->_statusCode = 201;
+            this->_headers["Content-Type"] = "text/html";
+            this->_headers["Content-Length"] = intToString(htmlResponse.size());
             this->createHeader();
             this->sendHeader();
-            this->sendData(jsonResponse.c_str(), jsonResponse.size());
+            this->sendData(htmlResponse.c_str(), htmlResponse.size());
         } else {
             handleError(500, "Failed to upload files.");
         }
@@ -755,6 +947,12 @@ static std::string joinPaths(const std::string& path1, const std::string& path2)
 }
 
 bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
+    // Remove any double slashes from the input URI
+    size_t pos;
+    while ((pos = uri.find("//")) != std::string::npos) {
+        uri.erase(pos, 1);
+    }
+
     std::string resolvePath;
     std::string location;
     // bool follow = true;
@@ -883,16 +1081,17 @@ void HttpResponse::handleRedirect(int code, const std::string &uri) {
 	logMsg(DEBUG, "Redirecting to " + uri + " with status code " + toString(code));
 }
 
-void HttpResponse::movedPermanently(const std::string &url) {
+void HttpResponse::movedPermanently(std::string path) {
+    // Remove any double slashes
+    size_t pos;
+    while ((pos = path.find("//")) != std::string::npos) {
+        path.erase(pos, 1);
+    }
+    
     this->_statusCode = 301;
-    this->_headers["Location"] = url;
-    this->_body = "<html><head><title>301 Moved Permanently</title></head>"
-                  "<body><h1>301 Moved Permanently</h1>"
-                  "<p>The requested resource has been permanently moved to "
-                  "<a href=\"" + url + "\">" + url + "</a>.</p></body></html>";
-    this->_headers["Content-Length"] = intToString(this->_body.size());
-	this->sendHeader();
-	this->_client->setError();
+    this->_headers["Location"] = path;
+    this->createHeader();
+    this->sendHeader();
 }
 
 
