@@ -304,6 +304,8 @@ std::string	getCurrTime()
 
 void	logMsg(LogLevel level, std::string msg)
 {
+	if (DEBUG == 0 && level == DEBUG)
+		return;
 	const std::string	levelStr[3] = {"[DEBUG]", "[INFO] ", "[ERROR]"};
 	std::string	currTime = getCurrTime();
 	std::cout << currTime << " " << levelStr[level] << " " << msg << std::endl;
