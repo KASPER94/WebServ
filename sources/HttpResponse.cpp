@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 00:12:04 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 01:59:31 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,9 +196,11 @@ void HttpResponse::sendDirectoryPage(std::string path) {
         return;
     }
 
-	std::cerr << "### " << path << std::endl;
-    std::string body = "<html><head><title>Index of " + path + "</title></head>";
-    body += "<body><h1>Index of " + path + "</h1><ul>";
+    // Obtenez l'URI demandé par le client
+    std::string requestPath = this->getRequest()->returnPATH();
+
+    std::string body = "<html><head><title>Index of " + requestPath + "</title></head>";
+    body += "<body><h1>Index of " + requestPath + "</h1><ul>";
 
     // Parcourir les entrées du répertoire
     while ((entry = readdir(dir)) != NULL) {
@@ -208,18 +210,19 @@ void HttpResponse::sendDirectoryPage(std::string path) {
         if (name == "." || name == "..")
             continue;
 
-        // Concaténer le chemin et vérifier si c'est un répertoire
-        std::string link = path;
+        // Créez un lien relatif basé sur l'URI demandé
+        std::string link = requestPath;
         if (link[link.size() - 1] != '/')
             link += "/";
         link += name;
 
         struct stat s;
-        if (stat(link.c_str(), &s) == 0 && (s.st_mode & S_IFDIR)) {
-            name += "/"; // Ajouter "/" pour indiquer un répertoire
+        std::string displayName = name;
+        if (stat((path + "/" + name).c_str(), &s) == 0 && (s.st_mode & S_IFDIR)) {
+            displayName += "/"; // Ajouter "/" pour indiquer un répertoire
         }
 
-        body += "<li><a href=\"" + name + "\">" + name + "</a></li>";
+        body += "<li><a href=\"" + link + "\">" + displayName + "</a></li>";
     }
 
     // Fin de la page HTML
@@ -240,13 +243,13 @@ void HttpResponse::sendDirectoryPage(std::string path) {
     this->sendData(body.c_str(), body.size());
 }
 
+
 void	HttpResponse::directoryListing(std::string path) {
 	this->_statusCode = 200;
 	this->_mime = Mime::getMimeType("html");
 	this->createHeader();
 	this->sendHeader();
 	this->sendDirectoryPage(path);
-
 }
 
 int	HttpResponse::sendData(const void *data, int len) {
@@ -903,7 +906,10 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 						return (true);
                 }
             }
-        } else {
+        } else if (uri.compare("/")) {
+			resolvePath = uri;
+			std::cout << resolvePath << std::endl;
+		} else {
 			if (_root.c_str()[_root.size() - 1] == '/')
 				resolvePath = _root;
 			else
@@ -933,6 +939,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	}
 	// if (uri == "/")
 		uri = resolvePath;
+
 	// else
 	// 	uri = _root + this->_client->getRequest()->returnPATH();
 

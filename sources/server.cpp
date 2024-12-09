@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 20:26:14 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/09 12:41:56 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,13 @@ Server::Server(): websocket(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY), _port(80
 }
 
 Server::~Server() {
+	cleanUp();
 	delete _uri;
 	for (std::map<std::string, Location*>::iterator it = _locations.begin(); 
              it != _locations.end(); ++it) {
             delete it->second;
         }
-        _locations.clear();
+	_locations.clear();
 }
 
 Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port, inet_addr(cpy._host.c_str())) {
@@ -53,10 +54,16 @@ Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port,
          it != cpy._locations.end(); ++it) {
         _locations[it->first] = new Location(*it->second);
     }
+	_sock = dup(cpy._sock);
+    if (_sock == -1) {
+        std::perror("Failed to duplicate socket");
+        exit(EXIT_FAILURE);
+    }
 }
 
 Server &Server::operator=(const Server &rhs) {
     if (this != &rhs) {
+		cleanUp();
         // Clean existing data
         delete _uri;
         _uri = NULL;
@@ -92,6 +99,11 @@ Server &Server::operator=(const Server &rhs) {
              it != rhs._locations.end(); ++it) {
             _locations[it->first] = new Location(*it->second);
         }
+		_sock = dup(rhs._sock);
+		if (_sock == -1) {
+			std::perror("Failed to duplicate socket");
+			exit(EXIT_FAILURE);
+		}
     }
     return *this;
 }
@@ -289,7 +301,7 @@ void Server::cleanUp() {
 		close(_sock);
 		_sock = -1;
 	}
-	logMsg(INFO, "Resources for server on port " + toString(_port) + " have been cleaned up");
+	// logMsg(INFO, "Resources for server on port " + toString(_port) + " have been cleaned up");
 }
 
 Location *Server::getLocation(const std::string &uri) const {

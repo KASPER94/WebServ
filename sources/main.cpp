@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/07 23:20:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 14:11:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,22 @@ void	signalHandler(int signum) {
 		std::cout << std::endl;
 		logMsg(INFO, "Received SIGINT");
 		run = false;
+        if (env()->webserv) {
+            logMsg(INFO, "Cleaning up clients...");
+
+            // Utiliser la méthode getClients pour accéder à _clients
+            std::map<int, Client*>::iterator it = env()->webserv->getClients().begin();
+            while (it != env()->webserv->getClients().end()) {
+                env()->webserv->deleteClient(it->first);  // Supprimer chaque client
+                it = env()->webserv->getClients().begin();  // Recommencer l'itération après suppression
+            }
+
+            logMsg(INFO, "All clients cleaned up.");
+        }
 	}
 }
 
 bool webserv(char *config_file, char **envi) {
-
     try {
         conf config(config_file);
 		std::vector<Server> &servers = env()->webserv->getAllServer();

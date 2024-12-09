@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/08 20:29:23 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/09 14:27:30 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,15 @@ std::vector<Server> &Webserv::getAllServer() {
 
 void Webserv::deleteClient(int fd) {
     if (_clients.find(fd) != _clients.end()) {
+		Client *client = _clients[fd];
+		if (client->getRequest()) {
+            delete client->getRequest();
+			client->setRequest(NULL); 
+        }
+        if (client->getResponse()) {
+            delete client->getResponse();
+			client->setResponse(NULL); 
+        }
         if (epoll_ctl(this->_epollfd, EPOLL_CTL_DEL, fd, NULL) == -1) {
 			logMsg(DEBUG, "Failed to delete socket " + toString(fd) + " from epoll: " + std::string(strerror(errno)));
         } else {

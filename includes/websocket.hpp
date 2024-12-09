@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:24:17 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/04 15:51:03 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 12:34:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <vector>
 #include <poll.h>
+#include <unistd.h> 
 
 class websocket {
 	protected:

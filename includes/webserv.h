@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/08 16:35:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 01:23:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,7 @@ std::string parseContentType(const std::string &cgiHeaders);
 std::string	strFromCharVec(size_t len, std::vector<char> &vec);
 std::vector<std::string> split_trim(std::string str, std::string needle);
 size_t	findInCharVec(std::string str, std::vector<char> &vec);
+std::string str_split_trim(const std::string& str, const std::string& needle);
 
 
 #endif

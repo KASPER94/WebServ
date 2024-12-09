@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/06 22:28:11 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/09 01:32:54 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -223,6 +223,41 @@ std::vector<std::string> split_trim(std::string str, std::string needle) {
 	rtrim(str);
 	split.push_back(str);
 	return (split);
+}
+
+std::string trim(const std::string& str) {
+    size_t start = str.find_first_not_of(" ");
+    size_t end = str.find_last_not_of(" ");
+    return (start == std::string::npos || end == std::string::npos) ? "" : str.substr(start, end - start + 1);
+}
+
+std::string str_split_trim(const std::string& str, const std::string& delimiter) {
+    std::vector<std::string> segments;
+    std::string result;
+    size_t start = 0, end = 0;
+
+    // Découper les segments
+    while ((end = str.find(delimiter, start)) != std::string::npos) {
+        std::string segment = trim(str.substr(start, end - start));
+        if (!segment.empty()) {
+            segments.push_back(segment);
+        }
+        start = end + delimiter.length();
+    }
+
+    // Ajouter le dernier segment
+    std::string lastSegment = trim(str.substr(start));
+    if (!lastSegment.empty()) {
+        segments.push_back(lastSegment);
+    }
+
+    // Recomposer en supprimant les slashs superflus
+    for (size_t i = 0; i < segments.size(); ++i) {
+        if (i > 0) result += delimiter;
+        result += segments[i];
+    }
+
+    return result;
 }
 
 size_t	findInCharVec(std::string str, std::vector<char> &vec) {

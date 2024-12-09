@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/07 00:38:17 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 14:10:57 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,14 @@ class Webserv {
         Webserv(std::vector<Server> const &servers) ;
 		~Webserv();
 		std::vector<Server> &getAllServer();
+		std::map<int, Client*>& getClients() { 
+			return _clients; 
+		}
 		void initializeSockets();
 		void sendResponse(int fd);
 		void getRequest(int clientSock);
 		bool isServerSocket(int sock) const ;
-		void			deleteClient(int fd);
+		void deleteClient(int fd);
 		void checkClientTimeouts();
 };
 

@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:44:47 by skapersk          #+#    #+#             */
-/*   Updated: 2024/11/04 15:50:54 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 12:33:10 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ websocket::websocket(int domain, int service, int protocol, int port, unsigned l
 }
 
 websocket::~websocket() {
-
+    if (_sock != -1) {
+        close(_sock);
+    }
 }
 
 websocket::websocket(const websocket &cpy) {
@@ -29,8 +31,16 @@ websocket::websocket(const websocket &cpy) {
 
 websocket &websocket::operator=(const websocket &rhs) {
     if (this != &rhs) {
-        this->_sock = rhs._sock;
+		if (_sock != -1) {
+            close(_sock);
+        }
+		_sock = dup(rhs._sock);
+        if (_sock == -1) {
+            std::perror("Failed to duplicate socket");
+            exit(EXIT_FAILURE);
+        }
         this->_address = rhs._address;
+		this->_addrlen = rhs._addrlen;
     }
     return *this;
 }

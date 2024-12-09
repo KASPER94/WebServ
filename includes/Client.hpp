@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 11:51:15 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 14:28:02 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,12 @@ class Client {
 		int getTimeout() const;
 		char **getCgiEnv();
 		void setCgiEnv(char **mergedEnv);
+		void setRequest(HttpRequest* request) {
+        	_request = request;
+    	}
+		void setResponse(HttpResponse* response) {
+			_response = response;
+		}		
 };
 
 std::ostream &operator<<(std::ostream &o, const Client &client);
