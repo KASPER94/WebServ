@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 15:27:27 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 16:22:43 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@ Client::Client(const Client &cpy) {
 }
 
 Client::~Client() {
+	if (this->cgiEnv)
+		freeEnv(cgiEnv);
 	if (this->_request)
 		delete this->_request;
 	if (this->_response)

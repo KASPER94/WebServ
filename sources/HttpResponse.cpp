@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 15:30:57 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 16:21:57 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,13 @@ HttpResponse::HttpResponse(const HttpResponse &cpy) {
 }
 
 HttpResponse::~HttpResponse() {
-	freeEnv(_cgiEnv);
+    // if (_cgiEnv) {
+    //     // Assurez-vous de libérer la mémoire allouée à chaque chaîne
+    //     for (size_t i = 0; _cgiEnv[i] != NULL; ++i) {
+    //         free(_cgiEnv[i]);
+    //     }
+    //     delete[] _cgiEnv; // Libère le tableau char**
+    // }
 }
 
 HttpResponse &HttpResponse::operator=(const HttpResponse &rhs) {
@@ -320,7 +326,7 @@ char **HttpResponse::createEnv(HttpRequest *request) {
 	else
     	envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
     envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
-    envVars.push_back("SERVER_PORT=" + request->getMethod());
+    // envVars.push_back("REQUEST_METHOD=" + request->getMethod());
 
     // Query String
     const t_query &query = request->getQueryString();
@@ -458,6 +464,7 @@ bool HttpResponse::executeCGI(const std::string &uri) {
 	}
 	else
 		_cgiEnv = mergeEnvironments(en, this->_client->getCgiEnv());
+	_client->setCgiEnv(_cgiEnv);
 	freeEnv(en);
 	// int i = 0;
 	// while (cgiEnv[i]) {
