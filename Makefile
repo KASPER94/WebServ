@@ -41,6 +41,8 @@ SRC_FILES = $(addprefix $(SRC_DIR), $(SRC))
 
 OBJ_FILES = $(addprefix $(OBJ_DIR), $(OBJ))
 
+DEBUG = 0
+
 .PHONY : all clean fclean re
 
 all : $(NAME)
@@ -50,7 +52,7 @@ $(OBJ_DIR)%.o : $(SRC_DIR)%.cpp
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(NAME) : $(OBJ_FILES)
-	@$(CC) $(OBJ_FILES) -o $(NAME)
+	@$(CC) $(OBJ_FILES) -o $(NAME) -D DEBUG=$(DEBUG)
 
 clean :
 	@$(RM) -rf $(OBJ_DIR)
