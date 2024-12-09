@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 16:22:43 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 20:05:10 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,13 +40,18 @@ Client::Client(const Client &cpy) {
 }
 
 Client::~Client() {
-	if (this->cgiEnv)
-		freeEnv(cgiEnv);
-	if (this->_request)
-		delete this->_request;
-	if (this->_response)
-		delete this->_response;
-	logMsg(DEBUG, "Client socket " + toString(_fd) + " destroyed");
+    if (this->cgiEnv) {
+        for (int i = 0; this->cgiEnv[i]; i++) {
+            free(this->cgiEnv[i]);
+        }
+        delete[] this->cgiEnv;
+        this->cgiEnv = NULL;
+    }
+    if (this->_request)
+        delete this->_request;
+    if (this->_response)
+        delete this->_response;
+    logMsg(DEBUG, "Client socket " + toString(_fd) + " destroyed");
 }
 
 Client	&Client::operator=(const Client &rhs) {
@@ -111,22 +116,22 @@ void	Client::setError() {
 }
 
 void Client::resetForNextRequest() {
-	// logMsg(DEBUG, "Client using fd " + toString(_fd) + " reset for next request");
     if (_request) {
-        delete _request;  // Libère la mémoire allouée à la requête précédente
+        delete _request;
         _request = NULL;
     }
-
     if (_response) {
-        delete _response;  // Libère la mémoire allouée à la réponse précédente
+        delete _response;
         _response = NULL;
     }
-
-    // setRequest(new HttpRequest(this));
-    // setResponse(new HttpResponse(this));
-
-    // Réinitialise les erreurs et autres indicateurs
-	_lastActivityTime = time(NULL); 
+    if (cgiEnv) {
+        for (int i = 0; cgiEnv[i]; i++) {
+            free(cgiEnv[i]);
+        }
+        delete[] cgiEnv;
+        cgiEnv = NULL;
+    }
+    _lastActivityTime = time(NULL); 
     _error = false;
 }
 
@@ -143,7 +148,13 @@ int Client::getTimeout() const {
 }
 
 void Client::setCgiEnv(char **mergedEnv) {
-	this->cgiEnv = mergedEnv;
+    if (this->cgiEnv) {
+        for (int i = 0; this->cgiEnv[i]; i++) {
+            free(this->cgiEnv[i]);
+        }
+        delete[] this->cgiEnv;
+    }
+    this->cgiEnv = mergedEnv;
 }
 
 char **Client::getCgiEnv() {
