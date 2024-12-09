@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 18:18:27 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 17:27:26 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,6 +255,8 @@ void HttpResponse::sendDirectoryPage(std::string path) {
 void	HttpResponse::directoryListing(std::string path) {
 	this->_statusCode = 200;
 	this->_mime = Mime::getMimeType("html");
+	this->createHeader();
+	this->sendHeader();
 	this->sendDirectoryPage(path);
 }
 
@@ -747,15 +749,10 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 	if (_isLocation) {
         location = matchLocation(uri);
         if (!location.empty()) {
-
 			saveLoc.inLoc = true;
             Location *loc = this->getServer()->getLocation(location);
 			saveLoc.loc = *loc;
             resolvePath = loc->getRoot();
-			if (uri.compare(location)) {
-				std::string tmp = uri.substr(uri.find(location) + location.size());
-				resolvePath = loc->getRoot() + tmp;
-			}
             if (resolvePath[resolvePath.size() - 1] != '/')
                 resolvePath += '/';
             // resolvePath += uri.substr(location.size());
@@ -973,3 +970,4 @@ void	HttpResponse::sendFinalChunk() {
 	bytes = send(this->_client->getFd(), "0\r\n\r\n", 5, 0);
 	this->checkSend(bytes);
 }
+
