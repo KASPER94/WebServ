@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 12:41:56 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 15:51:41 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,11 +54,12 @@ Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port,
          it != cpy._locations.end(); ++it) {
         _locations[it->first] = new Location(*it->second);
     }
-	_sock = dup(cpy._sock);
-    if (_sock == -1) {
-        std::perror("Failed to duplicate socket");
-        exit(EXIT_FAILURE);
-    }
+	// _sock = dup(cpy._sock);
+    // if (_sock == -1) {
+    //     std::perror("Failed to duplicate socket");
+    //     exit(EXIT_FAILURE);
+    // }
+	_sock = -1;
 }
 
 Server &Server::operator=(const Server &rhs) {
@@ -99,11 +100,12 @@ Server &Server::operator=(const Server &rhs) {
              it != rhs._locations.end(); ++it) {
             _locations[it->first] = new Location(*it->second);
         }
-		_sock = dup(rhs._sock);
-		if (_sock == -1) {
-			std::perror("Failed to duplicate socket");
-			exit(EXIT_FAILURE);
-		}
+		// _sock = dup(rhs._sock);
+		// if (_sock == -1) {
+		// 	std::perror("Failed to duplicate socket");
+		// 	exit(EXIT_FAILURE);
+		// }
+		_sock = -1;
     }
     return *this;
 }
@@ -124,7 +126,7 @@ int Server::connectToNetwork() {
 	int yes = 1;
 	if (setsockopt(this->_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
 		logMsg(ERROR, "Failed to set socket options: " + std::string(strerror(errno)));
-		return -1;
+		// return -1;
 		close(this->_sock);
 		return -1;
 	}
