@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/09 01:32:54 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 15:20:44 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,17 @@ Directive getDirective(const std::string &directive) {
 t_env *env() {
 	static t_env e;
 	return (&e);
+}
+
+void freeEnv(char **env) {
+    if (env) {
+        size_t i = 0;
+        while (env[i]) {
+            free(env[i]);
+            i++;
+        }
+        delete[] env;
+    }
 }
 
 std::vector<std::string> split_trim_conf(std::string str) {

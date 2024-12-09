@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/03 10:42:03 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 11:50:38 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 15:27:27 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ void	Client::setError() {
 }
 
 void Client::resetForNextRequest() {
-	logMsg(DEBUG, "Client using fd " + toString(_fd) + " reset for next request");
+	// logMsg(DEBUG, "Client using fd " + toString(_fd) + " reset for next request");
     if (_request) {
         delete _request;  // Libère la mémoire allouée à la requête précédente
         _request = NULL;
@@ -120,8 +120,8 @@ void Client::resetForNextRequest() {
         _response = NULL;
     }
 
-    _request = new HttpRequest(this);  // Crée une nouvelle requête
-    _response = new HttpResponse(this);  // Crée une nouvelle réponse
+    // setRequest(new HttpRequest(this));
+    // setResponse(new HttpResponse(this));
 
     // Réinitialise les erreurs et autres indicateurs
 	_lastActivityTime = time(NULL); 

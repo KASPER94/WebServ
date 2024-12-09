@@ -58,6 +58,7 @@ class HttpResponse {
 		// std::vector<std::string>					_cgiBin;
 		std::string									_cgiBin;
 		std::vector<std::string>					_cgiExt;
+		char								**_cgiEnv;
 		bool								_isLocation;
 		bool								_isCGI;
 		t_loc								saveLoc;

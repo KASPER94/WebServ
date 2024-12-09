@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/08 00:34:07 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 15:07:05 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@ HttpRequest::HttpRequest(Client *client): _client(client) {
 
 HttpRequest::~HttpRequest() {
 	logMsg(DEBUG, "HttpRequest created at " + toString(this));
+	_headers.clear();
+    _formData.clear();
+    _fileData.clear();
+    _query.params.clear();
 }
 
 enum HttpMethod HttpRequest::getMethod() const {

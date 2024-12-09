@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 19:30:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/09 14:11:26 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 15:25:08 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,22 +20,20 @@ bool	run = true;
 void	signalHandler(int signum) {
 	if (signum == SIGINT) {
 		(void)signum;
-		// std::cout << "\nReceived SIGINT" << std::endl;
 		std::cout << std::endl;
 		logMsg(INFO, "Received SIGINT");
 		run = false;
         if (env()->webserv) {
             logMsg(INFO, "Cleaning up clients...");
 
-            // Utiliser la méthode getClients pour accéder à _clients
             std::map<int, Client*>::iterator it = env()->webserv->getClients().begin();
             while (it != env()->webserv->getClients().end()) {
-                env()->webserv->deleteClient(it->first);  // Supprimer chaque client
-                it = env()->webserv->getClients().begin();  // Recommencer l'itération après suppression
+                env()->webserv->deleteClient(it->first); 
+                it = env()->webserv->getClients().begin();
             }
-
             logMsg(INFO, "All clients cleaned up.");
         }
+		// freeEnv(env()->envp);
 	}
 }
 
