@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:59 by peanut            #+#    #+#             */
-/*   Updated: 2024/11/20 12:28:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 23:47:17 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ public:
     // Ajout de méthodes supplémentaires pour la gestion de la configuration
     void addAllowedMethod(const std::string &method);
     void addErrorPage(int errorCode, const std::string &uri);
+	std::string getErrorPage(int code) const;
 
     // Méthode de validation
     bool isValidMethod(const std::string &method) const;

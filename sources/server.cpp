@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 15:51:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 00:18:58 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,7 +308,6 @@ void Server::cleanUp() {
 
 Location *Server::getLocation(const std::string &uri) const {
 	std::map<std::string, Location*>::const_iterator it = _locations.find(uri);
-	std::cout << (it == _locations.end()) << std::endl;
 
 	if (it != _locations.end()) {
 		return it->second;
@@ -319,6 +318,14 @@ Location *Server::getLocation(const std::string &uri) const {
 
 std::map<std::string, Location*> Server::returnLoc() {
 	return (_locations);
+}
+
+std::string Server::getErrorPage(int code) const {
+    std::map<int, std::string>::const_iterator it = this->_errorPages.find(code);
+    if (it != this->_errorPages.end()) {
+        return it->second; // Retourne la page d'erreur configurée au niveau du serveur
+    }
+    return "";
 }
 
 std::ostream	&operator<<(std::ostream &o, Server &server) {

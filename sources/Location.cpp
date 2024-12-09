@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/01 17:21:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/09 23:49:05 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,14 @@ void Location::addAllowedMethod(const std::string &method) {
 
 void Location::addErrorPage(int errorCode, const std::string &uri) {
     _error_pages[errorCode] = uri;
+}
+
+std::string Location::getErrorPage(int code) const {
+    std::map<int, std::string>::const_iterator it = this->_error_pages.find(code);
+    if (it != this->_error_pages.end()) {
+        return it->second; // Retourne la page d'erreur configurée
+    }
+    return "";
 }
 
 const std::vector<std::string> &getValidMethods() {
