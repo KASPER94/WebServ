@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 12:47:14 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 13:23:54 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -987,6 +987,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
             saveLoc.inLoc = true;
             Location *loc = this->getServer()->getLocation(location);
             saveLoc.loc = *loc;
+			_allowedMethod = loc->getAllowedMethods();
 			_directoryListing = loc->getAutoindex();
             if (uri.compare(location)) {
                 std::string relativePath = uri.substr(uri.find(location) + location.size());
