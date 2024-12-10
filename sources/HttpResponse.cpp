@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 09:45:56 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/10 12:47:14 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,9 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
             isDir = false;
     }
     if (isDir) {
+		if (this->getServer()->getAutoindex()) {
+            return true;
+        }
         for (std::vector<std::string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
             if (*it == "")
                 continue;
@@ -426,7 +429,6 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     // Decode the URI before using it
     std::string decodedUri = urlDecode(uri);
     std::ifstream file(decodedUri.c_str(), std::ios::binary);
-
     if (!file.is_open()) {
         if (decodedUri.find("favicon.ico") != std::string::npos) {
             this->_statusCode = 204;
@@ -437,7 +439,7 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
             this->sendHeader();
             return;
         }
-        this->handleError(500, "Failed to Open File");
+        this->handleError(404, "Not Found");
         return;
     }
 
@@ -662,7 +664,8 @@ bool HttpResponse::executeCGI(const std::string &uri) {
                 return false;
             }
         } else {
-            this->handleError(500, "CGI process terminated abnormally");
+            // this->handleError(500, "CGI process terminated anormally");
+			_isCGI = false;
             unlink(tempFileName);
             return false;
         }
@@ -674,7 +677,7 @@ bool HttpResponse::executeCGI(const std::string &uri) {
 
 void HttpResponse::handleCGI(std::string uri) {
     if (!executeCGI(uri)) {
-        this->handleError(500, "CGI Execution Failed");
+        // this->handleError(500, "CGI Execution Failed");
         return;
     }
 
@@ -912,7 +915,7 @@ void HttpResponse::sendResponse() {
         return;
     }
 	if (isDir) {
-		if (!this->_directoryListing)
+		if (this->_directoryListing)
 			this->directoryListing(uri);
 		else {
 			handleError(404, "Not Found");
@@ -984,7 +987,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
             saveLoc.inLoc = true;
             Location *loc = this->getServer()->getLocation(location);
             saveLoc.loc = *loc;
-            
+			_directoryListing = loc->getAutoindex();
             if (uri.compare(location)) {
                 std::string relativePath = uri.substr(uri.find(location) + location.size());
                 resolvePath = joinPaths(loc->getRoot(), relativePath);
@@ -1014,6 +1017,9 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
                     return true;
                 }
             }
+			else if (!_directoryListing && loc->getIndex().empty()) {
+				return (false);
+			}
         } else if (uri.compare("/")) {
             resolvePath = uri;
         } else {

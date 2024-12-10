@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 16:52:53 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 15:51:41 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 12:15:38 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,7 +308,6 @@ void Server::cleanUp() {
 
 Location *Server::getLocation(const std::string &uri) const {
 	std::map<std::string, Location*>::const_iterator it = _locations.find(uri);
-	std::cout << (it == _locations.end()) << std::endl;
 
 	if (it != _locations.end()) {
 		return it->second;
