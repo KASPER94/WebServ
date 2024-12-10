@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   conf.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:50:49 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/04 16:07:12 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 11:51:57 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,11 @@ bool isConf(const std::string &str) {
     if (i == str.size() - 5)
         return (true);
     return (false);
+}
+
+bool	fileExists(const std::string &str) {
+	struct stat buffer;
+	return (stat(str.c_str(), &buffer) == 0);
 }
 
 bool   conf::_findServerBlock(std::string &line) {
@@ -288,19 +293,21 @@ std::vector<Server> conf::_getRawConfig(std::ifstream &ConfigFile) {
 
 conf::conf(const std::string &str) {
 
-    if (str.empty())
-        throw (std::runtime_error("error the config file seems to be empty"));
-    if (isDir(str))
-        throw (std::runtime_error("error the config file seems to be directory"));
-    if (!isConf(str))
-        throw (std::runtime_error("error the config file has not the extension .conf"));
-    if (access(str.c_str(), R_OK))
-		throw (std::runtime_error("error the config file does not provide read access"));
-    std::ifstream ConfigFile(str.c_str());
-    if (!ConfigFile.is_open()) {
-        throw (std::runtime_error("error opening the config file"));
-    }
-    env()->webserv = new Webserv(this->_getRawConfig(ConfigFile));
+	if (str.empty())
+		throw (std::runtime_error("the config file seems to be empty"));
+	if (isDir(str))
+		throw (std::runtime_error("the config file seems to be directory"));
+	if (!isConf(str))
+		throw (std::runtime_error("the config file has not the extension .conf"));
+	if (!fileExists(str))
+		throw (std::runtime_error("the config file does not exist"));
+	if (access(str.c_str(), R_OK))
+		throw (std::runtime_error("the config file does not provide read access"));
+	std::ifstream ConfigFile(str.c_str());
+	if (!ConfigFile.is_open()) {
+		throw (std::runtime_error("error opening the config file"));
+	}
+	env()->webserv = new Webserv(this->_getRawConfig(ConfigFile));
 }
 
 conf::~conf() {
