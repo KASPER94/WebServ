@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 16:21:10 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 20:56:23 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class HttpRequest {
 		std::string							_path;
 		bool								_goodRequest;
 		enum HttpMethod						_method;
+		std::string							_methodr;
 		std::string							_uri;
 		t_query								_query;
 		t_form								_form;
@@ -86,6 +87,7 @@ class HttpRequest {
 		// bool			appendRequest(const std::string str);
 		// bool			isGood() const;
 		enum HttpMethod	getMethod() const;
+		std::string		getMethodstr() const;
 		void			getUri();
 		bool			keepAlive() const;
 		void			setQuery(std::string query);
@@ -103,6 +105,7 @@ class HttpRequest {
 		void 			setForm(std::string form);
 		void			getForm(std::string &str);
 		void			decodeUrl();
+		void parseContentLength();
 
 
 		void 			parseHttpRequest();
@@ -129,6 +132,7 @@ class HttpRequest {
 		std::map<std::string, std::string> &getFileData();
 		std::map<std::string, std::string> &getFormData();
 		s_query getQueryString();
+		std::string getBody() const;
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpRequest &request);
