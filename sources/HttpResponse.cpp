@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 00:15:07 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 15:30:10 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,8 +295,10 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
 		struct stat s;
 		if (stat(uri.c_str(), &s) != 0) {
 			this->handleError(404, "The requested resource was not found.");
+			return ;
 		} else {
 			this->handleError(500, "Failed to Open File");
+			return ;
 		}
     }
     file.seekg(0, std::ios::end);
