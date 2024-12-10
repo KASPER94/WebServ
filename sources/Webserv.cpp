@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/09 15:49:19 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 15:49:15 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,6 @@ void Webserv::getRequest(int clientSock) {
 
     buffer[bytesRead] = '\0';  // Terminer la chaîne de caractères
 	// logMsg(DEBUG, "Fragment of request received on socket " + toString(clientSock));
-    // std::cout << buffer << std::endl;
 	bool isRequestComplete = client->appendRequest(buffer, bytesRead);
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {

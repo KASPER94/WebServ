@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 15:07:05 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 17:02:27 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,24 +128,62 @@ void HttpRequest::parseContentLen(std::string &line) {
     _contentLen = atoi(line.c_str());
 }
 
-void HttpRequest::parseContentType(std::string &line) {
-    _contentType = line.substr();
-    if (line.find("multipart/form-data") != std::string::npos) {
-        size_t pos = _contentType.find("boundary=");
-        if (pos != std::string::npos) {
-            _boundary = "--" + _contentType.substr(pos + 9);
-        }
-		_contentType = "multipart/form-data";
-    }
-	else if (line.find("text/plain") != std::string::npos) {
-		_contentType = "text/plain";
-	}
-	else if (line.find("application/x-www-form-urlencoded") != std::string::npos) {
-		_contentType = "application/x-www-form-urlencoded";
-	}
+// void HttpRequest::parseContentType(std::string &line) {
+//     _contentType = line.substr();
+//     if (line.find("multipart/form-data") != std::string::npos) {
+//         size_t pos = _contentType.find("boundary=");
+//         if (pos != std::string::npos) {
+//             _boundary = "--" + _contentType.substr(pos + 9);
+//         }
+// 		_contentType = "multipart/form-data";
+//     }
+// 	else if (line.find("text/plain") != std::string::npos) {
+// 		_contentType = "text/plain";
+// 	}
+// 	else if (line.find("application/x-www-form-urlencoded") != std::string::npos) {
+// 		_contentType = "application/x-www-form-urlencoded";
+// 	}
 
-	// std::cout << "++++  " << _boundary << " ++++" << std::endl;
-	// std::cout << "++++  " << _contentType << " ++++" << std::endl;
+// 	// std::cout << "++++  " << _boundary << " ++++" << std::endl;
+// 	// std::cout << "++++  " << _contentType << " ++++" << std::endl;
+// }
+
+std::string HttpRequest::getContentType() {
+	return (_contentType);
+}
+
+std::string clean(const std::string &str) {
+    size_t start = str.find_first_not_of(" \t\r\n");
+    size_t end = str.find_last_not_of(" \t\r\n");
+
+    return (start == std::string::npos || end == std::string::npos) 
+            ? "" 
+            : str.substr(start, end - start + 1);
+}
+
+void HttpRequest::parseContentType(std::string &line) {
+	line = clean(line);
+    size_t semicolonPos = line.find(";");
+
+    if (semicolonPos != std::string::npos) {
+        _contentType = line.substr(0, semicolonPos);
+    } else {
+        _contentType = line;
+    }
+
+    _contentType.erase(0, _contentType.find_first_not_of(" "));
+    _contentType.erase(_contentType.find_last_not_of(" ") + 1);
+
+    if (line.find("multipart/form-data") != std::string::npos) {
+        _contentType = "multipart/form-data";
+    } 
+    else if (line.find("application/x-www-form-urlencoded") != std::string::npos) {
+        _contentType = "application/x-www-form-urlencoded";
+    } 
+    else if (line.find("text/plain") != std::string::npos) {
+        _contentType = "text/plain";
+    }
+
 }
 
 void HttpRequest::parseHost(std::string &line) {
@@ -212,6 +250,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 		if (hasCompleteBody()) {
 			this->processMultipartData();
 			_endRequested = true;
+			std::cout << _requestData << std::endl;
             return (_endRequested);
         }
 		// if (confBodySize && _receivedBodySize >= confBodySize) {
@@ -313,8 +352,13 @@ void	HttpRequest::processMultipartData() {
 		// std::cout << "Contenu text/plain reçu : " << plainTextContent << std::endl;
 		_plainTextBody = plainTextContent;
 	}
-	// else
-		// this->_isGood = false;
+    else {
+        size_t bodyStart = _requestData.find("\r\n\r\n") + 4;
+        if (bodyStart != std::string::npos) {
+            std::string bodyContent = _requestData.substr(bodyStart);
+            _formData["raw_body"] = bodyContent;
+        }
+    }
 }
 
 bool	HttpRequest::isGood() const {

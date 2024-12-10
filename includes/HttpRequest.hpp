@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:10:41 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/07 21:55:33 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 16:21:10 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ class HttpRequest {
 
 		void 			parseHttpRequest();
 		std::string		HttpMethodTostring();
+		std::string		getContentType();
 		HttpMethod 		stringToHttpMethod(const std::string &methodStr);
 		bool			appendRequest(const char *data, int bytes);
 		std::string 	getFullRequest() const;

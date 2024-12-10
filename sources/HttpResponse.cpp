@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 15:31:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 17:48:30 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ void HttpResponse::sendHeader() {
         case 400: statusDescription = "Bad Request"; break;
         case 403: statusDescription = "Forbidden"; break;
         case 404: statusDescription = "Not Found"; break;
+        case 405: statusDescription = "Method Not Allowed"; break;
         case 413: statusDescription = "Payload Too Large"; break;
         case 500: statusDescription = "Internal Server Error"; break;
         default:  statusDescription = "Unknown Status"; break;
@@ -685,7 +686,6 @@ bool HttpResponse::executeCGI(const std::string &uri) {
             return false;
         }
     }
-
     // Le CGI a réussi, la sortie est dans le fichier temporaire
     return true;
 }
@@ -832,6 +832,19 @@ bool HttpResponse::handleUpload() {
     return true;
 }
 
+static std::string joinPaths(const std::string& path1, const std::string& path2) {
+    if (path1.empty()) return path2;
+    if (path2.empty()) return path1;
+    
+    std::string result = path1;
+    if (result[result.length()-1] == '/' && path2[0] == '/') {
+        result = result.substr(0, result.length()-1);
+    } else if (result[result.length()-1] != '/' && path2[0] != '/') {
+        result += '/';
+    }
+    return result + path2;
+}
+
 void HttpResponse::handlePostRequest() {
     // Check for file uploads
     const std::map<std::string, std::string>& files = this->getRequest()->getFileData();
@@ -879,9 +892,15 @@ void HttpResponse::handlePostRequest() {
         }
         return;
     }
-
-    // Handle form data only
     if (!formData.empty()) {
+		if (formData.begin()->second.empty()) {
+			this->_statusCode = 200;
+			this->_headers["Content-Type"] = this->getRequest()->getContentType();
+            this->_headers["Content-Length"] = "0";
+			this->createHeader();
+        	this->sendHeader();
+			return ;
+		}
         this->_statusCode = 200; // OK
         std::string jsonResponse = "{\n  \"status\": \"success\",\n  \"message\": \"Form data received successfully\",\n  \"data\": {\n";
 
@@ -918,7 +937,6 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
-	std::cout << uri << std::endl;
 	if (!this->methodAllowed(this->getRequest()->getMethod())) {
         return handleError(405, "Method Not Allowed");
     }
@@ -927,6 +945,9 @@ void HttpResponse::sendResponse() {
 		return ;
 	}
 	if (this->getRequest()->getMethod() == POST) {
+		if  (_isCGI) {
+			handleCGI(uri);
+		}
         handlePostRequest();
         return;
     }
@@ -970,19 +991,6 @@ void	HttpResponse::setInfos() {
 	this->_indexes = this->getServer()->getIndexes();
 }
 
-static std::string joinPaths(const std::string& path1, const std::string& path2) {
-    if (path1.empty()) return path2;
-    if (path2.empty()) return path1;
-    
-    std::string result = path1;
-    if (result[result.length()-1] == '/' && path2[0] == '/') {
-        result = result.substr(0, result.length()-1);
-    } else if (result[result.length()-1] != '/' && path2[0] != '/') {
-        result += '/';
-    }
-    return result + path2;
-}
-
 bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
     // Remove any double slashes from the input URI
     size_t pos;
@@ -1005,6 +1013,7 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
             saveLoc.loc = *loc;
 			_allowedMethod = loc->getAllowedMethods();
 			_directoryListing = loc->getAutoindex();
+			_cgiBin = loc->getCgiBin();
             if (uri.compare(location)) {
                 std::string relativePath = uri.substr(uri.find(location) + location.size());
                 resolvePath = joinPaths(loc->getRoot(), relativePath);
