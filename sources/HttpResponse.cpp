@@ -6,7 +6,7 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 09:29:55 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/10 09:45:56 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,29 @@
 # include <algorithm>
 # include <sstream>
 # include <iomanip>
+
+// Add this helper function at the top of the file or in a utility header
+std::string urlDecode(const std::string& encoded) {
+    std::string decoded;
+    for (size_t i = 0; i < encoded.length(); ++i) {
+        if (encoded[i] == '%' && i + 2 < encoded.length()) {
+            std::string hex = encoded.substr(i + 1, 2);
+            int ch;
+            std::stringstream ss;
+            ss << std::hex << hex;
+            ss >> ch;
+            decoded += static_cast<char>(ch);
+            i += 2;
+        }
+        else if (encoded[i] == '+') {
+            decoded += ' ';
+        }
+        else {
+            decoded += encoded[i];
+        }
+    }
+    return decoded;
+}
 
 HttpResponse::HttpResponse(): _client(NULL) {}
 
@@ -136,6 +159,7 @@ bool	HttpResponse::methodAllowed(enum HttpMethod method) {
 
 void HttpResponse::tryDeleteFile(std::string &uri) {
     std::string root;
+    std::string decodedUri = urlDecode(uri);
 
     if (this->_isLocation) {
         root = this->_root;
@@ -143,43 +167,33 @@ void HttpResponse::tryDeleteFile(std::string &uri) {
         root = this->getServer()->getRoot();
     }
 
-    // Normalize the URI before using it
-    uri = normalizeUrl(uri);
+    decodedUri = normalizeUrl(decodedUri);
 
-    // Debug output to check paths
-    std::cout << "Root path: " << root << std::endl;
-    std::cout << "URI path: " << uri << std::endl;
-    std::cout << "Full root path: " << getFullPath(root) << std::endl;
-    std::cout << "Full URI path: " << getFullPath(uri) << std::endl;
+    logMsg(DEBUG, "Attempting to delete file: " + decodedUri);
+    logMsg(DEBUG, "Root path: " + root);
 
-    // Check if file exists before checking permissions
-    if (access(uri.c_str(), F_OK) == -1) {
+    if (access(decodedUri.c_str(), F_OK) == -1) {
         this->handleError(404, "File not found");
         return;
     }
 
-    // Check write permissions
-    if (access(uri.c_str(), W_OK) == -1) {
+    if (access(decodedUri.c_str(), W_OK) == -1) {
         this->handleError(403, "Permission denied");
         return;
     }
 
-    // Check if path is within root directory
-    if (!childPath(getFullPath(root), getFullPath(uri))) {
+    if (!childPath(getFullPath(root), getFullPath(decodedUri))) {
         this->handleError(403, "Access denied");
         return;
     }
 
-    // Try to delete the file
-    if (remove(uri.c_str()) == 0) {
-        // Success - send 204 No Content
+    if (remove(decodedUri.c_str()) == 0) {
         this->_statusCode = 204;
         this->_headers.clear();
-        this->_headers["Content-Length"] = "0";  // Add Content-Length header
+        this->_headers["Content-Length"] = "0";
         this->createHeader();
         this->sendHeader();
     } else {
-        // If deletion fails, provide more specific error message
         std::string errorMsg = "Failed to delete file: ";
         errorMsg += strerror(errno);
         this->handleError(500, errorMsg);
@@ -407,11 +421,14 @@ int HttpResponse::sendData(const void *data, int len) {
     return (0);
 }
 
+// Modify the serveStaticFile method
 void HttpResponse::serveStaticFile(const std::string &uri) {
-    std::ifstream file(uri.c_str(), std::ios::binary);
+    // Decode the URI before using it
+    std::string decodedUri = urlDecode(uri);
+    std::ifstream file(decodedUri.c_str(), std::ios::binary);
 
     if (!file.is_open()) {
-        if (uri.find("favicon.ico") != std::string::npos) {
+        if (decodedUri.find("favicon.ico") != std::string::npos) {
             this->_statusCode = 204;
             this->_mime = "image/x-icon";
             this->_headers["Content-Type"] = this->_mime;
@@ -430,7 +447,7 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.seekg(0, std::ios::beg);
 
     // Get file extension and MIME type
-    std::string ext = uri.substr(uri.find_last_of(".") + 1);
+    std::string ext = decodedUri.substr(decodedUri.find_last_of(".") + 1);
     this->_mime = Mime::getMimeType(ext);
 
     // Set response headers
@@ -438,8 +455,9 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     this->_headers["Content-Type"] = this->_mime;
     this->_headers["Content-Length"] = intToString(fileSize);
     
-    // Add Content-Disposition for downloads
-    std::string filename = uri.substr(uri.find_last_of("/") + 1);
+    // Add Content-Disposition for downloads - use the decoded filename
+    std::string filename = decodedUri.substr(decodedUri.find_last_of("/") + 1);
+    // Encode the filename in Content-Disposition to handle special characters
     this->_headers["Content-Disposition"] = "inline; filename=\"" + filename + "\"";
     
     this->createHeader();
@@ -1023,7 +1041,6 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 }
 
 std::string HttpResponse::matchLocation(std::string &requestUri) const {
-    // Add null checks
     if (!_client || !_client->getServer()) {
         return "";
     }
@@ -1092,12 +1109,6 @@ void HttpResponse::handleRedirect(int code, const std::string &uri) {
 }
 
 void HttpResponse::movedPermanently(std::string path) {
-    // Remove any double slashes
-    size_t pos;
-    while ((pos = path.find("//")) != std::string::npos) {
-        path.erase(pos, 1);
-    }
-    
     this->_statusCode = 301;
     this->_headers["Location"] = path;
     this->createHeader();
