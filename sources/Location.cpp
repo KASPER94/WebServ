@@ -6,12 +6,14 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/01 17:21:21 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 15:28:32 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
 #include <algorithm>
+#include <iostream>
+
 
 Location::Location() : _autoindex(false) {}
 
@@ -63,7 +65,11 @@ void Location::setUploadPath(const std::string &uploadPath) { _upload_path = upl
 void Location::setReturnUri(const std::map<int, std::string> &returnUri) { _return_uri = returnUri; }
 void Location::setAutoindex(bool autoindex) { _autoindex = autoindex; }
 void Location::setAllowedMethods(const std::vector<std::string> &methods) { _allowed_methods = methods; }
-void Location::setErrorPages(const std::map<int, std::string> &errorPages) { _error_pages = errorPages; }
+void Location::setErrorPages(const std::map<int, std::string> &errorPages) {
+    for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
+        _error_pages[it->first] = it->second;
+    }
+}
 void Location::setClientMaxBody(const size_t &maxBodySize) { _maxBodySize = maxBodySize; }
 
 void Location::addAllowedMethod(const std::string &method) {
@@ -74,6 +80,18 @@ void Location::addAllowedMethod(const std::string &method) {
 
 void Location::addErrorPage(int errorCode, const std::string &uri) {
     _error_pages[errorCode] = uri;
+}
+
+std::string Location::getErrorPage(int code) const {
+	std::cout << code << std::endl;
+    std::map<int, std::string>::const_iterator it = this->_error_pages.find(code);
+	for (std::map<int, std::string>::const_iterator it = _error_pages.begin(); it != _error_pages.end(); it++) {
+		std::cout << "##"<< it->first << std::endl;
+	}
+    if (it != this->_error_pages.end()) {
+        return it->second;
+    }
+    return "";
 }
 
 const std::vector<std::string> &getValidMethods() {

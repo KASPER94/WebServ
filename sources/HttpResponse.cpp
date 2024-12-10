@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 13:23:54 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/10 15:31:00 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,21 +126,36 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
     }
     if (isDir) {
 		if (this->getServer()->getAutoindex()) {
-            return true;
+			for (std::vector<std::string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
+				if (*it == "")
+					continue;
+				if (access((uri + *it).c_str(), F_OK) != -1) {
+					if (access((uri + *it).c_str(), R_OK) == -1) {
+						this->handleError(403, "Permission denied");
+						return false;
+					}
+					uri += *it;
+					isDir = false;
+					break;
+				}
+			}
         }
-        for (std::vector<std::string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
-            if (*it == "")
-                continue;
-            if (access((uri + *it).c_str(), F_OK) != -1) {
-                if (access((uri + *it).c_str(), R_OK) == -1) {
-                    this->handleError(403, "Permission denied");
-                    return false;
-                }
-                uri += *it;
-                isDir = false;
-                break;
-            }
-        }
+		else {
+			std::vector<std::string>::iterator it = this->_indexes.begin();
+			if (*it == "") {
+				isDir = true;
+				return true;
+			}
+			if (access((uri + *it).c_str(), F_OK) != -1) {
+				if (access((uri + *it).c_str(), R_OK) == -1) {
+					this->handleError(403, "Permission denied");
+					return false;
+				}
+				uri += *it;
+				isDir = false;
+				return true;
+			}
+		}
     }
     return true;
 }
@@ -821,7 +836,7 @@ void HttpResponse::handlePostRequest() {
     // Check for file uploads
     const std::map<std::string, std::string>& files = this->getRequest()->getFileData();
     const std::map<std::string, std::string>& formData = this->getRequest()->getFormData();
-
+	
     if (!files.empty()) {
         if (handleUpload()) {
             // Create an HTML response with a nice notification
@@ -890,7 +905,7 @@ void HttpResponse::handlePostRequest() {
     }
 
     // If no form data or files were found
-    handleError(400, "No valid data provided in the POST request.");
+    handleError(404, "No valid data provided in the POST request.");
 }
 
 void HttpResponse::sendResponse() {
@@ -903,6 +918,7 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
+	std::cout << uri << std::endl;
 	if (!this->methodAllowed(this->getRequest()->getMethod())) {
         return handleError(405, "Method Not Allowed");
     }
@@ -1170,9 +1186,60 @@ void HttpResponse::error(const std::string &message) {
 }
 
 
+// void HttpResponse::handleError(int code, const std::string &message) {
+// 	this->_statusCode = code;
+// 	this->error(message);
+// }
+
 void HttpResponse::handleError(int code, const std::string &message) {
-	this->_statusCode = code;
-	this->error(message);
+    this->_statusCode = code;
+
+    // Vérifiez s'il y a une page d'erreur définie dans la location actuelle
+    std::string errorPage;
+    if (saveLoc.inLoc) {
+        errorPage = saveLoc.loc.getErrorPage(code);
+        if (!errorPage.empty()) {
+            std::string errorUri = saveLoc.loc.getRoot() + errorPage;
+            struct stat s;
+            if (stat(errorUri.c_str(), &s) == 0) {
+                this->serveStaticFile(errorUri); // Servir la page d'erreur personnalisée
+                return;
+            }
+        }
+    }
+
+    // Si aucune page d'erreur définie dans la location, chercher au niveau global du serveur
+    if (errorPage.empty()) {
+        errorPage = this->getServer()->getErrorPage(code);
+        if (!errorPage.empty()) {
+            std::string errorUri = this->getServer()->getRoot() + errorPage;
+            struct stat s;
+            if (stat(errorUri.c_str(), &s) == 0) {
+                this->serveStaticFile(errorUri); // Servir la page d'erreur globale
+                return;
+            }
+        }
+    }
+
+    // Aucune page d'erreur personnalisée ou erreur dans son chargement
+    std::string statusDescription;
+    switch (this->_statusCode) {
+        case 404: statusDescription = "Not Found"; break;
+        case 400: statusDescription = "Bad Request"; break;
+        case 500: statusDescription = "Internal Server Error"; break;
+        case 403: statusDescription = "Forbidden"; break;
+        case 413: statusDescription = "Payload Too Large"; break;
+        default: statusDescription = "Error"; break;
+    }
+	this->_body = "<html><head><title>" + intToString(this->_statusCode) + " " + statusDescription + "</title></head>";
+    this->_body += "<body><h1>" + intToString(this->_statusCode) + " " + statusDescription + "</h1>";
+    this->_body += "<p>" + message + "</p></body></html>";
+
+    this->_headers["Content-Length"] = intToString(this->_body.size());
+    this->_headers["Content-Type"] = "text/html";
+
+    this->sendHeader();
+    this->sendData(this->_body.c_str(), this->_body.size());
 }
 
 std::string	HttpResponse::getResponse() {
