@@ -6,7 +6,7 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 00:31:46 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/10 09:29:55 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1023,11 +1023,21 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 }
 
 std::string HttpResponse::matchLocation(std::string &requestUri) const {
-    std::vector<std::string> *locations = this->_client->getServer()->getUri();
+    // Add null checks
+    if (!_client || !_client->getServer()) {
+        return "";
+    }
+
+    std::vector<std::string> *locations = _client->getServer()->getUri();
+    if (!locations) {
+        return "";
+    }
+
     std::string bestMatch = "";
     size_t bestMatchLength = 0;
 
-    for (std::vector<std::string>::iterator it = locations->begin(); it != locations->end(); ++it) {
+    for (std::vector<std::string>::iterator it = locations->begin(); 
+         it != locations->end(); ++it) {
         const std::string &location = *it;
         if (requestUri.find(location) == 0 && location.length() > bestMatchLength) {
             bestMatch = location;

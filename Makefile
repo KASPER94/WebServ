@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+         #
+#    By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/12/07 23:57:00 by skapersk         ###   ########.fr        #
+#    Updated: 2024/12/10 09:27:22 by ael-mank         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CC = c++
 
 INCLUDES = includes/
 
-CFLAGS = -Wall -Werror -Wextra -std=c++98 -I $(INCLUDES)
+CFLAGS = -g3 -Wall -Werror -Wextra -std=c++98 -I $(INCLUDES)
 
 SRC_DIR = sources/
 
