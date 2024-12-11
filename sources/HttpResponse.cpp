@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 11:29:53 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 11:49:01 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -476,7 +476,13 @@ char **HttpResponse::createEnv(HttpRequest *request, std::string uri) {
     // SCRIPT_NAME
     std::string scriptName = uri;
 	//ATTENTION A CHANGER CA !
-	std::string serverRoot = "/home/skapersk/Downloads/webserv/";
+	char cwd[4096];
+	std::string serverRoot;
+	if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    	serverRoot = std::string(cwd) + "/";
+	}
+	else
+		serverRoot = "/home/";
 	envVars.push_back("SCRIPT_FILENAME=" + serverRoot + uri); // Chemin absolu
     envVars.push_back("SCRIPT_NAME=" + uri); 
 	envVars.push_back("REDIRECT_STATUS=200");

@@ -21,6 +21,7 @@
 # include <map>
 # include <dirent.h>
 # include "Mime.hpp"
+# include <limits.h>
 
 class Client;
 class HttpRequest;
