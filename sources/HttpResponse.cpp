@@ -970,8 +970,6 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
                 isDir = true;
                 return true;
             }
-
-            // Otherwise, proceed with normal index file handling
             if (!loc->getIndex().empty()) {
                 std::string indexPath = joinPaths(resolvePath, loc->getIndex());
                 if (access(indexPath.c_str(), F_OK) != -1) {
