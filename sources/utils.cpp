@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:34:08 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/09 15:20:44 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:39:23 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,24 +38,6 @@ std::string intToString(int number) {
 	std::stringstream ss;
 	ss << number;
 	return ss.str();
-}
-
-void convertAllowMethods(const std::vector<HttpMethod>& methods) {
-    std::stringstream result;
-	// std::vector<HttpMethod>::const_iterator it;
-
-	std::vector<HttpMethod>::const_iterator it;
-	it = methods.begin();
-	for (; it != methods.end(); it++){
-		std::cout << "coucou" << std::endl;
-		std::cout << *it << std::endl;
-		if (*it == GET)
-			std::cout << "+++GET+++" << std::endl;
-		else if (*it == POST)
-			std::cout << "++POST++" << std::endl;
-		else if (*it == DELETE)
-			std::cout << "+DELETE+" << std::endl;
-	}
 }
 
 Directive getDirective(const std::string &directive) {

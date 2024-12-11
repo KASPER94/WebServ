@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 15:34:56 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/10 15:28:32 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:38:58 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,11 +83,11 @@ void Location::addErrorPage(int errorCode, const std::string &uri) {
 }
 
 std::string Location::getErrorPage(int code) const {
-	std::cout << code << std::endl;
+	// std::cout << code << std::endl;
     std::map<int, std::string>::const_iterator it = this->_error_pages.find(code);
-	for (std::map<int, std::string>::const_iterator it = _error_pages.begin(); it != _error_pages.end(); it++) {
-		std::cout << "##"<< it->first << std::endl;
-	}
+	// for (std::map<int, std::string>::const_iterator it = _error_pages.begin(); it != _error_pages.end(); it++) {
+	// 	std::cout << "##"<< it->first << std::endl;
+	// }
     if (it != this->_error_pages.end()) {
         return it->second;
     }

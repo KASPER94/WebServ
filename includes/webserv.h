@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 13:40:34 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/09 15:20:58 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:39:29 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,6 @@ t_env *env();
 std::vector<std::string> split_trim_conf(std::string str);
 Directive getDirective(const std::string &directive);
 unsigned long convertIpToUnsignedLong(const std::string &ip);
-void convertAllowMethods(const std::vector<HttpMethod>& methods) ;
 int		setsocknonblock(int sock);
 void	rtrim(std::string &str);
 void	ltrim(std::string &str);

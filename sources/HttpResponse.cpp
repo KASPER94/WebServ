@@ -6,7 +6,7 @@
 /*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 10:29:29 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:39:57 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -868,7 +868,7 @@ void HttpResponse::sendResponse() {
     if (!resolveUri(uri, isDir)) {
         return handleError(404, "Not Found");
     }
-	std::cout << uri << std::endl;
+	//std::cout << uri << std::endl;
 	if (!this->methodAllowed(this->getRequest()->getMethod())) {
         return handleError(405, "Method Not Allowed");
     }
