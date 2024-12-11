@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/22 18:46:09 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/11 01:50:18 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/04 16:58:47 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,43 +125,18 @@ std::map<int, std::string>	conf::_getErrorPage(std::vector<std::string> line) {
 	return (ErrorData);
 }
 
-size_t conf::_getClientMaxBodySize(std::vector<std::string> line) {
-    size_t clientMaxBodysize;
-    std::string value;
+size_t    conf::_getClientMaxBodySize(std::vector<std::string> line) {
+	size_t clientMaxBodysize;
 
-    if (line.size() != 2)
-        throw std::runtime_error("Error: client_max_body_size directive requires exactly one argument (client_max_body_size)");
-    if (line[1][line[1].size() - 1] != ';')
-        throw std::runtime_error("Error: missing ';'");
-
-    value = line[1].substr(0, line[1].size() - 1); // Remove the ';' at the end
-
-    // Determine unit multiplier
-    size_t multiplier = 1; // Default multiplier (bytes)
-    if (value.size() > 2) {
-        std::string unit = value.substr(value.size() - 2); // Last two characters
-        if (unit == "KB") {
-            multiplier = 1024;
-            value = value.substr(0, value.size() - 2); // Remove the unit
-        } else if (unit == "MB") {
-            multiplier = 1024 * 1024;
-            value = value.substr(0, value.size() - 2); // Remove the unit
-        } else if (unit == "GB") {
-            multiplier = 1024 * 1024 * 1024;
-            value = value.substr(0, value.size() - 2); // Remove the unit
-        }
-    }
-
-    // Check if remaining value is a valid number
-    for (size_t i = 0; i < value.size(); ++i) {
-        if (!isdigit(value[i]))
-            throw std::runtime_error("Error: client_max_body_size directive contains invalid characters");
-    }
-
-    clientMaxBodysize = atoi(value.c_str()) * multiplier;
-    return clientMaxBodysize;
+	if (line.size() != 2)
+		throw std::runtime_error("Error: client_max_body_size directive requires exactly one argument (client_max_body_size)");
+	if (line[1][line[1].size() - 1] != ';')
+		throw std::runtime_error("Error: missing ';'");
+	if (allDigit(line[1]))
+		throw(std::runtime_error("Error: client_max_body_size directive"));
+	clientMaxBodysize = atoi(line[1].c_str());
+	return (clientMaxBodysize);
 }
-
 
 std::vector<std::string>    conf::_getAllowedMethods(std::vector<std::string> line) {
 	std::vector<std::string> methods;
@@ -399,3 +374,4 @@ std::string conf::_getCgiBin(std::vector<std::string> line) {
 		throw std::runtime_error("Error: missing cgiBin");
 	return cgiBin;
 }
+
