@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 11:28:48 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 13:56:55 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -413,36 +413,6 @@ void HttpRequest::parseHeaders() {
     }
 	parseHttpRequest();
 }
-
-// bool HttpRequest::isChunkedBodyComplete() {
-// 	_completed = false;
-// 	size_t pos = _requestData.find("\r\n\r\n") + 4; // Position du début du corps
-// 	// std::string combinedBody;
-
-// 	while (pos < _requestData.size()) {
-// 		size_t nextPos = _requestData.find("\r\n", pos);
-// 		if (nextPos == std::string::npos) {
-// 			return false; // Chunk incomplet
-// 		}
-
-// 		std::string chunkSizeStr = _requestData.substr(pos, nextPos - pos);
-// 		int chunkSize = std::strtol(chunkSizeStr.c_str(), NULL, 16);
-
-// 		// Chunk terminé
-// 		if (chunkSize == 0) {
-// 			_completed = true;
-// 			break;
-// 		}
-
-// 		pos = nextPos + 2; // Skip \r\n après la taille
-// 		_rawRequest.append(_requestData, pos, chunkSize);
-// 		pos += chunkSize + 2; // Skip le contenu du chunk et le \r\n suivant
-// 	}
-
-// 	// _requestData = combinedBody;
-// 	return _completed;
-// }
-
 
 bool HttpRequest::isChunkedBodyComplete() {
     size_t pos = _requestData.find("\r\n\r\n");

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 11:49:01 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 13:57:09 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -542,71 +542,6 @@ char **HttpResponse::createEnv(HttpRequest *request, std::string uri) {
 
     return env;
 }
-
-// char **HttpResponse::createEnv(HttpRequest *request) {
-//     std::vector<std::string> envVars;
-
-//     // Variables CGI standard
-// 	envVars.push_back("REDIRECT_STATUS=200");
-//     envVars.push_back("GATEWAY_INTERFACE=CGI/1.1");
-// 	envVars.push_back("SERVER_SOFTWARE=Webserv/1.0");
-//     envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
-//     envVars.push_back("REQUEST_URI=" + request->returnPATH());
-//     envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
-// 	if (request->getContentLen() == 0)
-// 	    envVars.push_back("CONTENT_LENGTH=0");
-// 	else
-//     	envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
-//     envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
-//     envVars.push_back("REQUEST_METHOD=" + this->getRequest()->getMethodstr());
-// 	std::cout << "REQUEST_METHOD=" + this->getRequest()->getMethodstr() << std::endl;
-
-//     // Query String
-//     const t_query &query = request->getQueryString();
-//     envVars.push_back("QUERY_STRING=" + query.strquery);
-//     for (std::map<std::string, std::string>::const_iterator it = query.params.begin(); it != query.params.end(); ++it) {
-//         envVars.push_back("QUERY_PARAM_" + it->first + "=" + it->second);
-//     }
-
-//     // Ajouter les en-têtes HTTP convertis en format CGI
-//     const std::map<std::string, std::string> &headers = request->getHeaders();
-//     for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
-//         std::string key = it->first;
-//         std::string value = it->second;
-
-//         // Convertir les noms d'en-têtes en CGI-compliant
-//         for (size_t i = 0; i < key.size(); ++i) {
-//             if (key[i] == '-') {
-//                 key[i] = '_';
-//             } else {
-//                 key[i] = toupper(key[i]);
-//             }
-//         }
-//         envVars.push_back("HTTP_" + key + "=" + value);
-//     }
-
-//     // Ajouter les données de formulaire si disponibles
-//     const std::map<std::string, std::string> &formData = request->getFormData();
-//     for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
-//         envVars.push_back("FORM_" + it->first + "=" + it->second);
-//     }
-//     char **env = new char*[envVars.size() + 1];
-//     for (size_t i = 0; i < envVars.size(); ++i) {
-//         if (!envVars[i].empty()) {
-//             env[i] = strdup(envVars[i].c_str());
-//             if (!env[i]) {
-//                 for (size_t j = 0; j < i; ++j) {
-//                     delete[] env[j];
-//                 }
-//                 delete[] env;
-//                 return NULL;
-//             }
-//         }
-//     }
-//     env[envVars.size()] = NULL; // Terminateur
-
-//     return env;
-// }
 
 char **buildArgv(const std::string &cgiBin, const std::string &uri) {
     char **argv = new char*[3]; // 2 arguments + NULL

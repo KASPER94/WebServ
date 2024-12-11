@@ -28,6 +28,14 @@ Server::~Server() {
 }
 
 Server::Server(const Server &cpy): websocket(AF_INET, SOCK_STREAM, 0, cpy._port, inet_addr(cpy._host.c_str())) {
+    if (_uri) {
+        delete _uri;
+    }
+    for (std::map<std::string, Location *>::iterator it = _locations.begin(); 
+            it != _locations.end(); ++it) {
+        delete it->second;
+    }
+    _locations.clear();
     _uri = NULL;
     _port = cpy._port;
     _host = cpy._host;

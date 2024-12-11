@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:32 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/09 14:10:57 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 13:57:57 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 # include "Client.hpp"
 # include <vector>
 # include <map>
-// # include <poll.h>
 # include <sys/epoll.h>
 # include <unistd.h>
 
@@ -30,12 +29,9 @@ class Webserv {
     private:
 		int 	_epollfd;
         std::vector<Server>				_servers;
-		// Client _clients;
 		std::map<int, Client*>			_clients;
 		std::map<int, Server*> 			_serverSockets;
-		// Webserv(const Webserv &cpy);
 
-		// Webserv &operator=(const Webserv &rhs);
     public:
         Webserv();
         Webserv(std::vector<Server> const &servers) ;

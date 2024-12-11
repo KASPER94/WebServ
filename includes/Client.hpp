@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 15:49:48 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/09 14:28:02 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 13:56:42 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,20 +34,12 @@ class Client {
 		time_t _lastActivityTime; // Temps de la dernière activité
     	static const int _timeout = 60; 
 
-		// std::string _requestData;        // Contient les données de la requête reçues
-		// bool _headersParsed;     // Indicateur si les en-têtes ont été analysés
-		// std::map<std::string, std::string> _headers; // Contient les en-têtes HTTP
-
-
 
 	public:
 		Client();
-		// Client(int fd);
 		Client(int fd, Server *servers);
-		// Client(std::string buffer, int fd);
 		Client(const Client &cpy);
 		~Client();
-
 		Client &operator=(const Client &rhs);
 
 		HttpRequest		*getRequest() const;
@@ -56,14 +48,7 @@ class Client {
 		Server			*getServer() const;
 		void 			setRequest(HttpRequest& request);
 		HttpRequest* getRequestPtr() const { return _request; };
-
-    	// HttpRequest& 	getRequest();
 		bool			appendRequest(const char *data, int bytes);
-		// std::string 	getFullRequest() const;
-		// bool 			hasCompleteBody();
-		// void 			parseHeaders();
-		// bool 			isChunkedBodyComplete();
-		// std::string		getRawRequest() const;
 		void			sendResponse();
 		bool	getError() const;
 		void	setError();
