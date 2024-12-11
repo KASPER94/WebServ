@@ -6,7 +6,7 @@
 #    By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/11 15:03:40 by skapersk          #+#    #+#              #
-#    Updated: 2024/12/10 09:27:22 by ael-mank         ###   ########.fr        #
+#    Updated: 2024/12/11 10:31:47 by ael-mank         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CC = c++
 
 INCLUDES = includes/
 
-CFLAGS = -g3 -Wall -Werror -Wextra -std=c++98 -I $(INCLUDES)
+CFLAGS = -o3 -Wall -Werror -Wextra -std=c++98 -I $(INCLUDES)
 
 SRC_DIR = sources/
 

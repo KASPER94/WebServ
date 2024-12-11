@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 10:07:06 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:30:05 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,9 +143,6 @@ void HttpRequest::parseContentType(std::string &line) {
 	else if (line.find("application/x-www-form-urlencoded") != std::string::npos) {
 		_contentType = "application/x-www-form-urlencoded";
 	}
-
-	// std::cout << "++++  " << _boundary << " ++++" << std::endl;
-	// std::cout << "++++  " << _contentType << " ++++" << std::endl;
 }
 
 void HttpRequest::parseHost(std::string &line) {
@@ -193,17 +190,6 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 	_isGood = true;
 	_receivedBodySize += length;
 
-	// size_t maxBody = this->_client->getServer()->getClientMaxBody();
-	// std::cout << "ClientMaxBody (avant conversion): " << maxBody << std::endl;
-
-	// Vérifiez si maxBody est raisonnable et différent de zéro
-	// if (maxBody == 0) {
-	// 	std::cerr << "Erreur : ClientMaxBody est à zéro ou non défini !" << std::endl;
-	// 	return false;
-	// }
-
-	// size_t confBodySize = maxBody ;
-	// std::cout << "ClientMaxBody après conversion en bytes (confBodySize): " << confBodySize << std::endl;
     size_t maxBodySize = this->_client->getServer()->getClientMaxBody();
     // Si la taille maximale est définie et la requête dépasse cette limite
     if (maxBodySize > 0 && _receivedBodySize > maxBodySize) {
@@ -219,11 +205,6 @@ bool HttpRequest::appendRequest(const char* data, int length) {
 			_endRequested = true;
             return (_endRequested);
         }
-		// if (confBodySize && _receivedBodySize >= confBodySize) {
-		// 	std::cerr << "Erreur : La taille du corps de la requête dépasse la limite maximale autorisée." << std::endl;
-		// 	_tooLarge = true;
-        //     return (_tooLarge);
-		// }
     }
     return (_endRequested);  // Retourne false si la requête n'est pas encore complète
 }
@@ -243,15 +224,6 @@ bool HttpRequest::hasCompleteBody() {
         parseHeaders();  // Une méthode qui extrait les en-têtes de _requestData
 		_headersParsed = true;  // Indiquer que les en-têtes ont été traités
     }
-
-	// if (!_completed) {
-	// 	// if (_requestData.find(_boundary + "--")) {
-	// 	// 	std::cout << "OK    ++++ " << std::endl;
-	// 	// }
-	// 	this->processMultipartData();
-	// 	return (true);
-	// }
-
 	// Cas 1 : Vérifier Content-Length
     if (_headers.count("Content-Length") > 0) {
 		size_t contentLength = std::strtol(_headers["Content-Length"].c_str(), 0, 10);
@@ -326,133 +298,6 @@ bool	HttpRequest::isGood() const {
 	return (this->_isGood);
 }
 
-// void	HttpRequest::decodeFormData() {
-// 	size_t	pos = _requestData.find("\r\n\r\n") + 4;
-
-// 	std::string tmp = _requestData.substr(pos);
-// 	if (tmp.find(_boundary) == std::string::npos) {
-// 		std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
-// 		return;
-// 	}
-// 	size_t boundaryPos = tmp.find(_boundary);
-// 	while (boundaryPos != std::string::npos) {
-// 		boundaryPos += _boundary.size() + 1;  // Aller au début du contenu après boundary
-// 		size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
-
-// 		if (nextBoundaryPos == std::string::npos) {
-// 			nextBoundaryPos = tmp.find(_boundary + "--");
-// 		}
-// 			// break;
-
-// 		std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
-
-// 		// Vérifiez si c'est une image ou du texte
-// 		if (part.find("Content-Disposition: form-data; name=\"image\"") != std::string::npos) {
-// 			std::cout << "[Image data - binary content hidden]" << std::endl;
-// 		} else {
-// 			std::cout << "Données de formulaire texte reçues: " << part << std::endl;
-// 		}
-
-// 		boundaryPos = nextBoundaryPos;
-// 	}
-// }
-
-// void HttpRequest::decodeFormData() {
-// 	size_t pos = _requestData.find("\r\n\r\n") + 4;
-// 	std::string tmp = _requestData.substr(pos);
-
-// 	if (tmp.find(_boundary) == std::string::npos) {
-// 		std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
-// 		return;
-// 	}
-
-// 	size_t boundaryPos = tmp.find(_boundary);
-// 	while (boundaryPos != std::string::npos) {
-// 		boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
-// 		size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
-// 		if (nextBoundaryPos == std::string::npos) {
-// 			nextBoundaryPos = tmp.find(_boundary + "--");
-// 		}
-
-// 		std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
-
-// 		// Vérifiez si c'est une image ou du texte
-// 		size_t namePos = part.find("name=\"");
-// 		if (namePos != std::string::npos) {
-// 			namePos += 6; // Aller au début du nom après 'name="'
-// 			size_t endNamePos = part.find("\"", namePos);
-// 			std::string name = part.substr(namePos, endNamePos - namePos);
-
-// 			size_t contentPos = part.find("\r\n\r\n") + 4;
-// 			std::string content = part.substr(contentPos);
-
-// 			// Vérifier si c'est un fichier
-// 			if (part.find("filename=\"") != std::string::npos) {
-// 				namePos = part.find("filename=\"") + 10;
-// 				size_t endNamePos = part.find("\"", namePos);
-// 				std::string name = part.substr(namePos, endNamePos - namePos);
-// 				_fileData[name] = content;
-// 			} else {
-// 				_formData[name] = content;
-// 			}
-// 		}
-
-// 		boundaryPos = nextBoundaryPos;
-// 	}
-// }
-
-// void HttpRequest::decodeFormData() {
-//     size_t pos = _requestData.find("\r\n\r\n") + 4;
-//     std::string tmp = _requestData.substr(pos);
-
-//     // if (tmp.find(_boundary) == std::string::npos) {
-//     //     std::cerr << "Erreur: Boundary introuvable dans le corps de la requête" << std::endl;
-//     //     std::cerr << "Données reçues jusqu'à présent : " << tmp << std::endl;
-//     //     return;
-//     // }
-
-//     size_t boundaryPos = tmp.find(_boundary);
-//     while (boundaryPos != std::string::npos) {
-//         boundaryPos += _boundary.size() + 1; // Aller au début du contenu après boundary
-//         size_t nextBoundaryPos = tmp.find(_boundary, boundaryPos);
-//         if (nextBoundaryPos == std::string::npos) {
-//             nextBoundaryPos = tmp.find(_boundary + "--", boundaryPos);
-
-//         }
-
-//         std::string part = tmp.substr(boundaryPos, nextBoundaryPos - boundaryPos);
-
-//         // Traitez chaque partie ici...
-//         size_t namePos = part.find("name=\"");
-//         if (namePos != std::string::npos) {
-//             namePos += 6;
-//             size_t endNamePos = part.find("\"", namePos);
-//             std::string name = part.substr(namePos, endNamePos - namePos);
-
-//             size_t contentPos = part.find("\r\n\r\n") + 4;
-//             std::string content = part.substr(contentPos);
-// 			std::string boundaryMarker = _boundary + "--";
-// 			std::size_t pos = 0;
-// 			while ((pos = content.find(boundaryMarker, pos)) != std::string::npos) {
-// 				content.erase(pos, boundaryMarker.length());
-// 			}
-
-// 			std::string tmp2 = content.substr(0, content.find("\n"));
-// 			// std::cerr << "AQUE COUOCUC " << tmp2 << std::endl;
-
-//             if (part.find("filename=\"") != std::string::npos) {
-//                 namePos = part.find("filename=\"") + 10;
-//                 size_t endNamePos = part.find("\"", namePos);
-//                 std::string fileName = part.substr(namePos, endNamePos - namePos);
-//                 _fileData[fileName] = tmp2;
-//             } else {
-//                 _formData[name] = content;
-//             }
-//         }
-
-//         boundaryPos = nextBoundaryPos;
-//     }
-// }
 
 void HttpRequest::decodeFormData() {
     size_t pos = _requestData.find("\r\n\r\n") + 4;

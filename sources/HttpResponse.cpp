@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/10 15:31:00 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:29:29 by ael-mank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 # include <sstream>
 # include <iomanip>
 
-// Add this helper function at the top of the file or in a utility header
+
 std::string urlDecode(const std::string& encoded) {
     std::string decoded;
     for (size_t i = 0; i < encoded.length(); ++i) {
@@ -74,12 +74,10 @@ void HttpResponse::sendHeader() {
     }
     header += statusDescription + "\r\n";
 
-    // Ajout en-têtes HTTP à partir de _headers
     for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it) {
         header += it->first + ": " + it->second + "\r\n";
     }
-
-    // Terminer les en-têtes avec une ligne vide
+	
     header += "\r\n";
 	std::cout << header << std::endl;
 
@@ -96,11 +94,9 @@ void	HttpResponse::checkSend(int bytes) {
 std::string normalizeUrl(const std::string& path) {
     std::string normalized = path;
     size_t pos;
-    // Replace multiple consecutive slashes with a single slash
     while ((pos = normalized.find("//")) != std::string::npos) {
         normalized.replace(pos, 2, "/");
     }
-    // Remove trailing slashes except for root path
     while (normalized.length() > 1 && normalized[normalized.length() - 1] == '/') {
         normalized.erase(normalized.length() - 1);
     }
@@ -113,9 +109,7 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
     if (stat(uri.c_str(), &s) == 0) {
         if (s.st_mode & S_IFDIR) {
             isDir = true;
-            // Get the raw path without any normalization
             std::string path = this->getRequest()->returnPATH();
-            // Only redirect if there's really no trailing slash
             if (path != "/" && path[path.length() - 1] != '/') {
                 this->movedPermanently(path + "/");
                 return false;
@@ -124,38 +118,28 @@ bool HttpResponse::hasAccess(std::string &uri, bool &isDir) {
         else
             isDir = false;
     }
+    
     if (isDir) {
-		if (this->getServer()->getAutoindex()) {
-			for (std::vector<std::string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
-				if (*it == "")
-					continue;
-				if (access((uri + *it).c_str(), F_OK) != -1) {
-					if (access((uri + *it).c_str(), R_OK) == -1) {
-						this->handleError(403, "Permission denied");
-						return false;
-					}
-					uri += *it;
-					isDir = false;
-					break;
-				}
-			}
+        if (this->getServer()->getAutoindex()) {
+            isDir = true;
+            return true;
         }
-		else {
-			std::vector<std::string>::iterator it = this->_indexes.begin();
-			if (*it == "") {
-				isDir = true;
-				return true;
-			}
-			if (access((uri + *it).c_str(), F_OK) != -1) {
-				if (access((uri + *it).c_str(), R_OK) == -1) {
-					this->handleError(403, "Permission denied");
-					return false;
-				}
-				uri += *it;
-				isDir = false;
-				return true;
-			}
-		}
+        else {
+            std::vector<std::string>::iterator it = this->_indexes.begin();
+            if (*it == "") {
+                isDir = true;
+                return true;
+            }
+            if (access((uri + *it).c_str(), F_OK) != -1) {
+                if (access((uri + *it).c_str(), R_OK) == -1) {
+                    this->handleError(403, "Permission denied");
+                    return false;
+                }
+                uri += *it;
+                isDir = false;
+                return true;
+            }
+        }
     }
     return true;
 }
@@ -194,17 +178,14 @@ void HttpResponse::tryDeleteFile(std::string &uri) {
         this->handleError(404, "File not found");
         return;
     }
-
     if (access(decodedUri.c_str(), W_OK) == -1) {
         this->handleError(403, "Permission denied");
         return;
     }
-
     if (!childPath(getFullPath(root), getFullPath(decodedUri))) {
         this->handleError(403, "Access denied");
         return;
     }
-
     if (remove(decodedUri.c_str()) == 0) {
         this->_statusCode = 204;
         this->_headers.clear();
@@ -227,7 +208,6 @@ void HttpResponse::createHeader() {
 			this->_headers["Content-Type"] = "text/html";
 		}
 	}
-	//changer avec keepalive !!!!!
 	if (this->getRequest()->keepAlive()) {
         this->_headers["Connection"] = "keep-alive";
         this->_headers["Keep-Alive"] = "timeout=" + intToString(this->_client->getTimeout());
@@ -314,7 +294,7 @@ void HttpResponse::sendDirectoryPage(std::string path) {
     body += "<div class='d-flex justify-content-between align-items-center mb-4'>";
     body += "<h4 class='m-0'><i class='bi bi-folder2-open me-2'></i>File Manager - " + requestPath + "</h4>";
     
-    // Add upload form
+
     body += "<div class='upload-zone'>";
     body += "<form method='post' enctype='multipart/form-data' class='mb-0'>";
     body += "<div class='d-flex align-items-center gap-3'>";
@@ -358,7 +338,7 @@ void HttpResponse::sendDirectoryPage(std::string path) {
         while (link.length() > 1 && link[link.length() - 1] == '/') {
             link.erase(link.length() - 1);
         }
-        link += "/";  // Add single trailing slash
+        link += "/";
         link += name;
 
         body += "<div class='file-item'>";
@@ -376,8 +356,7 @@ void HttpResponse::sendDirectoryPage(std::string path) {
                 body += "<span class='file-size'>" + size + "</span>";
             }
         }
-        
-        // Add delete button for files (not directories)
+
         if (!isDir) {
             body += "<div class='file-actions'>";
             body += "<button onclick='deleteFile(\"" + link + "\")' class='btn btn-sm btn-outline-danger'>";
@@ -388,7 +367,6 @@ void HttpResponse::sendDirectoryPage(std::string path) {
         body += "</div>";
     }
 
-    // Add JavaScript for delete functionality
     body += "<script>";
     body += "function deleteFile(path) {";
     body += "  if (!confirm('Are you sure you want to delete this file?')) return;";
@@ -439,9 +417,7 @@ int HttpResponse::sendData(const void *data, int len) {
     return (0);
 }
 
-// Modify the serveStaticFile method
 void HttpResponse::serveStaticFile(const std::string &uri) {
-    // Decode the URI before using it
     std::string decodedUri = urlDecode(uri);
     std::ifstream file(decodedUri.c_str(), std::ios::binary);
     if (!file.is_open()) {
@@ -458,29 +434,18 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
         return;
     }
 
-    // Get file size
     file.seekg(0, std::ios::end);
     size_t fileSize = file.tellg();
     file.seekg(0, std::ios::beg);
-
-    // Get file extension and MIME type
     std::string ext = decodedUri.substr(decodedUri.find_last_of(".") + 1);
     this->_mime = Mime::getMimeType(ext);
-
-    // Set response headers
     this->_statusCode = 200;
     this->_headers["Content-Type"] = this->_mime;
     this->_headers["Content-Length"] = intToString(fileSize);
-    
-    // Add Content-Disposition for downloads - use the decoded filename
     std::string filename = decodedUri.substr(decodedUri.find_last_of("/") + 1);
-    // Encode the filename in Content-Disposition to handle special characters
     this->_headers["Content-Disposition"] = "inline; filename=\"" + filename + "\"";
-    
     this->createHeader();
     this->sendHeader();
-
-    // Send file contents in chunks
     char buffer[4096];
     while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
         this->sendData(buffer, file.gcount());
@@ -491,7 +456,6 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
 char **HttpResponse::createEnv(HttpRequest *request) {
     std::vector<std::string> envVars;
 
-    // Variables CGI standard
     envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
     envVars.push_back("REQUEST_URI=" + request->returnPATH());
     envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
@@ -500,22 +464,17 @@ char **HttpResponse::createEnv(HttpRequest *request) {
 	else
     	envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
     envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
-    // envVars.push_back("REQUEST_METHOD=" + request->getMethod());
-
-    // Query String
     const t_query &query = request->getQueryString();
     envVars.push_back("QUERY_STRING=" + query.strquery);
     for (std::map<std::string, std::string>::const_iterator it = query.params.begin(); it != query.params.end(); ++it) {
         envVars.push_back("QUERY_PARAM_" + it->first + "=" + it->second);
     }
 
-    // Ajouter les en-têtes HTTP convertis en format CGI
+
     const std::map<std::string, std::string> &headers = request->getHeaders();
     for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
         std::string key = it->first;
         std::string value = it->second;
-
-        // Convertir les noms d'en-têtes en CGI-compliant
         for (size_t i = 0; i < key.size(); ++i) {
             if (key[i] == '-') {
                 key[i] = '_';
@@ -525,8 +484,6 @@ char **HttpResponse::createEnv(HttpRequest *request) {
         }
         envVars.push_back("HTTP_" + key + "=" + value);
     }
-
-    // Ajouter les données de formulaire si disponibles
     const std::map<std::string, std::string> &formData = request->getFormData();
     for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
         envVars.push_back("FORM_" + it->first + "=" + it->second);
@@ -544,16 +501,15 @@ char **HttpResponse::createEnv(HttpRequest *request) {
             }
         }
     }
-    env[envVars.size()] = NULL; // Terminateur
-
+    env[envVars.size()] = NULL;
     return env;
 }
 
 char **buildArgv(const std::string &cgiBin, const std::string &uri) {
-    char **argv = new char*[3]; // 2 arguments + NULL
+    char **argv = new char*[3];
     argv[0] = strdup(cgiBin.c_str());
     argv[1] = strdup(uri.c_str());
-    argv[2] = NULL; // Terminaison avec NULL
+    argv[2] = NULL;
     return argv;
 }
 
@@ -565,11 +521,11 @@ void freeArgv(char **argv) {
 }
 
 char **buildEnvp(const std::vector<std::string> &environ) {
-    char **envp = new char*[environ.size() + 1]; // +1 pour le NULL final
+    char **envp = new char*[environ.size() + 1];
     for (size_t i = 0; i < environ.size(); ++i) {
-        envp[i] = strdup(environ[i].c_str()); // Copie chaque chaîne dans envp
+        envp[i] = strdup(environ[i].c_str());
     }
-    envp[environ.size()] = NULL; // Terminaison avec NULL
+    envp[environ.size()] = NULL;
     return envp;
 }
 
@@ -583,31 +539,25 @@ void freeEnvp(char **envp, size_t size) {
 char **HttpResponse::mergeEnvironments(char **originalEnv, char **cgiEnv) {
     std::set<std::string> envSet;
     std::vector<std::string> mergedEnv;
-
-    // Add original environment variables to the set and vector
     for (size_t i = 0; originalEnv && originalEnv[i] != NULL; ++i) {
         std::string var(originalEnv[i]);
-        envSet.insert(var.substr(0, var.find('='))); // Store variable name only
+        envSet.insert(var.substr(0, var.find('=')));
         mergedEnv.push_back(var);
     }
-
-    // Add CGI environment variables, avoiding duplicates
     for (size_t i = 0; cgiEnv && cgiEnv[i] != NULL; ++i) {
         std::string var(cgiEnv[i]);
         std::string key = var.substr(0, var.find('='));
-        if (envSet.find(key) == envSet.end()) { // Add only if not already in set
+        if (envSet.find(key) == envSet.end()) {
             envSet.insert(key);
             mergedEnv.push_back(var);
         }
     }
-
     // Convert the vector to a NULL-terminated array
     char **mergedArray = new char*[mergedEnv.size() + 1];
     for (size_t i = 0; i < mergedEnv.size(); ++i) {
         mergedArray[i] = strdup(mergedEnv[i].c_str());
     }
-    mergedArray[mergedEnv.size()] = NULL; // Add NULL terminator
-
+    mergedArray[mergedEnv.size()] = NULL;
     return mergedArray;
 }
 
@@ -615,7 +565,7 @@ char **HttpResponse::mergeEnvironments(char **originalEnv, char **cgiEnv) {
 
 bool HttpResponse::executeCGI(const std::string &uri) {
     char tempFileName[] = "/tmp/cgi_output_XXXXXX";
-    int tempFd = mkstemp(tempFileName); // Fichier temporaire sécurisé
+    int tempFd = mkstemp(tempFileName);
     if (tempFd == -1) {
         this->handleError(500, "CGI execution failed: unable to create temp file");
         return false;
@@ -992,7 +942,6 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
 
     std::string resolvePath;
     std::string location;
-    // bool follow = true;
     isDir = false;
     saveLoc.inLoc = false;
     _isCGI = false;
@@ -1003,8 +952,9 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
             saveLoc.inLoc = true;
             Location *loc = this->getServer()->getLocation(location);
             saveLoc.loc = *loc;
-			_allowedMethod = loc->getAllowedMethods();
-			_directoryListing = loc->getAutoindex();
+            _allowedMethod = loc->getAllowedMethods();
+            _directoryListing = loc->getAutoindex();
+            
             if (uri.compare(location)) {
                 std::string relativePath = uri.substr(uri.find(location) + location.size());
                 resolvePath = joinPaths(loc->getRoot(), relativePath);
@@ -1012,6 +962,16 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
                 resolvePath = loc->getRoot();
             }
 
+            // If autoindex is enabled, we want to show directory listing
+            // regardless of index files
+            struct stat s;
+            if (stat(resolvePath.c_str(), &s) == 0 && S_ISDIR(s.st_mode) && _directoryListing) {
+                uri = resolvePath;
+                isDir = true;
+                return true;
+            }
+
+            // Otherwise, proceed with normal index file handling
             if (!loc->getIndex().empty()) {
                 std::string indexPath = joinPaths(resolvePath, loc->getIndex());
                 if (access(indexPath.c_str(), F_OK) != -1) {
@@ -1034,9 +994,9 @@ bool HttpResponse::resolveUri(std::string &uri, bool &isDir) {
                     return true;
                 }
             }
-			else if (!_directoryListing && loc->getIndex().empty()) {
-				return (false);
-			}
+            else if (!_directoryListing && loc->getIndex().empty()) {
+                return (false);
+            }
         } else if (uri.compare("/")) {
             resolvePath = uri;
         } else {
@@ -1173,23 +1133,11 @@ void HttpResponse::error(const std::string &message) {
 	this->_body += "<p>" + message + "</p></body></html>";
 
 	this->_headers["Content-Length"] = intToString(this->_body.size());
-	// std::string header;
-	// for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it) {
-    //     header += it->first + ": " + it->second + "\r\n";
-    // }
-
-    // // Terminer les en-têtes avec une ligne vide
-    // header += "\r\n";
 	_response = _body;
 	sendHeader();
 	this->_readyToSend = true;
 }
 
-
-// void HttpResponse::handleError(int code, const std::string &message) {
-// 	this->_statusCode = code;
-// 	this->error(message);
-// }
 
 void HttpResponse::handleError(int code, const std::string &message) {
     this->_statusCode = code;

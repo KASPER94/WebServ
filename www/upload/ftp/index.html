@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Webserv</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Poppins', sans-serif;
+			background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+			min-height: 100vh;
+		}
+
+		.container {
+			padding-top: 2vh;
+			max-width: 1000px;
+		}
+
+		.card {
+			background: rgba(255, 255, 255, 0.9);
+			border: none;
+			border-radius: 15px;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+			backdrop-filter: blur(5px);
+			transition: transform 0.3s ease;
+			padding: 2rem !important;
+		}
+
+		.card:hover {
+			transform: translateY(-5px);
+		}
+
+		h2 {
+			color: #2d3436;
+			font-weight: 600;
+			margin-bottom: 2rem;
+			position: relative;
+			display: inline-block;
+		}
+
+		h2:after {
+			content: '';
+			position: absolute;
+			bottom: -10px;
+			left: 0;
+			width: 100%;
+			height: 3px;
+			background: linear-gradient(90deg, #00b894, #00cec9);
+			border-radius: 3px;
+		}
+
+		.btn {
+			border-radius: 8px;
+			padding: 0.6rem 1.2rem;
+			font-weight: 500;
+			transition: all 0.3s ease;
+			margin: 0.4rem;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			min-width: 140px;
+		}
+
+		.btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+
+		.section {
+			padding: 1rem 0;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+			text-align: center;
+		}
+
+		.section:last-child {
+			border-bottom: none;
+		}
+
+		.section-title {
+			font-size: 0.9rem;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			color: #636e72;
+			margin-bottom: 1rem;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<div class="card p-5">
+			<div class="text-center">
+				<h2>Webserv Dashboard</h2>
+			</div>
+
+			<div class="section">
+				<div class="section-title">Error Pages</div>
+				<div class="text-center">
+					<a href="/default_error" class="btn btn-success">Default Error Page</a>
+					<a href="/custom_error" class="btn btn-success">Custom Error Page</a>
+				</div>
+			</div>
+
+			<div class="section">
+				<div class="section-title">HTTP Methods</div>
+				<div class="text-center">
+					<a href="/GET" class="btn btn-primary">GET</a>
+					<a href="/POST" class="btn btn-primary">POST</a>
+					<a href="/DELETE" class="btn btn-primary">DELETE</a>
+				</div>
+			</div>
+
+			<div class="section">
+				<div class="section-title">Routing</div>
+				<div class="text-center">
+					<a href="/redir" class="btn btn-secondary">Redirection</a>
+					<a href="/samePort" class="btn btn-secondary">Same Ports</a>
+				</div>
+			</div>
+
+			<div class="section">
+				<div class="section-title">File Management</div>
+				<div class="text-center">
+					<a href="http://127.0.0.1:8086/files/" class="btn btn-info">File Manager</a>
+				</div>
+			</div>
+
+			<div class="section">
+				<div class="section-title">Static Content</div>
+				<div class="text-center">
+					<a href="http://127.0.0.1:8085/" class="btn btn-warning">Static Website</a>
+				</div>
+			</div>
+
+			<div class="section">
+				<div class="section-title">CGI & Sessions</div>
+				<div class="text-center">
+					<a href="http://127.0.0.1:8082/" class="btn btn-dark">PHP CGI</a>
+					<a href="http://127.0.0.1:8083/" class="btn btn-dark">Python CGI</a>
+					<a href="http://127.0.0.1:8084/" class="btn btn-danger">Session</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
+
