@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/09 15:49:19 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:00:46 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,15 @@ void Webserv::getRequest(int clientSock) {
 	// logMsg(DEBUG, "Fragment of request received on socket " + toString(clientSock));
     // std::cout << buffer << std::endl;
 	bool isRequestComplete = client->appendRequest(buffer, bytesRead);
+	if (client->getRequest()->tooLarge()) {
+		logMsg(DEBUG, "Request received from socket " + toString(clientSock) + " is ready to be proceeded");
+
+        // Préparer le client pour l'envoi de la réponse
+        struct epoll_event clientEvent;
+        clientEvent.data.fd = clientSock;
+        clientEvent.events = EPOLLOUT;
+        epoll_ctl(_epollfd, EPOLL_CTL_MOD, clientSock, &clientEvent);
+	}
 	    // Si la requête est chunked et incomplète, continuer à écouter le socket
     if (!isRequestComplete) {
 		// logMsg(DEBUG, "Waiting for more fragments of request on socket " + toString(clientSock));

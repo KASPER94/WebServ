@@ -6,7 +6,7 @@
 /*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 01:48:04 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 10:07:06 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,7 +208,7 @@ bool HttpRequest::appendRequest(const char* data, int length) {
     // Si la taille maximale est définie et la requête dépasse cette limite
     if (maxBodySize > 0 && _receivedBodySize > maxBodySize) {
         _tooLarge = true; // Marquer la requête comme trop grande
-        return false;     // Arrêter le traitement
+        return true;     // Arrêter le traitement
     }
     _requestData.append(data, length);  // Accumule les données reçues dans une std::string
     // Vérifiez si la requête est complète
