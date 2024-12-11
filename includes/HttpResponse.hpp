@@ -21,6 +21,7 @@
 # include <map>
 # include <dirent.h>
 # include "Mime.hpp"
+# include <limits.h>
 
 class Client;
 class HttpRequest;
@@ -100,7 +101,7 @@ class HttpResponse {
 		bool handleUpload();
 		void handlePostRequest();
 		void prepareCGIEnvironment(std::vector<std::string> &env);
-		char **createEnv(HttpRequest *request);
+		char **createEnv(HttpRequest *request, std::string uri);
 		char **mergeEnvironments(char **originalEnv, char **cgiEnv);
 };
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/13 14:51:58 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 10:39:57 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/11 11:49:01 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -453,28 +453,63 @@ void HttpResponse::serveStaticFile(const std::string &uri) {
     file.close();
 }
 
-char **HttpResponse::createEnv(HttpRequest *request) {
+char **HttpResponse::createEnv(HttpRequest *request, std::string uri) {
     std::vector<std::string> envVars;
 
+    // Variables CGI standard
+    envVars.push_back("REDIRECT_STATUS=200");
+    envVars.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    envVars.push_back("SERVER_SOFTWARE=Webserv/1.0");
     envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
-    envVars.push_back("REQUEST_URI=" + request->returnPATH());
-    envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
-	if (request->getContentLen() == 0)
-	    envVars.push_back("CONTENT_LENGTH=0");
+    envVars.push_back("SERVER_NAME=" + this->getServer()->getServerName());
+
+    std::stringstream port;
+    port << this->getServer()->getPort();
+    envVars.push_back("SERVER_PORT=" + port.str());
+
+    envVars.push_back("REQUEST_METHOD=" + request->HttpMethodTostring());
+
+    // Define PATH_INFO and PATH_TRANSLATED
+    envVars.push_back("PATH_INFO=" + request->returnPATH());
+    envVars.push_back("PATH_TRANSLATED=" + this->getServer()->getRoot() + request->returnPATH());
+
+    // SCRIPT_NAME
+    std::string scriptName = uri;
+	//ATTENTION A CHANGER CA !
+	char cwd[4096];
+	std::string serverRoot;
+	if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    	serverRoot = std::string(cwd) + "/";
+	}
 	else
-    	envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
-    envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
+		serverRoot = "/home/";
+	envVars.push_back("SCRIPT_FILENAME=" + serverRoot + uri); // Chemin absolu
+    envVars.push_back("SCRIPT_NAME=" + uri); 
+	envVars.push_back("REDIRECT_STATUS=200");
+
+    // Query String
     const t_query &query = request->getQueryString();
     envVars.push_back("QUERY_STRING=" + query.strquery);
-    for (std::map<std::string, std::string>::const_iterator it = query.params.begin(); it != query.params.end(); ++it) {
-        envVars.push_back("QUERY_PARAM_" + it->first + "=" + it->second);
+
+    // Client info
+    envVars.push_back("REMOTE_HOST=" + this->getServer()->getHostname());
+    // envVars.push_back("REMOTE_ADDR=" + this->getServer()->getHost());
+
+    // Content headers
+    envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
+    if (request->getContentLen() == 0) {
+        envVars.push_back("CONTENT_LENGTH=0");
+    } else {
+        envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
     }
 
-
+    // HTTP headers converted to CGI-compliant variables
     const std::map<std::string, std::string> &headers = request->getHeaders();
     for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
         std::string key = it->first;
         std::string value = it->second;
+
+        // Convert header names to uppercase and replace '-' with '_'
         for (size_t i = 0; i < key.size(); ++i) {
             if (key[i] == '-') {
                 key[i] = '_';
@@ -484,32 +519,100 @@ char **HttpResponse::createEnv(HttpRequest *request) {
         }
         envVars.push_back("HTTP_" + key + "=" + value);
     }
+
+    // Form data if available
     const std::map<std::string, std::string> &formData = request->getFormData();
     for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
         envVars.push_back("FORM_" + it->first + "=" + it->second);
     }
+
+    // Convert envVars to char**
     char **env = new char*[envVars.size() + 1];
     for (size_t i = 0; i < envVars.size(); ++i) {
-        if (!envVars[i].empty()) {
-            env[i] = strdup(envVars[i].c_str());
-            if (!env[i]) {
-                for (size_t j = 0; j < i; ++j) {
-                    delete[] env[j];
-                }
-                delete[] env;
-                return NULL;
+        env[i] = strdup(envVars[i].c_str());
+        if (!env[i]) {
+            for (size_t j = 0; j < i; ++j) {
+                delete[] env[j];
             }
+            delete[] env;
+            return NULL;
         }
     }
-    env[envVars.size()] = NULL;
+    env[envVars.size()] = NULL; // Null terminator
+
     return env;
 }
 
+// char **HttpResponse::createEnv(HttpRequest *request) {
+//     std::vector<std::string> envVars;
+
+//     // Variables CGI standard
+// 	envVars.push_back("REDIRECT_STATUS=200");
+//     envVars.push_back("GATEWAY_INTERFACE=CGI/1.1");
+// 	envVars.push_back("SERVER_SOFTWARE=Webserv/1.0");
+//     envVars.push_back("SERVER_PROTOCOL=HTTP/1.1");
+//     envVars.push_back("REQUEST_URI=" + request->returnPATH());
+//     envVars.push_back("CONTENT_TYPE=" + request->getHeaders()["Content-Type"]);
+// 	if (request->getContentLen() == 0)
+// 	    envVars.push_back("CONTENT_LENGTH=0");
+// 	else
+//     	envVars.push_back("CONTENT_LENGTH=" + intToString(request->getContentLen()));
+//     envVars.push_back("SERVER_PORT=" + intToString(this->getServer()->getPort()));
+//     envVars.push_back("REQUEST_METHOD=" + this->getRequest()->getMethodstr());
+// 	std::cout << "REQUEST_METHOD=" + this->getRequest()->getMethodstr() << std::endl;
+
+//     // Query String
+//     const t_query &query = request->getQueryString();
+//     envVars.push_back("QUERY_STRING=" + query.strquery);
+//     for (std::map<std::string, std::string>::const_iterator it = query.params.begin(); it != query.params.end(); ++it) {
+//         envVars.push_back("QUERY_PARAM_" + it->first + "=" + it->second);
+//     }
+
+//     // Ajouter les en-têtes HTTP convertis en format CGI
+//     const std::map<std::string, std::string> &headers = request->getHeaders();
+//     for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+//         std::string key = it->first;
+//         std::string value = it->second;
+
+//         // Convertir les noms d'en-têtes en CGI-compliant
+//         for (size_t i = 0; i < key.size(); ++i) {
+//             if (key[i] == '-') {
+//                 key[i] = '_';
+//             } else {
+//                 key[i] = toupper(key[i]);
+//             }
+//         }
+//         envVars.push_back("HTTP_" + key + "=" + value);
+//     }
+
+//     // Ajouter les données de formulaire si disponibles
+//     const std::map<std::string, std::string> &formData = request->getFormData();
+//     for (std::map<std::string, std::string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
+//         envVars.push_back("FORM_" + it->first + "=" + it->second);
+//     }
+//     char **env = new char*[envVars.size() + 1];
+//     for (size_t i = 0; i < envVars.size(); ++i) {
+//         if (!envVars[i].empty()) {
+//             env[i] = strdup(envVars[i].c_str());
+//             if (!env[i]) {
+//                 for (size_t j = 0; j < i; ++j) {
+//                     delete[] env[j];
+//                 }
+//                 delete[] env;
+//                 return NULL;
+//             }
+//         }
+//     }
+//     env[envVars.size()] = NULL; // Terminateur
+
+//     return env;
+// }
+
 char **buildArgv(const std::string &cgiBin, const std::string &uri) {
-    char **argv = new char*[3];
+    char **argv = new char*[3]; // 2 arguments + NULL
     argv[0] = strdup(cgiBin.c_str());
     argv[1] = strdup(uri.c_str());
-    argv[2] = NULL;
+    argv[2] = NULL; // Terminaison avec NULL
     return argv;
 }
 
@@ -521,11 +624,11 @@ void freeArgv(char **argv) {
 }
 
 char **buildEnvp(const std::vector<std::string> &environ) {
-    char **envp = new char*[environ.size() + 1];
+    char **envp = new char*[environ.size() + 1]; // +1 pour le NULL final
     for (size_t i = 0; i < environ.size(); ++i) {
-        envp[i] = strdup(environ[i].c_str());
+        envp[i] = strdup(environ[i].c_str()); // Copie chaque chaîne dans envp
     }
-    envp[environ.size()] = NULL;
+    envp[environ.size()] = NULL; // Terminaison avec NULL
     return envp;
 }
 
@@ -539,87 +642,105 @@ void freeEnvp(char **envp, size_t size) {
 char **HttpResponse::mergeEnvironments(char **originalEnv, char **cgiEnv) {
     std::set<std::string> envSet;
     std::vector<std::string> mergedEnv;
+
+    // Add original environment variables to the set and vector
     for (size_t i = 0; originalEnv && originalEnv[i] != NULL; ++i) {
         std::string var(originalEnv[i]);
-        envSet.insert(var.substr(0, var.find('=')));
+        envSet.insert(var.substr(0, var.find('='))); // Store variable name only
         mergedEnv.push_back(var);
     }
+
+    // Add CGI environment variables, avoiding duplicates
     for (size_t i = 0; cgiEnv && cgiEnv[i] != NULL; ++i) {
         std::string var(cgiEnv[i]);
         std::string key = var.substr(0, var.find('='));
-        if (envSet.find(key) == envSet.end()) {
+        if (envSet.find(key) == envSet.end()) { // Add only if not already in set
             envSet.insert(key);
             mergedEnv.push_back(var);
         }
     }
+
     // Convert the vector to a NULL-terminated array
     char **mergedArray = new char*[mergedEnv.size() + 1];
     for (size_t i = 0; i < mergedEnv.size(); ++i) {
         mergedArray[i] = strdup(mergedEnv[i].c_str());
     }
-    mergedArray[mergedEnv.size()] = NULL;
+    mergedArray[mergedEnv.size()] = NULL; // Add NULL terminator
+
     return mergedArray;
 }
 
-
-
 bool HttpResponse::executeCGI(const std::string &uri) {
+    // Créer un fichier temporaire pour capturer la sortie CGI
     char tempFileName[] = "/tmp/cgi_output_XXXXXX";
     int tempFd = mkstemp(tempFileName);
     if (tempFd == -1) {
         this->handleError(500, "CGI execution failed: unable to create temp file");
         return false;
     }
-
     this->_cgiTmpFile = tempFileName;
 
-    pid_t pid = fork();
-    if (pid < 0) {
-        this->handleError(500, "CGI execution failed: fork error");
+    // Créer un fichier temporaire pour transmettre le corps de la requête
+    FILE *contentTmp = tmpfile();
+    if (!contentTmp) {
+        this->handleError(500, "CGI execution failed: unable to create temp input file");
         close(tempFd);
         unlink(tempFileName);
         return false;
     }
-	HttpRequest *request = this->getRequest();
-	char **en = createEnv(request);
-	// char **cgiEnv;
-	if (this->_client->getCgiEnv() == NULL || this->_client->getCgiEnv()[0] == NULL) {
-		_cgiEnv = mergeEnvironments(en, env()->envp);
-	}
-	else
-		_cgiEnv = mergeEnvironments(en, this->_client->getCgiEnv());
-	_client->setCgiEnv(_cgiEnv);
-	freeEnv(en);
-	// int i = 0;
-	// while (cgiEnv[i]) {
-	// 	std::cout << cgiEnv[i] << std::endl;
-	// 	i++;
-	// }
-    if (pid == 0) {
+    int contentFd = fileno(contentTmp);
+    if (contentFd == -1) {
+        this->handleError(500, "CGI execution failed: unable to get file descriptor");
+        fclose(contentTmp);
+        close(tempFd);
+        unlink(tempFileName);
+        return false;
+    }
+
+    // Écrire le corps de la requête dans le fichier temporaire
+    fputs(this->getRequest()->getBody().c_str(), contentTmp);
+    lseek(contentFd, 0, SEEK_SET); // Réinitialiser le pointeur pour la lecture
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        this->handleError(500, "CGI execution failed: fork error");
+        fclose(contentTmp);
+        close(contentFd);
+        close(tempFd);
+        unlink(tempFileName);
+        return false;
+    } else if (pid == 0) {
         // Processus enfant
-        dup2(tempFd, STDOUT_FILENO); // Redirige stdout vers le fichier temporaire
-        dup2(tempFd, STDERR_FILENO); // Redirige stderr pour capturer les erreurs
+        char **env = createEnv(this->getRequest(), uri);
+
+        // Préparer les arguments pour le script CGI
+        std::string script = uri.substr();
+        char **argv = new char*[3];
+        argv[0] = strdup(this->_cgiBin.c_str());
+        argv[1] = strdup(script.c_str());
+        argv[2] = NULL;
+
+        // Rediriger les entrées/sorties
+        if (dup2(contentFd, STDIN_FILENO) == -1 || dup2(tempFd, STDOUT_FILENO) == -1) {
+            perror("dup2 failed");
+            exit(127);
+        }
+        close(contentFd);
         close(tempFd);
 
-        // Préparer les variables d'environnement et les arguments
-    	// HttpRequest *request = this->getRequest();
-        // char **en = createEnv(request);
-		// char **cgiEnv = mergeEnvironments(env()->envp, en);
-        char **argv = buildArgv(this->_cgiBin, uri);
-
         // Exécuter le script CGI
-        if (execve(this->_cgiBin.c_str(), argv, _cgiEnv) == -1) {
-            perror("execve failed"); // Affiche l'erreur dans stderr
-            freeArgv(en);
-            freeArgv(argv);
-            exit(127); // Code d'erreur pour execve
+        if (execve(this->_cgiBin.c_str(), argv, env) == -1) {
+            perror("execve failed");
+            exit(127);
         }
     } else {
         // Processus parent
+        close(contentFd);
+        fclose(contentTmp);
         close(tempFd);
 
         int status;
-        waitpid(pid, &status, 0); // Attend la fin du processus enfant
+        waitpid(pid, &status, 0); // Attendre la fin du processus enfant
 
         if (WIFEXITED(status)) {
             int exitCode = WEXITSTATUS(status);
@@ -629,8 +750,7 @@ bool HttpResponse::executeCGI(const std::string &uri) {
                 return false;
             }
         } else {
-            // this->handleError(500, "CGI process terminated anormally");
-			_isCGI = false;
+            this->handleError(500, "CGI process terminated abnormally");
             unlink(tempFileName);
             return false;
         }

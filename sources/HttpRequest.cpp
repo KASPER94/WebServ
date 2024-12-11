@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ael-mank <ael-mank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/02 19:24:38 by skapersk          #+#    #+#             */
-/*   Updated: 2024/12/11 10:30:05 by ael-mank         ###   ########.fr       */
+/*   Updated: 2024/12/11 11:28:48 by skapersk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,14 @@ void HttpRequest::parseUrn(std::string queryString) {
     }
 }
 
+std::string HttpRequest::getBody() const {
+    size_t headerEnd = _requestData.find("\r\n\r\n");
+    if (headerEnd == std::string::npos) {
+        return "";
+    }
+    return _requestData.substr(headerEnd + 4);
+}
+
 void	HttpRequest::getUri() {
 	size_t queryPos = this->_path.find("?");
 	size_t fragPos = this->_path.find("#");
@@ -153,12 +161,34 @@ void HttpRequest::parseCookie(std::string &line) {
     _cookie = line;
 }
 
+void HttpRequest::parseContentLength() {
+    std::map<std::string, std::string>::iterator it = _headers.find("Content-Length");
+    if (it != _headers.end()) {
+        try {
+            _contentLen = std::atoi(it->second.c_str());
+        } catch (const std::invalid_argument &e) {
+            _contentLen = 0;
+        } catch (const std::out_of_range &e) {
+            _contentLen = 0;
+        }
+    } else {
+        size_t headerEnd = _rawRequest.find("\r\n\r\n");
+        if (headerEnd != std::string::npos) {
+            headerEnd += 4;
+            _contentLen = _rawRequest.size() - headerEnd;
+        } else {
+            _contentLen = 0;
+        }
+    }
+}
+
 void HttpRequest::initializeHeaderParsers() {
 	parseAcceptedMimes(_headers["Accept"]);
 	parseConnection(_headers["Connection"]);
 	parseUserAgent(_headers["User-Agent"]);
 	parseContentType(_headers["Content-Type"]);
-	parseContentLen(_headers["Content-Length"]);
+	// parseContentLen(_headers["Content-Length"]);
+	parseContentLength();
 	parseHost(_headers["Host"]);
 	parseCookie(_headers["cookie"]);
 }
@@ -290,6 +320,14 @@ void	HttpRequest::processMultipartData() {
 		// std::cout << "Contenu text/plain reçu : " << plainTextContent << std::endl;
 		_plainTextBody = plainTextContent;
 	}
+	else {
+        size_t bodyStart = _requestData.find("\r\n\r\n") + 4;
+		_contentLen = bodyStart;
+        if (bodyStart != std::string::npos) {
+            std::string bodyContent = _requestData.substr(bodyStart);
+            _formData["raw_body"] = bodyContent;
+        }
+    }
 	// else
 		// this->_isGood = false;
 }
