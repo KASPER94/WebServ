@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skapersk <skapersk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yrigny <yrigny@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/23 16:38:26 by peanut            #+#    #+#             */
-/*   Updated: 2024/12/11 10:00:46 by skapersk         ###   ########.fr       */
+/*   Updated: 2024/12/11 11:33:29 by yrigny           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,7 +239,7 @@ void Webserv::checkClientTimeouts() {
 void Webserv::initializeSockets() {
 	int serverSock;
     std::vector<Server> &servers = this->getAllServer();
-    _epollfd = epoll_create1(0);
+    _epollfd = epoll_create(1);
     if (_epollfd == -1) {
 		logMsg(ERROR, "epoll_create() failed to create epoll instance");
         return;
